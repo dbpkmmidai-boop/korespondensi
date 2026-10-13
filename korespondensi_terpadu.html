@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Korespondensi - UPTD Puskesmas Midai</title>
@@ -687,6 +688,90 @@
             });
         });
     </script>
+<!-- Modal Proteksi Login Google -->
+<div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+  <div class="bg-slate-800 border border-cyan-500/30 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+    <div class="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-cyan-400/30">
+      <i class="fa-solid fa-user-shield text-2xl text-cyan-400"></i>
+    </div>
+    <h2 class="text-xl font-bold text-white mb-2">Akses Terbatas</h2>
+    <p class="text-sm text-cyan-200/80 mb-6">Silakan login menggunakan akun Google yang terdaftar untuk mengakses Dashboard Korespondensi UPTD Puskesmas Midai.</p>
+    
+    <!-- Tombol Google Sign-In -->
+    <div id="g_id_onload"
+         data-client_id="TEMPEL_CLIENT_ID_ANDA_DI_SINI"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin flex justify-center mb-4"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
 
+    <!-- Status / Pesan Error -->
+    <div id="authMessage" class="text-xs text-red-400 min-h-[20px]"></div>
+  </div>
+</div>
+
+<script>
+  // DAFTAR EMAIL GOOGLE YANG DIIZINKAN MASUK
+  const ALLOWED_EMAILS = [
+    "dbpkmmidai@gmail.com"
+    "natunassl@gmail.com"
+    "witapebrianti33@gmail.com"
+    "cyyessi25@gmail.com"
+    "midiawati.midai@gmail.com"
+    "wandisusanto21@gmail.com"
+    
+    // Tambahkan email admin/staf lain di sini, contoh:
+    // , "admin2@gmail.com"
+  ];
+
+  // Dekode Token JWT dari Google
+  function parseJwt(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  }
+
+  // Cek Status Sesi Login saat Halaman Dimuat
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedUser = sessionStorage.getItem('authorized_user');
+    if (savedUser && ALLOWED_EMAILS.includes(savedUser)) {
+      const overlay = document.getElementById('loginOverlay');
+      if (overlay) overlay.classList.add('hidden');
+    }
+  });
+
+  // Callback Setelah User Klik Login
+  function handleCredentialResponse(response) {
+    try {
+      const responsePayload = parseJwt(response.credential);
+      const userEmail = responsePayload.email;
+
+      if (ALLOWED_EMAILS.includes(userEmail)) {
+        sessionStorage.setItem('authorized_user', userEmail);
+        document.getElementById('loginOverlay').classList.add('hidden');
+      } else {
+        document.getElementById('authMessage').innerText = `Akses Ditolak: Email (${userEmail}) tidak memiliki izin.`;
+      }
+    } catch (err) {
+      document.getElementById('authMessage').innerText = "Gagal memproses autentikasi Google.";
+    }
+  }
+
+  // Fungsi Logout
+  function logoutGoogle() {
+    sessionStorage.removeItem('authorized_user');
+    location.reload();
+  }
+</script>
 </body>
 </html>
