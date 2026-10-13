@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Integrasi Administrasi Kelahiran Puskesmas Midai</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; margin: 0; padding: 20px; font-size: 11pt; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        /* HEADER DENGAN TOMBOL DASHBOARD */
+        .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #81c784; padding-bottom: 6px; margin-bottom: 15px; }
+        .header-container h2 { border-bottom: none; padding-bottom: 0; margin: 0; }
+        
+        h2, h3 { color: #1b5e20; border-bottom: 2px solid #81c784; padding-bottom: 6px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: bold; font-size: 0.85rem; margin-bottom: 4px; color: #333; }
+        .form-group input, .form-group select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; }
+        .input-prefix-container { display: flex; align-items: center; }
+        .input-prefix { background: #e9ecef; border: 1px solid #ccc; border-right: none; padding: 8px 10px; font-size: 0.9rem; border-radius: 4px 0 0 4px; color: #495057; font-weight: bold; }
+        .input-prefix-container input { border-radius: 0 4px 4px 0; width: 100%; }
+        .full-width { grid-column: 1 / -1; }
+        .btn-container { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        button, .btn-dashboard { background-color: #2e7d32; color: white; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.95rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        button:hover, .btn-dashboard:hover { background-color: #1b5e20; }
+        .btn-dashboard { background-color: #17324d; }
+        .btn-dashboard:hover { background-color: #0f263b; }
+        button.excel { background-color: #157347; }
+        button.excel:hover { background-color: #0e4b2e; }
+        button.reset { background-color: #d32f2f; }
+        button.reset:hover { background-color: #9a0007; }
+
+        /* TABEL MANUAL INPUT FORM */
+        .manual-doc-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .manual-doc-table th, .manual-doc-table td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+        .manual-doc-table th { background-color: #f8f9fa; font-size: 0.85rem; }
+
+        /* TABEL DATABASE RIWAYAT */
+        .table-container { margin-top: 30px; overflow-x: auto; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
+        table.db-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+        table.db-table th, table.db-table td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+        table.db-table th { background-color: #e8f5e9; color: #1b5e20; }
+        
+        /* TOMBOL AKSI TABEL RIWAYAT */
+        .btn-action-group { display: flex; gap: 4px; flex-wrap: nowrap; }
+        .btn-edit { background-color: #0288d1; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 8pt; }
+        .btn-edit:hover { background-color: #01579b; }
+        .btn-print { background-color: #2e7d32; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 8pt; }
+        .btn-print:hover { background-color: #1b5e20; }
+        .btn-del { background-color: #e53935; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 8pt; }
+        .btn-del:hover { background-color: #b71c1c; }
+
+        /* AREA CETAK DOKUMEN */
+        #print-area { display: none; }
+
+        @media print {
+            /* PENGATURAN MARGIN KERTAS UTAMA (TOP MARGIN 1 CM UNTUK SURAT KELAHIRAN) */
+            @page {
+                size: 215.9mm 330mm;
+                margin: 10mm 20mm 15mm 25mm;
+            }
+
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            
+            #print-area { 
+                display: block; 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                padding: 0; 
+                font-family: 'Times New Roman', Times, serif; 
+            }
+
+            .page-break { 
+                page-break-after: always; 
+                clear: both;
+            }
+
+            .page-standard-margin {
+                padding-top: 5mm;
+            }
+            
+            /* KOP PUSKESMAS 2 LOGO */
+            .kop-puskesmas-container {
+                width: 100%;
+                border-bottom: 3px double #000;
+                padding-bottom: 4px;
+                margin-bottom: 10px;
+            }
+            .kop-table {
+                width: 100%;
+                border-collapse: collapse;
+                border: none;
+            }
+            .kop-table td {
+                vertical-align: middle;
+                padding: 0;
+                border: none !important;
+            }
+            .kop-logo-left {
+                width: 15%;
+                text-align: left;
+            }
+            .kop-logo-right {
+                width: 15%;
+                text-align: right;
+            }
+            .kop-text-center {
+                width: 70%;
+                text-align: center;
+            }
+            .kop-logo-img {
+                max-width: 75px;
+                max-height: 80px;
+                height: auto;
+                width: auto;
+            }
+            .kop-text-center h3 {
+                margin: 0;
+                line-height: 1.15;
+                font-size: 11pt;
+                font-weight: normal;
+                color: #000;
+                text-transform: uppercase;
+                border: none !important;
+            }
+            .kop-text-center h2 {
+                margin: 0;
+                line-height: 1.15;
+                font-size: 13pt;
+                font-weight: bold;
+                color: #000;
+                text-transform: uppercase;
+                border: none !important;
+            }
+            .kop-text-center p {
+                margin: 0;
+                font-size: 9pt;
+                line-height: 1.15;
+            }
+
+            .doc-title { text-align: center; font-weight: bold; font-size: 12pt; text-decoration: underline; margin-top: 2px; }
+            .doc-no { text-align: center; font-size: 10pt; margin-bottom: 10px; }
+
+            /* FORMAT TEKS PENERANGAN SURAT KELAHIRAN */
+            .text-menerangkan {
+                margin-bottom: 6px;
+                font-size: 12pt;
+                line-height: 1.3;
+            }
+            .text-menerangkan-p1 {
+                text-indent: 40px;
+                margin: 0;
+            }
+            .text-menerangkan-p2 {
+                margin: 0;
+            }
+
+            .label-spaced {
+                letter-spacing: 3px;
+            }
+
+            .section-header-center {
+                text-align: center;
+                font-weight: bold;
+                letter-spacing: 4px;
+                margin-top: 6px;
+                margin-bottom: 3px;
+                font-size: 12pt;
+            }
+
+            /* TABEL FORM SKL */
+            table.form-table { width: 100%; border-collapse: collapse; margin-top: 2px; }
+            table.form-table td { padding: 2px 2px; vertical-align: top; font-size: 12pt; }
+
+            /* DOKUMEN F-2.01: UKURAN PROPOSIONAL UNTUK MENGISI SPACE HINGGA PAS 1 HALAMAN */
+            .container-f201 {
+                page-break-inside: avoid;
+                font-size: 10.5pt;
+                line-height: 1.25;
+            }
+            .container-f201 table.form-table td {
+                padding: 2px 2px !important;
+                font-size: 10.5pt !important;
+            }
+            .container-f201 p {
+                margin: 5px 0 2px 0 !important;
+                font-size: 10.5pt !important;
+            }
+            .container-f201 ol {
+                margin: 4px 0 0 0 !important;
+                padding-left: 20px !important;
+                font-size: 9pt !important;
+            }
+            .container-f201 .ttd-box-f201 {
+                float: right;
+                text-align: center;
+                width: 40%;
+                margin-top: 15px;
+                font-size: 10.5pt;
+                page-break-inside: avoid;
+            }
+
+            table.bordered-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+            table.bordered-table th, table.bordered-table td { border: 1px solid #000; padding: 4px; text-align: left; font-size: 9.5pt; }
+            
+            .ttd-box { float: right; text-align: center; width: 45%; margin-top: 18px; font-size: 11pt; page-break-inside: avoid; }
+            .header-f201 { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 10pt; }
+            .notes { margin-top: 12px; font-size: 8.5pt; clear: both; line-height: 1.15; }
+
+            /* DOKUMEN 3: FORM REGISTER - MENYESUAIKAN FORMULIR REFERENSI */
+            .register-form {
+                font-family: 'Times New Roman', Times, serif;
+                font-size: 9.5pt;
+                line-height: 1.15;
+            }
+            .register-title {
+                text-align: center;
+                font-weight: bold;
+                font-size: 10.5pt;
+                line-height: 1.15;
+                margin: 0 0 12px 0;
+            }
+            .register-data-wrap {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                margin-bottom: 10px;
+            }
+            .register-data-table {
+                width: calc(100% - 125px);
+                margin: 0 !important;
+            }
+            .register-data-table td {
+                padding: 2px 1px !important;
+                font-size: 12pt !important;
+                vertical-align: top;
+            }
+            .register-data-table td:first-child {
+                width: 31%;
+            }
+            .register-data-table td:nth-child(2) {
+                width: 3%;
+            }
+            .register-no-box {
+                width: 115px;
+                height: 62px;
+                border: 1px solid #000;
+                flex: 0 0 115px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                font-weight: normal;
+                font-size: 9pt;
+            }
+            .register-no-box .register-no-label {
+                width: 100%;
+                padding: 3px 2px 2px;
+                border-bottom: 1px solid #000;
+                text-align: center;
+                font-weight: normal;
+            }
+            .register-no-box .register-no-value {
+                width: 100%;
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 10pt;
+            }
+            .register-section-title {
+                font-weight: bold;
+                margin: 8px 0 3px 0;
+                font-size: 9.5pt;
+            }
+            table.register-doc-table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+                margin: 0;
+            }
+            table.register-doc-table th,
+            table.register-doc-table td {
+                border: 1px solid #000;
+                padding: 0 3px;
+                height: 30px; /* 150% dari tinggi baris sebelumnya (20px) */
+                font-size: 9pt;
+                font-weight: normal;
+                vertical-align: middle;
+            }
+            table.register-doc-table th {
+                height: 30px; /* 150% dari tinggi header sebelumnya (20px) */
+                text-align: center;
+                font-weight: normal;
+            }
+            table.register-doc-table th:nth-child(1),
+            table.register-doc-table td:nth-child(1) { width: 7%; }
+            table.register-doc-table th:nth-child(2),
+            table.register-doc-table td:nth-child(2) { width: 66%; }
+            table.register-doc-table th:nth-child(3),
+            table.register-doc-table td:nth-child(3) { width: 27%; }
+            .register-doc-table td:first-child {
+                text-align: center;
+            }
+            .register-bottom {
+                margin-top: 10px;
+            }
+            .register-notes-row {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 22px;
+            }
+            .register-notes-box {
+                width: 68%;
+                height: 105px;
+                border: 1px solid #000;
+                padding: 5px 6px;
+                font-size: 8.5pt;
+            }
+            .register-notes-box .notes-label {
+                margin-bottom: 6px;
+            }
+            .register-note-line {
+                height: 27px;
+                line-height: 1.15;
+                white-space: nowrap;
+            }
+            .register-reporter {
+                width: 27%;
+                text-align: center;
+                font-size: 9pt;
+                padding-top: 2px;
+            }
+            .register-reporter-space {
+                height: 2cm; /* jarak 2 cm */
+            }
+            .register-verification {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-top: 15px;
+                font-size: 9pt;
+            }
+            .register-signature {
+                width: 38%;
+                text-align: center;
+            }
+            .register-signature.right {
+                width: 38%;
+            }
+            .register-signature-space {
+                height: 2cm; /* jarak 2 cm */
+            }
+            .register-signature-line {
+                display: inline-block;
+                min-width: 155px;
+            }
+
+            /* DATA PEMOHON: 12PT */
+            #input-form h3:first-of-type,
+            #input-form h3:first-of-type + .form-grid,
+            #input-form h3:first-of-type + .form-grid label,
+            #input-form h3:first-of-type + .form-grid input,
+            #input-form h3:first-of-type + .form-grid select {
+                font-size: 12pt !important;
+            }
+
+            /* UKURAN HURUF FORM REGISTER: 12PT */
+            .register-form,
+            .register-form * {
+                font-size: 12pt !important;
+            }
+        }
+
+        /* ==============================
+           MODAL OTORISASI PENGHAPUSAN DATA
+           ============================== */
+        .delete-password-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(0, 0, 0, 0.55);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .delete-password-overlay.show {
+            display: flex;
+        }
+        .delete-password-modal {
+            width: min(420px, 100%);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 15px 45px rgba(0,0,0,.28);
+            overflow: hidden;
+            animation: deleteModalIn .18s ease-out;
+        }
+        @keyframes deleteModalIn {
+            from { opacity: 0; transform: translateY(-12px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .delete-password-header {
+            background: #b71c1c;
+            color: #fff;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .delete-password-header h3 {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            color: #fff;
+            font-size: 1.05rem;
+        }
+        .delete-password-body {
+            padding: 20px;
+        }
+        .delete-password-body p {
+            margin: 0 0 14px;
+            color: #444;
+            line-height: 1.5;
+        }
+        .delete-password-input-wrap {
+            position: relative;
+        }
+        .delete-password-input {
+            width: 100%;
+            padding: 11px 44px 11px 12px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+        .delete-password-input:focus {
+            border-color: #b71c1c;
+            box-shadow: 0 0 0 3px rgba(183, 28, 28, .10);
+        }
+        .delete-password-toggle {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            font-size: .9rem;
+            color: #555;
+            padding: 5px;
+        }
+        .delete-password-error {
+            display: none;
+            margin-top: 9px;
+            color: #b71c1c;
+            font-size: .88rem;
+            font-weight: 600;
+        }
+        .delete-password-error.show {
+            display: block;
+        }
+        .delete-password-footer {
+            padding: 0 20px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .delete-password-footer button {
+            border: 0;
+            border-radius: 6px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .delete-password-cancel {
+            background: #e9ecef;
+            color: #333;
+        }
+        .delete-password-confirm {
+            background: #b71c1c;
+            color: #fff;
+        }
+        .delete-password-confirm:hover { background: #8e0000; }
+        .delete-password-cancel:hover { background: #d9dde1; }
+
+
+        /* =========================================================
+           LOGIN PASSWORD SAAT MEMBUKA APLIKASI
+           ========================================================= */
+        body.app-locked > *:not(#login-overlay) {
+            visibility: hidden !important;
+        }
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 25, 45, 0.82);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+        }
+        #login-overlay.hidden {
+            display: none;
+        }
+        .login-box {
+            width: min(420px, 100%);
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3);
+            padding: 30px;
+            text-align: center;
+        }
+        .login-icon {
+            font-size: 42px;
+            margin-bottom: 8px;
+        }
+        .login-box h2 {
+            margin: 0 0 7px;
+            color: #17324d;
+            font-size: 21px;
+        }
+        .login-box p {
+            margin: 0 0 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        .login-password-wrap {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .login-password-wrap input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .login-toggle {
+            border: 1px solid #cbd5e1;
+            background: #f3f4f6;
+            border-radius: 7px;
+            padding: 0 12px;
+            cursor: pointer;
+        }
+        .login-button {
+            width: 100%;
+            margin-top: 14px;
+            border: 0;
+            border-radius: 7px;
+            padding: 12px;
+            background: #17324d;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .login-button:hover { background: #0f263b; }
+        .login-error {
+            display: none;
+            margin-top: 10px;
+            color: #b71c1c;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .login-error.show { display: block; }
+        @media print {
+            #login-overlay { display: none !important; }
+            body.app-locked > *:not(#login-overlay) { visibility: visible !important; }
+        }
+
+
+        /* =========================================================
+           DEEP SEA FUTURISM — TEMA LAYAR APLIKASI
+           Tampilan cetak dokumen resmi tetap dipertahankan.
+           ========================================================= */
+        @media screen {
+            :root {
+                color-scheme: dark;
+                --ds-bg: #041522;
+                --ds-panel: rgba(7, 31, 48, .88);
+                --ds-panel-2: rgba(10, 43, 62, .88);
+                --ds-cyan: #50e6f2;
+                --ds-teal: #28d7c3;
+                --ds-text: #e7fbff;
+                --ds-muted: #a8cbd5;
+                --ds-border: rgba(80, 230, 242, .35);
+            }
+            html { background: var(--ds-bg); }
+            body {
+                background-color: var(--ds-bg) !important;
+                background-image:
+                    radial-gradient(ellipse at 12% 5%, rgba(0, 190, 210, .20), transparent 38%),
+                    radial-gradient(ellipse at 88% 28%, rgba(0, 103, 180, .24), transparent 42%),
+                    linear-gradient(145deg, rgba(2, 13, 28, .94), rgba(4, 42, 59, .90), rgba(3, 19, 37, .96)),
+                    url('./latar1.png') !important;
+                background-position: center, center, center, center;
+                background-size: cover;
+                background-attachment: fixed;
+                color: var(--ds-text) !important;
+            }
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: -1;
+                opacity: .25;
+                background-image: radial-gradient(rgba(80,230,242,.45) .7px, transparent .7px);
+                background-size: 24px 24px;
+            }
+            .container {
+                color: var(--ds-text);
+                background: linear-gradient(145deg, rgba(5, 28, 45, .96), rgba(7, 43, 60, .94)) !important;
+                border: 1px solid var(--ds-border);
+                border-radius: 18px;
+                box-shadow: 0 0 0 1px rgba(40,215,195,.08), 0 18px 55px rgba(0,0,0,.42), 0 0 32px rgba(0,190,210,.10);
+                backdrop-filter: blur(14px);
+            }
+            .header-container {
+                border-bottom: 1px solid var(--ds-cyan) !important;
+                padding-bottom: 14px;
+                gap: 14px;
+                flex-wrap: wrap;
+                box-shadow: 0 8px 22px -20px var(--ds-cyan);
+            }
+            h2, h3 {
+                color: var(--ds-cyan) !important;
+                border-bottom-color: rgba(80,230,242,.48) !important;
+                text-shadow: 0 0 16px rgba(80,230,242,.15);
+            }
+            .form-grid { gap: 14px; }
+            .form-group label { color: #c8f7fb !important; }
+            .form-group input, .form-group select,
+            .manual-doc-table input,
+            .login-password-wrap input {
+                color: #ecfcff !important;
+                background: rgba(3, 20, 34, .92) !important;
+                border: 1px solid rgba(100, 193, 211, .45) !important;
+                border-radius: 8px !important;
+                transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+            }
+            .form-group input::placeholder, .manual-doc-table input::placeholder,
+            .login-password-wrap input::placeholder { color: #779eab !important; }
+            .form-group input:focus, .form-group select:focus,
+            .manual-doc-table input:focus, .login-password-wrap input:focus {
+                outline: none;
+                border-color: var(--ds-cyan) !important;
+                box-shadow: 0 0 0 3px rgba(80,230,242,.13), 0 0 18px rgba(80,230,242,.10);
+            }
+            .form-group input[readonly] {
+                background: rgba(13, 55, 72, .94) !important;
+                color: #9cecf1 !important;
+            }
+            .input-prefix {
+                color: var(--ds-cyan) !important;
+                background: rgba(8, 57, 72, .95) !important;
+                border-color: rgba(100,193,211,.45) !important;
+                border-radius: 8px 0 0 8px;
+            }
+            .input-prefix-container input { border-radius: 0 8px 8px 0 !important; }
+            button, .btn-dashboard {
+                color: #031722 !important;
+                background: linear-gradient(135deg, #58edf3, #24c9b9) !important;
+                border: 1px solid rgba(139,255,255,.60) !important;
+                border-radius: 9px !important;
+                box-shadow: 0 5px 16px rgba(0, 195, 210, .15);
+                transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+            }
+            button:hover, .btn-dashboard:hover {
+                filter: brightness(1.08);
+                transform: translateY(-1px);
+                box-shadow: 0 8px 22px rgba(0,195,210,.24);
+            }
+            button.excel { background: linear-gradient(135deg, #43e0b4, #1aa77c) !important; }
+            button.reset, .btn-del, .delete-password-confirm { 
+                color: #fff !important;
+                background: linear-gradient(135deg, #ff657b, #c92750) !important;
+                border-color: rgba(255,139,158,.55) !important;
+            }
+            .btn-edit { color: #041925 !important; background: linear-gradient(135deg,#72d9ff,#3988e8) !important; }
+            .btn-print { color: #031722 !important; background: linear-gradient(135deg,#55e9c1,#16aa91) !important; }
+            .manual-doc-table, table.db-table { color: var(--ds-text); }
+            .manual-doc-table th, table.db-table th {
+                color: #c7fbff !important;
+                background: linear-gradient(120deg, rgba(10,75,94,.98), rgba(10,52,75,.98)) !important;
+                border-color: rgba(80,230,242,.3) !important;
+            }
+            .manual-doc-table td, table.db-table td { border-color: rgba(100,193,211,.24) !important; }
+            .table-container {
+                color: var(--ds-text);
+                background: rgba(4, 24, 40, .88) !important;
+                border: 1px solid var(--ds-border) !important;
+                border-radius: 14px !important;
+                box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 12px 30px rgba(0,0,0,.18);
+            }
+            table.db-table { background: rgba(4,22,37,.58); }
+            table.db-table tbody tr:nth-child(even) { background: rgba(20, 77, 94, .24); }
+            table.db-table tbody tr:hover { background: rgba(38, 166, 185, .15); }
+            .btn-container { padding-top: 4px; }
+            .delete-password-modal, .login-box {
+                color: var(--ds-text) !important;
+                background: linear-gradient(145deg, #08283d, #041827) !important;
+                border: 1px solid rgba(80,230,242,.45);
+                box-shadow: 0 22px 70px rgba(0,0,0,.55), 0 0 32px rgba(0,190,210,.12) !important;
+            }
+            .delete-password-header {
+                background: linear-gradient(110deg, #a92a50, #e64f69) !important;
+            }
+            .delete-password-body p, .login-box p { color: var(--ds-muted) !important; }
+            .delete-password-input {
+                color: #ecfcff !important;
+                background: rgba(3,20,34,.95) !important;
+                border-color: rgba(100,193,211,.45) !important;
+            }
+            .delete-password-cancel, .login-toggle {
+                color: var(--ds-text) !important;
+                background: rgba(20,65,83,.95) !important;
+                border: 1px solid var(--ds-border) !important;
+            }
+            .login-box h2 { color: var(--ds-cyan) !important; }
+            .login-icon { filter: drop-shadow(0 0 12px rgba(80,230,242,.35)); }
+            .login-button {
+                color: #031722 !important;
+                background: linear-gradient(135deg,#58edf3,#24c9b9) !important;
+            }
+            #login-overlay {
+                background: radial-gradient(ellipse at center, rgba(5,63,82,.60), rgba(1,9,22,.94)) !important;
+                backdrop-filter: blur(12px);
+            }
+            .delete-password-overlay { background: rgba(1,9,22,.78) !important; backdrop-filter: blur(8px); }
+            .btn-dashboard { white-space: nowrap; }
+            @media (max-width: 640px) {
+                body { padding: 10px !important; }
+                .container { padding: 16px !important; border-radius: 13px; }
+                .header-container { align-items: flex-start; }
+                .header-container h2 { font-size: 1.2rem; }
+                .btn-container button { flex: 1 1 100%; justify-content: center; }
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+        }
+
+    </style>
+
+</head>
+<!-- Menggunakan Background Image dari folder yang sama -->
+<body class="min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
+
+    <!-- Container Utama dengan Overlay Transparan -->
+    <div class="min-h-screen bg-teal-950/40 backdrop-blur-xs flex flex-col justify-between py-8 px-4 sm:px-6">
+
+        <!-- Main Content Centered -->
+        <main class="max-w-4xl mx-auto w-full flex-grow">
+
+<body class="app-locked">
+<div id="login-overlay" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="login-box">
+        <div class="login-icon">🔐</div>
+        <h2 id="login-title">Akses Sistem Integrasi Kelahiran</h2>
+        <p>Masukkan password untuk membuka aplikasi Puskesmas Midai.</p>
+        <div class="login-password-wrap">
+            <input type="password" id="login-password-input" autocomplete="current-password" placeholder="Masukkan password">
+            <button type="button" class="login-toggle" onclick="toggleLoginPassword()">Lihat</button>
+        </div>
+        <div id="login-error" class="login-error">Password salah. Silakan coba lagi.</div>
+        <button type="button" class="login-button" onclick="bukaAplikasiDenganPassword()">Masuk</button>
+    </div>
+</div>
+
+
+<div class="container" id="input-form">
+    <div class="header-container">
+        <h2>Sistem Integrasi Kelahiran Puskesmas Midai</h2>
+        <a href="korespondensi_terpadu.html" class="btn-dashboard">🏠 Dashboard</a>
+    </div>
+    <form id="mainForm">
+        
+        <h3>1. Data Instansi & Pemohon (Petugas Admin)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Pemohon/Admin</label><input type="text" id="in_p_nama_admin" value="Herman Susilo" required></div>
+            <div class="form-group"><label>NIK Pemohon/Admin</label><input type="text" id="in_p_nik_admin" value="2103042008760001" required></div>
+            <div class="form-group"><label>Alamat Instansi</label><input type="text" id="in_instansi" value="Jln Tanjung Selamat Midai" required></div>
+            <div class="form-group"><label>No. HP & Email</label><input type="text" id="in_kontak" value="0821 7077 9697 / natunassl@gmail.com" required></div>
+            <div class="form-group"><label>No. Register Kerjasama</label><input type="text" id="in_no_reg" placeholder="Isi No. Register"></div>
+        </div>
+
+        <h3>2. Nomor & Format Surat SKL</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>No. Surat Keluar SKL</label>
+                <div class="input-prefix-container">
+                    <span class="input-prefix">400.12.3/</span>
+                    <input type="text" id="in_no_skl" placeholder="Contoh: 015" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Bulan Romawi</label>
+                <select id="in_bln_romawi" required>
+                    <option value="">-- Pilih Bulan --</option>
+                    <option value="I">I (Januari)</option>
+                    <option value="II">II (Februari)</option>
+                    <option value="III">III (Maret)</option>
+                    <option value="IV">IV (April)</option>
+                    <option value="V">V (Mei)</option>
+                    <option value="VI">VI (Juni)</option>
+                    <option value="VII">VII (Juli)</option>
+                    <option value="VIII">VIII (Agustus)</option>
+                    <option value="IX">IX (September)</option>
+                    <option value="X">X (Oktober)</option>
+                    <option value="XI">XI (November)</option>
+                    <option value="XII">XII (Desember)</option>
+                </select>
+            </div>
+
+            <div class="form-group"><label>Tahun Surat</label><input type="text" id="in_thn_skl" value="2026" required></div>
+            <div class="form-group"><label>Kode Wilayah F-2.01</label><input type="text" id="in_kodewil" placeholder="21.03.05.2001"></div>
+        </div>
+
+        <h3>3. Data Bayi</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Bayi</label><input type="text" id="in_b_nama" placeholder="Isi nama bayi / Bayi Ny. Siti"></div>
+            
+            <div class="form-group">
+                <label>Jenis Kelamin</label>
+                <select id="in_b_jk" required>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Anak Ke-</label>
+                <select id="in_b_anakke" required>
+                    <option value="1 (Satu)">1 (Satu)</option>
+                    <option value="2 (Dua)">2 (Dua)</option>
+                    <option value="3 (Tiga)">3 (Tiga)</option>
+                    <option value="4 (Empat)">4 (Empat)</option>
+                    <option value="5 (Lima)">5 (Lima)</option>
+                    <option value="6 (Enam)">6 (Enam)</option>
+                    <option value="7 (Tujuh)">7 (Tujuh)</option>
+                    <option value="8 (Delapan)">8 (Delapan)</option>
+                    <option value="9 (Sembilan)">9 (Sembilan)</option>
+                    <option value="10 (Sepuluh)">10 (Sepuluh)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tgl Lahir Bayi (Kalender)</label>
+                <input type="date" id="in_b_tgl_picker" onchange="prosesTanggalLahirBayi()" required>
+            </div>
+            <div class="form-group">
+                <label>Hari Lahir (Otomatis)</label>
+                <input type="text" id="in_b_hari" placeholder="Terisi otomatis..." readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>Tanggal Lahir Teks (Otomatis)</label>
+                <input type="text" id="in_b_tgl" placeholder="Terisi otomatis..." readonly style="background-color: #e9ecef;">
+            </div>
+
+            <div class="form-group"><label>Pukul (WIB)</label><input type="text" id="in_b_pukul" placeholder="08.30" required></div>
+            <div class="form-group"><label>Berat Badan (gram)</label><input type="number" id="in_b_bb" placeholder="3200" required></div>
+            <div class="form-group"><label>Panjang Badan (cm)</label><input type="number" id="in_b_pb" placeholder="49" required></div>
+            <div class="form-group"><label>Jenis Kelahiran</label>
+                <select id="in_b_jeniskel"><option value="Tunggal">Tunggal</option><option value="Kembar">Kembar</option></select>
+            </div>
+        </div>
+
+        <h3>4. Bidan Penolong & Tanggal Surat</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nama Bidan Penolong</label>
+                <select id="in_bidan_select" onchange="updateNipBidan()" required>
+                    <option value="" data-nip="">-- Pilih Bidan Penolong --</option>
+                    <option value="RAHMI YUSNITA, A.Md.Keb" data-nip="19870303 201001 2 015">RAHMI YUSNITA, A.Md.Keb</option>
+                    <option value="RETNO TRISUSANTI, S.S.T" data-nip="19910606 201403 2 003">RETNO TRISUSANTI, S.S.T</option>
+                    <option value="WIRDA SAFITRI, A.Md.Keb" data-nip="19961125 202321 2 008">WIRDA SAFITRI, A.Md.Keb</option>
+                    <option value="DESNIAWATI, A.Md.Keb" data-nip="19970806 202321 2 003">DESNIAWATI, A.Md.Keb</option>
+                    <option value="FITRI RANA VARDHILA, A.Md.Keb" data-nip="19920404 202421 2 003">FITRI RANA VARDHILA, A.Md.Keb</option>
+                    <option value="FITRI YANTI, A.Md.Keb" data-nip="19890515 202421 2 005">FITRI YANTI, A.Md.Keb</option>
+                    <option value="YUNI PAHRIZA, A.Md.Keb" data-nip="19940609 202421 2 006">YUNI PAHRIZA, A.Md.Keb</option>
+                    <option value="SARMALINA SITOHANG, A.Md" data-nip="19880730 202421 2 001">SARMALINA SITOHANG, A.Md</option>
+                    <option value="MELVI OLINDA, A.Md.Keb" data-nip="19890806 202521 2 001">MELVI OLINDA, A.Md.Keb</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>NIP Bidan</label>
+                <input type="text" id="in_bidan_nip" placeholder="Terisi otomatis..." readonly style="background-color: #e9ecef;">
+            </div>
+
+            <div class="form-group">
+                <label>Tgl Pembuatan Surat (Kalender)</label>
+                <input type="date" id="in_tgl_surat_picker" onchange="prosesTanggalSurat()" required>
+            </div>
+            <div class="form-group">
+                <label>Tgl Surat Teks (Otomatis Hari Ini)</label>
+                <input type="text" id="in_tgl_surat" placeholder="Terisi otomatis..." readonly style="background-color: #e9ecef;">
+            </div>
+        </div>
+
+        
+        <h3>5. Data Pelapor (Keluarga)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Pelapor</label><input type="text" id="in_pelapor_kel" required></div>
+            <div class="form-group"><label>NIK Pelapor</label><input type="text" id="in_pelapor_nik" maxlength="16" required></div>
+            <div class="form-group">
+                <label>Tgl Lahir Pelapor (Kalender)</label>
+                <input type="date" id="in_p_tgl_picker" onchange="hitungUmur('in_p_tgl_picker', 'in_pelapor_umur')" required>
+            </div>
+            <div class="form-group">
+                <label>Umur Pelapor (Otomatis)</label>
+                <input type="text" id="in_pelapor_umur" placeholder="Otomatis..." readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group"><label>Pekerjaan Pelapor</label><input type="text" id="in_pelapor_job" required></div>
+            <div class="form-group full-width"><label>Alamat Pelapor</label><input type="text" id="in_pelapor_alamat" required></div>
+        </div>
+
+        <h3>6. Data Orang Tua (Ayah & Ibu)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Ayah</label><input type="text" id="in_a_nama" required></div>
+            <div class="form-group"><label>NIK Ayah</label><input type="text" id="in_a_nik" maxlength="16" required></div>
+            <div class="form-group">
+                <label>Tgl Lahir Ayah (Kalender)</label>
+                <input type="date" id="in_a_tgl_picker" onchange="hitungUmur('in_a_tgl_picker', 'in_a_umur')" required>
+            </div>
+            <div class="form-group">
+                <label>Umur Ayah (Otomatis)</label>
+                <input type="text" id="in_a_umur" placeholder="Otomatis..." readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group"><label>Pekerjaan Ayah</label><input type="text" id="in_a_pekerjaan" required></div>
+            <div class="form-group full-width"><label>Alamat Ayah</label><input type="text" id="in_a_alamat" required></div>
+
+            <div class="form-group"><label>Nama Ibu</label><input type="text" id="in_i_nama" required></div>
+            <div class="form-group"><label>NIK Ibu</label><input type="text" id="in_i_nik" maxlength="16" required></div>
+            <div class="form-group">
+                <label>Tgl Lahir Ibu (Kalender)</label>
+                <input type="date" id="in_i_tgl_picker" onchange="hitungUmur('in_i_tgl_picker', 'in_i_umur')" required>
+            </div>
+            <div class="form-group">
+                <label>Umur Ibu (Otomatis)</label>
+                <input type="text" id="in_i_umur" placeholder="Otomatis..." readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group"><label>Pekerjaan Ibu</label><input type="text" id="in_i_pekerjaan" required></div>
+            <div class="form-group full-width"><label>Alamat Ibu</label><input type="text" id="in_i_alamat" required></div>
+        </div>
+
+        <h3>7. Data Saksi Kelahiran</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Saksi I</label><input type="text" id="in_saksi1_nama" placeholder="Nama Saksi 1" required></div>
+            <div class="form-group"><label>NIK Saksi I</label><input type="text" id="in_saksi1_nik" maxlength="16" placeholder="NIK Saksi 1" required></div>
+        </div>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Saksi II</label><input type="text" id="in_saksi2_nama" placeholder="Nama Saksi 2" required></div>
+            <div class="form-group"><label>NIK Saksi II</label><input type="text" id="in_saksi2_nik" maxlength="16" placeholder="NIK Saksi 2" required></div>
+        </div>
+
+        <h3>8. Input Manual Dokumen Tambahan (Baris 3 s/d 10)</h3>
+        <p style="font-size: 0.85rem; color: #555; margin-bottom: 5px;">* Baris 1 (Akte Kelahiran) & Baris 2 (KIA) otomatis diisi dengan Nama Bayi.</p>
+        <table class="manual-doc-table">
+            <thead>
+                <tr>
+                    <th width="8%">No</th>
+                    <th width="46%">Nama Lengkap</th>
+                    <th width="46%">Jenis Dokumen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: center;">3</td>
+                    <td><input type="text" id="in_doc_nama_3" style="width: 100%;" placeholder="Opsi Nama Lengkap"></td>
+                    <td><input type="text" id="in_doc_jenis_3" style="width: 100%;" placeholder="Opsi Jenis Dokumen"></td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">4</td>
+                    <td><input type="text" id="in_doc_nama_4" style="width: 100%;" placeholder="Opsi Nama Lengkap"></td>
+                    <td><input type="text" id="in_doc_jenis_4" style="width: 100%;" placeholder="Opsi Jenis Dokumen"></td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">5</td>
+                    <td><input type="text" id="in_doc_nama_5" style="width: 100%;" placeholder="Opsi Nama Lengkap"></td>
+                    <td><input type="text" id="in_doc_jenis_5" style="width: 100%;" placeholder="Opsi Jenis Dokumen"></td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">6</td>
+                    <td><input type="text" id="in_doc_nama_6" style="width: 100%;" placeholder="Opsi Nama Lengkap"></td>
+                    <td><input type="text" id="in_doc_jenis_6" style="width: 100%;" placeholder="Opsi Jenis Dokumen"></td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">7</td>
+                    <td><input type="text" id="in_doc_nama_7" style="width: 100%;" placeholder="Opsi Nama Lengkap"></td>
+                    <td><input type="text" id="in_doc_jenis_7" style="width: 100%;" placeholder="Opsi Jenis Dokumen"></td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">8</td>
+                    <td><input type="text" id="in_doc_nama_8" style="width: 100%;" placeholder="Opsi Nama Lengkap"></td>
+                    <td><input type="text" id="in_doc_jenis_8" style="width: 100%;" placeholder="Opsi Jenis Dokumen"></td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">9</td>
+                    <td><input type="text" id="in_doc_nama_9" style="width: 100%;" placeholder="Opsi Nama Lengkap"></td>
+                    <td><input type="text" id="in_doc_jenis_9" style="width: 100%;" placeholder="Opsi Jenis Dokumen"></td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">10</td>
+                    <td><input type="text" id="in_doc_nama_10" style="width: 100%;" placeholder="Opsi Nama Lengkap"></td>
+                    <td><input type="text" id="in_doc_jenis_10" style="width: 100%;" placeholder="Opsi Jenis Dokumen"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>9. Catatan Form Register</h3>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>Catatan 1</label>
+                <input type="text" id="in_reg_catatan_1" placeholder="Isi catatan (opsional)">
+            </div>
+            <div class="form-group full-width">
+                <label>Catatan 2</label>
+                <input type="text" id="in_reg_catatan_2" placeholder="Isi catatan (opsional)">
+            </div>
+            <div class="form-group full-width">
+                <label>Catatan 3</label>
+                <input type="text" id="in_reg_catatan_3" placeholder="Isi catatan (opsional)">
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button type="button" onclick="cetakDanSimpanData()">Cetak & Simpan Data</button>
+            <button type="button" class="excel" onclick="exportKeExcel()">Download Data Ke Excel (.xlsx)</button>
+            <button type="reset" class="reset" onclick="setTimeout(initFormDefault, 50)">Reset Form</button>
+        </div>
+    </form>
+
+    <!-- TABEL DATABASE PERMANEN LOKAL -->
+    <div class="table-container">
+        <h3>Riwayat Data Kelahiran Tersimpan (Database Lokal)</h3>
+        <table class="db-table">
+            <thead>
+                <tr>
+                    <th>No. SKL Lengkap</th>
+                    <th>Tgl Surat</th>
+                    <th>Nama Bayi</th>
+                    <th>JK</th>
+                    <th>Nama Ayah</th>
+                    <th>Nama Ibu</th>
+                    <th>Pelapor</th>
+                    <th>Bidan Penolong</th>
+                    <th style="min-width: 140px;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="db-table-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TEMPLATE LAYOUT CETAK DOKUMEN -->
+<!-- MODAL PASSWORD PENGHAPUSAN DATA -->
+<div id="delete-password-overlay" class="delete-password-overlay" role="dialog" aria-modal="true" aria-labelledby="delete-password-title">
+    <div class="delete-password-modal">
+        <div class="delete-password-header">
+            <span aria-hidden="true">🔐</span>
+            <h3 id="delete-password-title">Otorisasi Penghapusan Data</h3>
+        </div>
+        <div class="delete-password-body">
+            <p>Masukkan password administrator untuk menghapus data kelahiran dari riwayat lokal.</p>
+            <div class="delete-password-input-wrap">
+                <input type="password" id="delete-password-input" class="delete-password-input" autocomplete="off" placeholder="Masukkan password">
+                <button type="button" class="delete-password-toggle" onclick="toggleDeletePassword()" aria-label="Tampilkan password">Lihat</button>
+            </div>
+            <div id="delete-password-error" class="delete-password-error">Password salah. Data tidak dihapus.</div>
+        </div>
+        <div class="delete-password-footer">
+            <button type="button" class="delete-password-cancel" onclick="batalHapusData()">Batal</button>
+            <button type="button" class="delete-password-confirm" onclick="konfirmasiPasswordHapus()">Hapus Data</button>
+        </div>
+    </div>
+</div>
+
+<div id="print-area">
+    
+    <!-- DOKUMEN 1: SURAT KETERANGAN KELAHIRAN PUSKESMAS MIDAI -->
+    <div class="page-break">
+        <!-- KOP DUA LOGO KIRI & KANAN -->
+        <div class="kop-puskesmas-container">
+            <table class="kop-table">
+                <tr>
+                    <td class="kop-logo-left">
+                        <img src="logo_natuna.png" class="kop-logo-img" alt="Logo Natuna">
+                    </td>
+                    <td class="kop-text-center">
+                        <h3>PEMERINTAH KABUPATEN NATUNA</h3>
+                        <h3>DINAS KESEHATAN</h3>
+                        <h2>UPTD PUSKESMAS MIDAI</h2>
+                        <p>Jalan Tanjung Selamat Midai, Natuna, Kepulauan Riau 29784<br>Pos-el puskesmasmidai@gmail.com</p>
+                    </td>
+                    <td class="kop-logo-right">
+                        <img src="logo_kesehatan.jpg" class="kop-logo-img" alt="Logo Kesehatan">
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="doc-title">SURAT KETERANGAN KELAHIRAN</div>
+        <div class="doc-no">Nomor: 400.12.3/<span id="out_no_skl"></span>/PKM-MIDAI/<span id="out_bln_skl"></span>/<span id="out_thn_skl"></span></div>
+
+        <div class="text-menerangkan">
+            <p class="text-menerangkan-p1">Yang bertanda tangan di bawah ini, Bidan Puskesmas Midai dengan ini</p>
+            <p class="text-menerangkan-p2">menerangkan :</p>
+        </div>
+
+        <table class="form-table" style="margin-left: 30px; width: 90%;">
+            <tr>
+                <td width="28%"><span class="label-spaced">N a m a</span></td>
+                <td width="3%">:</td>
+                <td><b id="out_b_nama"></b></td>
+            </tr>
+            <tr>
+                <td>Jenis Kelamin</td>
+                <td>:</td>
+                <td id="out_b_jk"></td>
+            </tr>
+            <tr>
+                <td>Anak Ke</td>
+                <td>:</td>
+                <td id="out_b_anakke"></td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 12px; margin-left: 30px;">Anak dari</div>
+
+        <div class="section-header-center">A Y A H</div>
+        <table class="form-table" style="margin-left: 30px; width: 90%;">
+            <tr>
+                <td width="28%"><span class="label-spaced">N a m a</span></td>
+                <td width="3%">:</td>
+                <td id="out_a_nama"></td>
+            </tr>
+            <tr>
+                <td>Alamat</td>
+                <td>:</td>
+                <td id="out_a_alamat"></td>
+            </tr>
+        </table>
+
+        <div class="section-header-center" style="margin-top: 12px;">I B U</div>
+        <table class="form-table" style="margin-left: 30px; width: 90%;">
+            <tr>
+                <td width="28%"><span class="label-spaced">N a m a</span></td>
+                <td width="3%">:</td>
+                <td id="out_i_nama"></td>
+            </tr>
+            <tr>
+                <td>Alamat</td>
+                <td>:</td>
+                <td id="out_i_alamat"></td>
+            </tr>
+        </table>
+
+        <p style="margin-top: 16px; text-align: justify; line-height: 1.5; text-indent: 40px;">
+            Bahwa yang tersebut diatas adalah telah lahir di Puskesmas Midai pada hari <span id="out_b_hari"></span> tanggal <span id="out_b_tgl"></span> pukul <span id="out_b_pukul"></span> WIB, Berat Badan (BB): <span id="out_b_bb"></span> gr, Panjang Badan (PB): <span id="out_b_pb"></span> cm, dibantu oleh Tenaga Bidan Puskesmas.
+        </p>
+
+        <p style="margin-top: 10px; text-align: justify; line-height: 1.5; text-indent: 40px;">
+            Demikianlah Surat Keterangan ini dibuat untuk keperluan Pembuatan Akte Kelahiran dan Kartu Keluarga atas perhatiannya kami ucapkan terima kasih.
+        </p>
+
+        <div class="ttd-box">
+            Midai, <span class="tgl-surat-out"></span><br>
+            Bidan Puskesmas<br><br><br><br>
+            <b><u><span id="out_bidan_nama"></span></u></b><br>
+            NIP. <span id="out_bidan_nip"></span>
+        </div>
+    </div>
+
+    <!-- DOKUMEN 2: FORMULIR F-2.01 DISDUKCAPIL -->
+    <div class="page-break page-standard-margin container-f201">
+        <div class="header-f201">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 70%;">
+                        Pemerintah Kab./Kota : Natuna<br>
+                        Kecamatan : Midai<br>
+                        Desa/Kelurahan : Sabang Barat
+                    </td>
+                    <td style="width: 30%; text-align: right; vertical-align: top;">
+                        <b>Kode: F-2.01</b><br>
+                        Kode Wilayah: <span id="out_f_kodewil"></span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="doc-title" style="margin-bottom: 8px; font-size: 11pt;">FORMULIR PELAPORAN KELAHIRAN</div>
+
+        <p style="margin: 3px 0 2px 0;"><b>Yang bertanda tangan dibawah ini :</b></p>
+        <table class="form-table">
+            <tr><td width="28%">Nama Lengkap</td><td width="2%">:</td><td id="out_f_p_nama"></td></tr>
+            <tr><td>NIK</td><td>:</td><td id="out_f_p_nik"></td></tr>
+            <tr><td>Umur</td><td>:</td><td id="out_f_p_umur"></td></tr>
+            <tr><td>Pekerjaan</td><td>:</td><td id="out_f_p_pekerjaan"></td></tr>
+            <tr><td>Alamat</td><td>:</td><td id="out_f_p_alamat"></td></tr>
+        </table>
+
+        <p style="margin: 5px 0 2px 0;"><b>Melaporkan bahwa telah lahir :</b></p>
+        <table class="form-table">
+            <tr><td width="28%">Pada Hari</td><td width="2%">:</td><td id="out_f_b_hari"></td></tr>
+            <tr><td>Tanggal</td><td>:</td><td id="out_f_b_tgl"></td></tr>
+            <tr><td>Pukul</td><td>:</td><td><span id="out_f_b_pukul"></span> WIB</td></tr>
+            <tr><td>Bertempat di</td><td>:</td><td>Puskesmas Midai</td></tr>
+            <tr><td>Jenis Kelahiran</td><td>:</td><td id="out_f_b_jeniskel"></td></tr>
+            <tr><td>Nama **)</td><td>:</td><td id="out_f_b_nama"></td></tr>
+            <tr><td>Jenis Kelamin **)</td><td>:</td><td id="out_f_b_jk"></td></tr>
+            <tr><td>Anak Ke</td><td>:</td><td id="out_f_b_anakke"></td></tr>
+        </table>
+
+        <p style="margin: 5px 0 2px 0;"><b>Dari Seorang Ibu</b></p>
+        <table class="form-table">
+            <tr><td width="28%">Nama Lengkap</td><td width="2%">:</td><td id="out_f_i_nama"></td></tr>
+            <tr><td>NIK</td><td>:</td><td id="out_f_i_nik"></td></tr>
+            <tr><td>Tanggal Lahir/Umur</td><td>:</td><td id="out_f_i_umur"></td></tr>
+            <tr><td>Kewarganegaraan</td><td>:</td><td>WNI</td></tr>
+            <tr><td>Pekerjaan</td><td>:</td><td id="out_f_i_pekerjaan"></td></tr>
+            <tr><td>Alamat</td><td>:</td><td id="out_f_i_alamat"></td></tr>
+        </table>
+
+        <p style="margin: 5px 0 2px 0;"><b>Istri Dari</b></p>
+        <table class="form-table">
+            <tr><td width="28%">Nama Lengkap</td><td width="2%">:</td><td id="out_f_a_nama"></td></tr>
+            <tr><td>NIK</td><td>:</td><td id="out_f_a_nik"></td></tr>
+            <tr><td>Tanggal Lahir / Umur</td><td>:</td><td id="out_f_a_umur_2"></td></tr>
+            <tr><td>Kewarganegaraan</td><td>:</td><td>WNI</td></tr>
+            <tr><td>Pekerjaan</td><td>:</td><td id="out_f_a_pekerjaan"></td></tr>
+            <tr><td>Alamat</td><td>:</td><td id="out_f_a_alamat_2"></td></tr>
+        </table>
+
+        <p style="margin: 5px 0 2px 0;"><b>Saksi Kelahiran</b></p>
+        <table class="form-table">
+            <tr>
+                <td width="28%">1. Saksi I</td>
+                <td width="2%">:</td>
+                <td><span id="out_f_s1_nama"></span> (NIK: <span id="out_f_s1_nik"></span>)</td>
+            </tr>
+            <tr>
+                <td>2. Saksi II</td>
+                <td>:</td>
+                <td><span id="out_f_s2_nama"></span> (NIK: <span id="out_f_s2_nik"></span>)</td>
+            </tr>
+        </table>
+
+        <p style="margin: 5px 0 2px 0;">Terlampir disertakan persyaratan</p>
+        <ol style="margin: 2px 0 0 0; padding-left: 20px; font-size: 9pt;">
+            <li>Surat kelahiran dari penolong kelahiran</li>
+            <li>KTP dan Kartu Keluarga Orang Tua</li>
+            <li>Buku Nikah/Akta Perkawinan Orang Tua</li>
+            <li>Data Saksi-Saksi (2 orang saksi)</li>
+            <li>No. Telp dan email</li>
+        </ol>
+
+        <div class="ttd-box-f201">
+            Midai, <span class="tgl-surat-out"></span><br>
+            Pelapor,<br><br><br><br>
+            ( <b><span id="out_f_ttd_pelapor"></span></b> )
+        </div>
+
+        <div class="notes">
+            *) Coret yang tidak perlu<br>
+            **) Apa bila jenis kelahiran kembar tuliskan nama-nama yang diberikan pada bayi kembar secara berurutan secara dan jenis kelamin dari masing-masing bayi tersebut
+        </div>
+    </div>
+
+    <!-- DOKUMEN 3: FORMULIR REGISTER PERJANJIAN KERJASAMA -->
+    <div class="page-standard-margin register-form">
+        <div class="register-title">
+            FORMULIR PERJANJIAN KERJASAMA PENERBITAN AKTA KELAHIRAN,<br>
+            KARTU KELUARGA DAN KIA DENGAN PUSKESMAS, RSUD DAN KLINIK BERSALIN
+        </div>
+
+        <div class="register-data-wrap">
+            <div style="flex: 1;">
+                <div class="register-section-title">I. DATA PEMOHON</div>
+                <table class="form-table register-data-table">
+                    <tr><td>1. Nama Pemohon</td><td>:</td><td id="out_reg_pemohon"></td></tr>
+                    <tr><td>2. N I K</td><td>:</td><td id="out_reg_nik"></td></tr>
+                    <tr><td>3. Alamat Instansi</td><td>:</td><td id="out_reg_instansi"></td></tr>
+                    <tr><td>4. Nomor HP/email</td><td>:</td><td id="out_reg_kontak"></td></tr>
+                    <tr><td>5. Tanggal Pendaftaran</td><td>:</td><td class="tgl-surat-out"></td></tr>
+                </table>
+            </div>
+
+            <div class="register-no-box">
+                <div class="register-no-label">NO.REGISTER</div>
+                <div class="register-no-value" id="out_reg_noreg"></div>
+            </div>
+        </div>
+
+        <div class="register-section-title">II. DOKUMEN YANG DIAJUKAN</div>
+        <table class="register-doc-table">
+            <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>NAMA LENGKAP</th>
+                    <th>JENIS DOKUMEN</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td id="out_reg_nama_bayi_1"></td><td>Akte Kelahiran</td></tr>
+                <tr><td>2</td><td id="out_reg_nama_bayi_2"></td><td>KIA</td></tr>
+                <tr><td>3</td><td id="out_doc_nama_3"></td><td id="out_doc_jenis_3"></td></tr>
+                <tr><td>4</td><td id="out_doc_nama_4"></td><td id="out_doc_jenis_4"></td></tr>
+                <tr><td>5</td><td id="out_doc_nama_5"></td><td id="out_doc_jenis_5"></td></tr>
+                <tr><td>6</td><td id="out_doc_nama_6"></td><td id="out_doc_jenis_6"></td></tr>
+                <tr><td>7</td><td id="out_doc_nama_7"></td><td id="out_doc_jenis_7"></td></tr>
+                <tr><td>8</td><td id="out_doc_nama_8"></td><td id="out_doc_jenis_8"></td></tr>
+                <tr><td>9</td><td id="out_doc_nama_9"></td><td id="out_doc_jenis_9"></td></tr>
+                <tr><td>10</td><td id="out_doc_nama_10"></td><td id="out_doc_jenis_10"></td></tr>
+            </tbody>
+        </table>
+
+        <div class="register-bottom">
+            <div class="register-notes-row">
+                <div class="register-notes-box">
+                    <div class="notes-label">CATATAN :</div>
+                    <div class="register-note-line">1. <span id="out_reg_catatan_1">....................................................................................</span></div>
+                    <div class="register-note-line">2. <span id="out_reg_catatan_2">....................................................................................</span></div>
+                    <div class="register-note-line">3. <span id="out_reg_catatan_3">....................................................................................</span></div>
+                </div>
+
+                <div class="register-reporter">
+                    PELAPOR
+                    <div class="register-reporter-space"></div>
+                    ( <b><span id="out_reg_pelapor"></span></b> )
+                </div>
+            </div>
+
+            <div class="register-verification">
+                <div class="register-signature">
+                    DIVERIFIKASI OLEH
+                    <div class="register-signature-space"></div>
+                    ( ........................................ )
+                </div>
+
+                <div class="register-signature right">
+                    Ranai, <span class="tgl-surat-out"></span>
+                    <div class="register-signature-space"></div>
+                    ( ........................................ )
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const namaHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+    window.onload = function() {
+        initFormDefault();
+        tampilkanTabelLokal();
+    };
+
+    function initFormDefault() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        
+        document.getElementById('in_tgl_surat_picker').value = `${yyyy}-${mm}-${dd}`;
+        prosesTanggalSurat();
+        updateNipBidan();
+    }
+
+    function prosesTanggalSurat() {
+        const val = document.getElementById('in_tgl_surat_picker').value;
+        if (!val) return;
+        const dateObj = new Date(val);
+        const tgl = String(dateObj.getDate()).padStart(2, '0');
+        const bulan = namaBulan[dateObj.getMonth()];
+        const tahun = dateObj.getFullYear();
+        document.getElementById('in_tgl_surat').value = `${tgl} ${bulan} ${tahun}`;
+    }
+
+    function prosesTanggalLahirBayi() {
+        const dateInput = document.getElementById('in_b_tgl_picker').value;
+        if (!dateInput) return;
+
+        const dateObj = new Date(dateInput);
+        const hari = namaHari[dateObj.getDay()];
+        const tgl = String(dateObj.getDate()).padStart(2, '0');
+        const bulan = namaBulan[dateObj.getMonth()];
+        const tahun = dateObj.getFullYear();
+
+        document.getElementById('in_b_hari').value = hari;
+        document.getElementById('in_b_tgl').value = `${tgl} ${bulan} ${tahun}`;
+    }
+
+    function hitungUmur(idInputPicker, idOutputUmur) {
+        const birthVal = document.getElementById(idInputPicker).value;
+        if (!birthVal) return;
+
+        const birthDate = new Date(birthVal);
+        const today = new Date();
+        
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        document.getElementById(idOutputUmur).value = `${age} Tahun`;
+    }
+
+    function updateNipBidan() {
+        const selectElement = document.getElementById('in_bidan_select');
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const nip = selectedOption.getAttribute('data-nip') || '';
+        document.getElementById('in_bidan_nip').value = nip;
+    }
+
+    function siapkanDataObj() {
+        const blnRomawiVal = document.getElementById('in_bln_romawi').value;
+        if (!blnRomawiVal) {
+            alert('Silakan pilih Bulan Romawi terlebih dahulu!');
+            return null;
+        }
+
+        const dataObj = {
+            id: Date.now(),
+            noSkl: document.getElementById('in_no_skl').value,
+            blnSkl: blnRomawiVal,
+            thnSkl: document.getElementById('in_thn_skl').value,
+            kodewil: document.getElementById('in_kodewil').value,
+            bNama: document.getElementById('in_b_nama').value || '-',
+            bJk: document.getElementById('in_b_jk').value,
+            bAnakKe: document.getElementById('in_b_anakke').value,
+            bTglPicker: document.getElementById('in_b_tgl_picker').value,
+            bHari: document.getElementById('in_b_hari').value,
+            bTgl: document.getElementById('in_b_tgl').value,
+            bPukul: document.getElementById('in_b_pukul').value,
+            bBb: document.getElementById('in_b_bb').value,
+            bPb: document.getElementById('in_b_pb').value,
+            bJenisKel: document.getElementById('in_b_jeniskel').value,
+            aNama: document.getElementById('in_a_nama').value,
+            aNik: document.getElementById('in_a_nik').value,
+            aTglPicker: document.getElementById('in_a_tgl_picker').value,
+            aUmur: document.getElementById('in_a_umur').value,
+            aPekerjaan: document.getElementById('in_a_pekerjaan').value,
+            aAlamat: document.getElementById('in_a_alamat').value,
+            iNama: document.getElementById('in_i_nama').value,
+            iNik: document.getElementById('in_i_nik').value,
+            iTglPicker: document.getElementById('in_i_tgl_picker').value,
+            iUmur: document.getElementById('in_i_umur').value,
+            iPekerjaan: document.getElementById('in_i_pekerjaan').value,
+            iAlamat: document.getElementById('in_i_alamat').value,
+            saksi1Nama: document.getElementById('in_saksi1_nama').value,
+            saksi1Nik: document.getElementById('in_saksi1_nik').value,
+            saksi2Nama: document.getElementById('in_saksi2_nama').value,
+            saksi2Nik: document.getElementById('in_saksi2_nik').value,
+            pelaporNama: document.getElementById('in_pelapor_kel').value,
+            pelaporNik: document.getElementById('in_pelapor_nik').value,
+            pelaporTglPicker: document.getElementById('in_p_tgl_picker').value,
+            pelaporUmur: document.getElementById('in_pelapor_umur').value,
+            pelaporJob: document.getElementById('in_pelapor_job').value,
+            pelaporAlamat: document.getElementById('in_pelapor_alamat').value,
+            bidanNama: document.getElementById('in_bidan_select').value,
+            bidanNip: document.getElementById('in_bidan_nip').value,
+            tglSuratPicker: document.getElementById('in_tgl_surat_picker').value,
+            tglSurat: document.getElementById('in_tgl_surat').value,
+            adminNama: document.getElementById('in_p_nama_admin').value,
+            adminNik: document.getElementById('in_p_nik_admin').value,
+            instansi: document.getElementById('in_instansi').value,
+            kontak: document.getElementById('in_kontak').value,
+            noReg: document.getElementById('in_no_reg').value || '-',
+            regCatatan1: document.getElementById('in_reg_catatan_1').value.trim(),
+            regCatatan2: document.getElementById('in_reg_catatan_2').value.trim(),
+            regCatatan3: document.getElementById('in_reg_catatan_3').value.trim(),
+            docs: []
+        };
+
+        for (let i = 3; i <= 10; i++) {
+            dataObj.docs.push({
+                nama: document.getElementById(`in_doc_nama_${i}`).value || '',
+                jenis: document.getElementById(`in_doc_jenis_${i}`).value || ''
+            });
+        }
+
+        return dataObj;
+    }
+
+    function isiTemplateCetak(dataObj) {
+        document.getElementById('out_no_skl').innerText = dataObj.noSkl;
+        document.getElementById('out_bln_skl').innerText = dataObj.blnSkl;
+        document.getElementById('out_thn_skl').innerText = dataObj.thnSkl;
+        document.getElementById('out_f_kodewil').innerText = dataObj.kodewil;
+
+        document.getElementById('out_b_nama').innerText = dataObj.bNama;
+        document.getElementById('out_b_jk').innerText = dataObj.bJk;
+        document.getElementById('out_b_anakke').innerText = dataObj.bAnakKe;
+        document.getElementById('out_b_hari').innerText = dataObj.bHari;
+        document.getElementById('out_b_tgl').innerText = dataObj.bTgl;
+        document.getElementById('out_b_pukul').innerText = dataObj.bPukul;
+        document.getElementById('out_b_bb').innerText = dataObj.bBb;
+        document.getElementById('out_b_pb').innerText = dataObj.bPb;
+
+        document.getElementById('out_a_nama').innerText = dataObj.aNama;
+        document.getElementById('out_a_alamat').innerText = dataObj.aAlamat;
+        document.getElementById('out_i_nama').innerText = dataObj.iNama;
+        document.getElementById('out_i_alamat').innerText = dataObj.iAlamat;
+
+        document.getElementById('out_bidan_nama').innerText = dataObj.bidanNama;
+        document.getElementById('out_bidan_nip').innerText = dataObj.bidanNip;
+
+        const tglOuts = document.querySelectorAll('.tgl-surat-out');
+        tglOuts.forEach(e => e.innerText = dataObj.tglSurat);
+
+        // Dokumen F-2.01
+        document.getElementById('out_f_p_nama').innerText = dataObj.pelaporNama;
+        document.getElementById('out_f_p_nik').innerText = dataObj.pelaporNik;
+        document.getElementById('out_f_p_umur').innerText = dataObj.pelaporUmur;
+        document.getElementById('out_f_p_pekerjaan').innerText = dataObj.pelaporJob;
+        document.getElementById('out_f_p_alamat').innerText = dataObj.pelaporAlamat;
+
+        document.getElementById('out_f_b_hari').innerText = dataObj.bHari;
+        document.getElementById('out_f_b_tgl').innerText = dataObj.bTgl;
+        document.getElementById('out_f_b_pukul').innerText = dataObj.bPukul;
+        document.getElementById('out_f_b_jeniskel').innerText = dataObj.bJenisKel;
+        document.getElementById('out_f_b_nama').innerText = dataObj.bNama;
+        document.getElementById('out_f_b_jk').innerText = dataObj.bJk;
+        document.getElementById('out_f_b_anakke').innerText = dataObj.bAnakKe;
+
+        document.getElementById('out_f_i_nama').innerText = dataObj.iNama;
+        document.getElementById('out_f_i_nik').innerText = dataObj.iNik;
+        document.getElementById('out_f_i_umur').innerText = dataObj.iUmur;
+        document.getElementById('out_f_i_pekerjaan').innerText = dataObj.iPekerjaan;
+        document.getElementById('out_f_i_alamat').innerText = dataObj.iAlamat;
+
+        document.getElementById('out_f_a_nama').innerText = dataObj.aNama;
+        document.getElementById('out_f_a_nik').innerText = dataObj.aNik;
+        document.getElementById('out_f_a_umur_2').innerText = dataObj.aUmur;
+        document.getElementById('out_f_a_pekerjaan').innerText = dataObj.aPekerjaan;
+        document.getElementById('out_f_a_alamat_2').innerText = dataObj.aAlamat;
+
+        document.getElementById('out_f_s1_nama').innerText = dataObj.saksi1Nama;
+        document.getElementById('out_f_s1_nik').innerText = dataObj.saksi1Nik;
+        document.getElementById('out_f_s2_nama').innerText = dataObj.saksi2Nama;
+        document.getElementById('out_f_s2_nik').innerText = dataObj.saksi2Nik;
+        document.getElementById('out_f_ttd_pelapor').innerText = dataObj.pelaporNama;
+
+        // Dokumen 3 (Perjanjian Kerjasama)
+        document.getElementById('out_reg_pemohon').innerText = dataObj.adminNama;
+        document.getElementById('out_reg_nik').innerText = dataObj.adminNik;
+        document.getElementById('out_reg_instansi').innerText = dataObj.instansi;
+        document.getElementById('out_reg_kontak').innerText = dataObj.kontak;
+        document.getElementById('out_reg_noreg').innerText = dataObj.noReg;
+
+        const garisCatatan = '....................................................................................';
+        document.getElementById('out_reg_catatan_1').innerText = dataObj.regCatatan1 || garisCatatan;
+        document.getElementById('out_reg_catatan_2').innerText = dataObj.regCatatan2 || garisCatatan;
+        document.getElementById('out_reg_catatan_3').innerText = dataObj.regCatatan3 || garisCatatan;
+        
+        document.getElementById('out_reg_nama_bayi_1').innerText = dataObj.bNama;
+        document.getElementById('out_reg_nama_bayi_2').innerText = dataObj.bNama;
+
+        if (dataObj.docs && dataObj.docs.length > 0) {
+            dataObj.docs.forEach((d, idx) => {
+                const rowNum = idx + 3;
+                document.getElementById(`out_doc_nama_${rowNum}`).innerText = d.nama || '';
+                document.getElementById(`out_doc_jenis_${rowNum}`).innerText = d.jenis || '';
+            });
+        } else {
+            for (let i = 3; i <= 10; i++) {
+                document.getElementById(`out_doc_nama_${i}`).innerText = '';
+                document.getElementById(`out_doc_jenis_${i}`).innerText = '';
+            }
+        }
+
+        document.getElementById('out_reg_pelapor').innerText = dataObj.adminNama;
+    }
+
+    function cetakDanSimpanData() {
+        const dataObj = siapkanDataObj();
+        if (!dataObj) return;
+
+        isiTemplateCetak(dataObj);
+
+        // Simpan Data ke LocalStorage
+        let db = JSON.parse(localStorage.getItem('db_kelahiran_midai')) || [];
+        db.push(dataObj);
+        localStorage.setItem('db_kelahiran_midai', JSON.stringify(db));
+
+        tampilkanTabelLokal();
+
+        // Jalankan perintah Cetak
+        window.print();
+    }
+
+    function tampilkanTabelLokal() {
+        const db = JSON.parse(localStorage.getItem('db_kelahiran_midai')) || [];
+        const tbody = document.getElementById('db-table-body');
+        tbody.innerHTML = '';
+
+        if (db.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Belum ada data tersimpan.</td></tr>';
+            return;
+        }
+
+        db.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>400.12.3/${item.noSkl}/PKM-MIDAI/${item.blnSkl}/${item.thnSkl}</td>
+                <td>${item.tglSurat}</td>
+                <td>${item.bNama}</td>
+                <td>${item.bJk}</td>
+                <td>${item.aNama}</td>
+                <td>${item.iNama}</td>
+                <td>${item.pelaporNama}</td>
+                <td>${item.bidanNama}</td>
+                <td>
+                    <div class="btn-action-group">
+                        <button class="btn-edit" onclick="editData(${index})">Edit</button>
+                        <button class="btn-print" onclick="cetakUlangData(${index})">Cetak</button>
+                        <button class="btn-del" onclick="hapusData(${index})">Hapus</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function editData(index) {
+        const db = JSON.parse(localStorage.getItem('db_kelahiran_midai')) || [];
+        const item = db[index];
+        if (!item) return;
+
+        document.getElementById('in_p_nama_admin').value = item.adminNama || '';
+        document.getElementById('in_p_nik_admin').value = item.adminNik || '';
+        document.getElementById('in_instansi').value = item.instansi || '';
+        document.getElementById('in_kontak').value = item.kontak || '';
+        document.getElementById('in_no_reg').value = item.noReg === '-' ? '' : item.noReg;
+        document.getElementById('in_reg_catatan_1').value = item.regCatatan1 || '';
+        document.getElementById('in_reg_catatan_2').value = item.regCatatan2 || '';
+        document.getElementById('in_reg_catatan_3').value = item.regCatatan3 || '';
+
+        document.getElementById('in_no_skl').value = item.noSkl || '';
+        document.getElementById('in_bln_romawi').value = item.blnSkl || '';
+        document.getElementById('in_thn_skl').value = item.thnSkl || '';
+        document.getElementById('in_kodewil').value = item.kodewil || '';
+
+        document.getElementById('in_b_nama').value = item.bNama === '-' ? '' : item.bNama;
+        document.getElementById('in_b_jk').value = item.bJk || 'Laki-laki';
+        document.getElementById('in_b_anakke').value = item.bAnakKe || '1 (Satu)';
+        document.getElementById('in_b_tgl_picker').value = item.bTglPicker || '';
+        document.getElementById('in_b_hari').value = item.bHari || '';
+        document.getElementById('in_b_tgl').value = item.bTgl || '';
+        document.getElementById('in_b_pukul').value = item.bPukul || '';
+        document.getElementById('in_b_bb').value = item.bBb || '';
+        document.getElementById('in_b_pb').value = item.bPb || '';
+        document.getElementById('in_b_jeniskel').value = item.bJenisKel || 'Tunggal';
+
+        document.getElementById('in_pelapor_kel').value = item.pelaporNama || '';
+        document.getElementById('in_pelapor_nik').value = item.pelaporNik || '';
+        document.getElementById('in_p_tgl_picker').value = item.pelaporTglPicker || '';
+        document.getElementById('in_pelapor_umur').value = item.pelaporUmur || '';
+        document.getElementById('in_pelapor_job').value = item.pelaporJob || '';
+        document.getElementById('in_pelapor_alamat').value = item.pelaporAlamat || '';
+
+        document.getElementById('in_a_nama').value = item.aNama || '';
+        document.getElementById('in_a_nik').value = item.aNik || '';
+        document.getElementById('in_a_tgl_picker').value = item.aTglPicker || '';
+        document.getElementById('in_a_umur').value = item.aUmur || '';
+        document.getElementById('in_a_pekerjaan').value = item.aPekerjaan || '';
+        document.getElementById('in_a_alamat').value = item.aAlamat || '';
+
+        document.getElementById('in_i_nama').value = item.iNama || '';
+        document.getElementById('in_i_nik').value = item.iNik || '';
+        document.getElementById('in_i_tgl_picker').value = item.iTglPicker || '';
+        document.getElementById('in_i_umur').value = item.iUmur || '';
+        document.getElementById('in_i_pekerjaan').value = item.iPekerjaan || '';
+        document.getElementById('in_i_alamat').value = item.iAlamat || '';
+
+        document.getElementById('in_saksi1_nama').value = item.saksi1Nama || '';
+        document.getElementById('in_saksi1_nik').value = item.saksi1Nik || '';
+        document.getElementById('in_saksi2_nama').value = item.saksi2Nama || '';
+        document.getElementById('in_saksi2_nik').value = item.saksi2Nik || '';
+
+        if (item.docs && item.docs.length > 0) {
+            item.docs.forEach((d, idx) => {
+                const rowNum = idx + 3;
+                const inputNama = document.getElementById(`in_doc_nama_${rowNum}`);
+                const inputJenis = document.getElementById(`in_doc_jenis_${rowNum}`);
+                if (inputNama) inputNama.value = d.nama || '';
+                if (inputJenis) inputJenis.value = d.jenis || '';
+            });
+        }
+
+        document.getElementById('in_bidan_select').value = item.bidanNama || '';
+        updateNipBidan();
+        document.getElementById('in_tgl_surat_picker').value = item.tglSuratPicker || '';
+        prosesTanggalSurat();
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cetakUlangData(index) {
+        const db = JSON.parse(localStorage.getItem('db_kelahiran_midai')) || [];
+        const item = db[index];
+        if (!item) return;
+
+        isiTemplateCetak(item);
+        window.print();
+    }
+
+
+    // =========================================================
+    // PASSWORD SAAT MEMBUKA APLIKASI
+    // Password ini berbeda dari password penghapusan data.
+    // =========================================================
+    const PASSWORD_BUKA_APLIKASI = 'admin';
+
+    function toggleLoginPassword() {
+        const input = document.getElementById('login-password-input');
+        const button = document.querySelector('.login-toggle');
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (button) button.textContent = 'Sembunyikan';
+        } else {
+            input.type = 'password';
+            if (button) button.textContent = 'Lihat';
+        }
+        input.focus();
+    }
+
+    function bukaAplikasiDenganPassword() {
+        const input = document.getElementById('login-password-input');
+        const error = document.getElementById('login-error');
+        const overlay = document.getElementById('login-overlay');
+        if (!input || !overlay) return;
+
+        if (input.value !== PASSWORD_BUKA_APLIKASI) {
+            if (error) error.classList.add('show');
+            input.value = '';
+            input.focus();
+            return;
+        }
+
+        if (error) error.classList.remove('show');
+        overlay.classList.add('hidden');
+        document.body.classList.remove('app-locked');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('login-password-input');
+        if (input) {
+            input.focus();
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') bukaAplikasiDenganPassword();
+            });
+        }
+    });
+
+    // =========================================================
+    // PENGATURAN PASSWORD PENGHAPUSAN DATA
+    // GANTI NILAI DI BAWAH INI DENGAN PASSWORD YANG ANDA INGINKAN.
+    // =========================================================
+    const PASSWORD_HAPUS_DATA = 'y';
+    let indexDataYangAkanDihapus = null;
+
+    function hapusData(index) {
+        const db = JSON.parse(localStorage.getItem('db_kelahiran_midai')) || [];
+        if (!db[index]) return;
+
+        // Tahap 1: konfirmasi penghapusan
+        const yakin = confirm('Apakah Anda yakin ingin menghapus data ini dari riwayat lokal?');
+        if (!yakin) return;
+
+        // Tahap 2: minta password administrator
+        indexDataYangAkanDihapus = index;
+        bukaModalPasswordHapus();
+    }
+
+    function bukaModalPasswordHapus() {
+        const overlay = document.getElementById('delete-password-overlay');
+        const input = document.getElementById('delete-password-input');
+        const error = document.getElementById('delete-password-error');
+
+        if (!overlay || !input) return;
+
+        input.value = '';
+        input.type = 'password';
+        error.classList.remove('show');
+        overlay.classList.add('show');
+
+        setTimeout(() => input.focus(), 50);
+    }
+
+    function batalHapusData() {
+        const overlay = document.getElementById('delete-password-overlay');
+        if (overlay) overlay.classList.remove('show');
+        indexDataYangAkanDihapus = null;
+    }
+
+    function toggleDeletePassword() {
+        const input = document.getElementById('delete-password-input');
+        const button = document.querySelector('.delete-password-toggle');
+        if (!input) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (button) button.textContent = 'Sembunyikan';
+        } else {
+            input.type = 'password';
+            if (button) button.textContent = 'Lihat';
+        }
+        input.focus();
+    }
+
+    function konfirmasiPasswordHapus() {
+        const input = document.getElementById('delete-password-input');
+        const error = document.getElementById('delete-password-error');
+        const overlay = document.getElementById('delete-password-overlay');
+
+        if (!input || indexDataYangAkanDihapus === null) return;
+
+        if (input.value !== PASSWORD_HAPUS_DATA) {
+            error.classList.add('show');
+            input.value = '';
+            input.focus();
+            return;
+        }
+
+        // Password benar: hapus data dari database lokal
+        let db = JSON.parse(localStorage.getItem('db_kelahiran_midai')) || [];
+        if (db[indexDataYangAkanDihapus]) {
+            db.splice(indexDataYangAkanDihapus, 1);
+            localStorage.setItem('db_kelahiran_midai', JSON.stringify(db));
+        }
+
+        if (overlay) overlay.classList.remove('show');
+        indexDataYangAkanDihapus = null;
+        tampilkanTabelLokal();
+        alert('Data berhasil dihapus.');
+    }
+
+    // Tekan Enter pada kolom password = konfirmasi
+    document.addEventListener('keydown', function(event) {
+        const overlay = document.getElementById('delete-password-overlay');
+        if (event.key === 'Escape' && overlay && overlay.classList.contains('show')) {
+            batalHapusData();
+        }
+        if (event.key === 'Enter' && overlay && overlay.classList.contains('show') && document.activeElement && document.activeElement.id === 'delete-password-input') {
+            event.preventDefault();
+            konfirmasiPasswordHapus();
+        }
+    });
+
+
+    function exportKeExcel() {
+        const db = JSON.parse(localStorage.getItem('db_kelahiran_midai')) || [];
+        if (db.length === 0) {
+            alert('Tidak ada data tersimpan untuk diunduh.');
+            return;
+        }
+
+        // Membuat file Excel .xlsx asli (bukan CSV)
+        if (typeof XLSX === 'undefined') {
+            alert('Modul Excel belum termuat. Pastikan perangkat terhubung ke internet, lalu coba lagi.');
+            return;
+        }
+
+        const headers = [
+            "No SKL Lengkap", "Tanggal Surat", "Nama Bayi", "Jenis Kelamin", "Anak Ke", "Hari Lahir", "Tanggal Lahir",
+            "Pukul", "BB", "PB", "Jenis Kelahiran", "Nama Ayah", "NIK Ayah", "Umur Ayah", "Pekerjaan Ayah", "Alamat Ayah",
+            "Nama Ibu", "NIK Ibu", "Umur Ibu", "Pekerjaan Ibu", "Alamat Ibu", "Saksi 1", "NIK Saksi 1", "Saksi 2", "NIK Saksi 2",
+            "Pelapor", "NIK Pelapor", "Umur Pelapor", "Pekerjaan Pelapor", "Alamat Pelapor", "Bidan Penolong", "NIP Bidan",
+            "Admin", "NIK Admin", "Instansi", "No Register", "Catatan 1", "Catatan 2", "Catatan 3"
+        ];
+
+        for (let i = 3; i <= 10; i++) {
+            headers.push(`Doc ${i} Nama`, `Doc ${i} Jenis`);
+        }
+
+        const rows = db.map(item => {
+            const row = [
+                `400.12.3/${item.noSkl}/PKM-MIDAI/${item.blnSkl}/${item.thnSkl}`,
+                item.tglSurat || '', item.bNama || '', item.bJk || '', item.bAnakKe || '', item.bHari || '', item.bTgl || '',
+                item.bPukul || '', item.bBb || '', item.bPb || '', item.bJenisKel || '', item.aNama || '', item.aNik || '', item.aUmur || '',
+                item.aPekerjaan || '', item.aAlamat || '', item.iNama || '', item.iNik || '', item.iUmur || '', item.iPekerjaan || '',
+                item.iAlamat || '', item.saksi1Nama || '', item.saksi1Nik || '', item.saksi2Nama || '', item.saksi2Nik || '',
+                item.pelaporNama || '', item.pelaporNik || '', item.pelaporUmur || '', item.pelaporJob || '', item.pelaporAlamat || '',
+                item.bidanNama || '', item.bidanNip || '', item.adminNama || '', item.adminNik || '', item.instansi || '', item.noReg || '',
+                item.regCatatan1 || '', item.regCatatan2 || '', item.regCatatan3 || ''
+            ];
+
+            const docs = item.docs || [];
+            for (let i = 0; i < 8; i++) {
+                const d = docs[i];
+                row.push(d ? (d.nama || '') : '', d ? (d.jenis || '') : '');
+            }
+            return row;
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+        // Lebar kolom agar langsung terbaca saat dibuka di Excel.
+        worksheet['!cols'] = headers.map((h, index) => {
+            if (h.includes('Alamat')) return { wch: 28 };
+            if (h.includes('Nama') || h.includes('Pelapor') || h.includes('Bidan') || h.includes('Pekerjaan')) return { wch: 22 };
+            if (h.includes('Catatan')) return { wch: 30 };
+            if (h.includes('NIK') || h.includes('NIP')) return { wch: 20 };
+            return { wch: Math.min(Math.max(h.length + 2, 12), 22) };
+        });
+
+        // Membekukan baris judul dan memberi filter pada semua kolom.
+        worksheet['!freeze'] = { xSplit: 0, ySplit: 1 };
+        worksheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(headers.length - 1)}${rows.length + 1}` };
+
+        // Tebalkan header dan beri format sederhana agar tampak seperti tabel Excel.
+        headers.forEach((_, col) => {
+            const cell = worksheet[XLSX.utils.encode_cell({ r: 0, c: col })];
+            if (cell) {
+                cell.s = {
+                    font: { bold: true },
+                    alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
+                };
+            }
+        });
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Kelahiran');
+
+        const tanggal = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(workbook, `Data_Kelahiran_Puskesmas_Midai_${tanggal}.xlsx`);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Integrasi Administrasi Kematian UPTD Puskesmas Midai</title>
+    <!-- Library XLSX untuk Ekspor Data ke Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            font-size: 11pt;
+            color: #000;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #81c784;
+            padding-bottom: 6px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-container h2 {
+            margin: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        h2, h3 {
+            color: #1b5e20;
+            border-bottom: 2px solid #81c784;
+            padding-bottom: 6px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-row-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .form-row-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .form-row-5, .form-row-4 {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .input-prefix-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-prefix {
+            background: #e9ecef;
+            border: 1px solid #ccc;
+            border-right: none;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            border-radius: 4px 0 0 4px;
+            color: #495057;
+            font-weight: bold;
+        }
+
+        .input-prefix-container input {
+            border-radius: 0 4px 4px 0;
+            width: 100%;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .doc-input-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        button:hover { background-color: #1b5e20; }
+        button.excel { background-color: #157347; }
+        button.excel:hover { background-color: #0e4b2e; }
+        button.reset { background-color: #d32f2f; }
+        button.reset:hover { background-color: #9a0007; }
+        button.dashboard { background-color: #0288d1; }
+        button.dashboard:hover { background-color: #01579b; }
+
+        /* TABEL DATABASE RIWAYAT */
+        .table-container {
+            margin-top: 30px;
+            overflow-x: auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        table.db-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+        }
+
+        table.db-table th, table.db-table td {
+            border: 1px solid #ccc;
+            padding: 6px 8px;
+            text-align: left;
+        }
+
+        table.db-table th {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        .btn-action-group {
+            display: flex;
+            gap: 4px;
+            flex-wrap: nowrap;
+        }
+
+        .btn-del {
+            background-color: #e53935;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 8pt;
+        }
+
+        /* MODAL & LOGIN OVERLAY */
+        .delete-password-overlay, #login-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .delete-password-overlay:not(.show), #login-overlay.hidden {
+            display: none;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: min(400px, 100%);
+            text-align: center;
+        }
+
+        body.app-locked > *:not(#login-overlay) {
+            visibility: hidden !important;
+        }
+
+        /* AREA CETAK DOKUMEN VIA @MEDIA PRINT */
+        #print-area {
+            display: none;
+        }
+
+        @media print {
+            @page {
+                size: 210mm 330mm; /* Ukuran F4 / Folio */
+                margin-top: 10mm;
+                margin-right: 20mm;
+                margin-bottom: 10mm;
+                margin-left: 30mm;   /* kiri 3 cm, kanan 2 cm */
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+
+            #print-area {
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                color: #000;
+            }
+
+            .page-break {
+                page-break-after: always;
+                page-break-inside: avoid;
+                clear: both;
+            }
+
+            /* STYLES FORMULIR PERJANJIAN KERJASAMA */
+            .page-container {
+                width: 100%;
+                border: none;
+                padding: 0;
+            }
+
+            .header-title {
+                text-align: center;
+                font-weight: bold;
+                font-size: 11pt;
+                margin-bottom: 15px;
+                text-transform: uppercase;
+                line-height: 1.3;
+            }
+
+            .section-header {
+                font-weight: bold;
+                font-size: 10.5pt;
+                margin-bottom: 8px;
+            }
+
+            .pemohon-wrapper {
+                position: relative;
+                width: 100%;
+                margin-bottom: 15px;
+                min-height: 120px;
+            }
+
+            .pemohon-data {
+                width: 72%;
+            }
+
+            .pemohon-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .pemohon-table td {
+                padding: 3px 0;
+                vertical-align: top;
+                font-size: 10pt;
+            }
+
+            .dots-line {
+                border-bottom: 1px dotted #000;
+                display: inline-block;
+                width: 98%;
+            }
+
+            .register-box {
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 180px;
+                height: 85px;
+                border: 1.5px solid #000;
+                text-align: center;
+            }
+
+            .register-title {
+                font-weight: bold;
+                font-size: 9.5pt;
+                border-bottom: 1.5px solid #000;
+                padding: 3px 0;
+                letter-spacing: 0.5px;
+            }
+
+            .table-dokumen {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 6px;
+                margin-bottom: 15px;
+            }
+
+            .table-dokumen th, .table-dokumen td {
+                border: 1px solid #000;
+                padding: 4px 6px;
+                font-size: 9.5pt;
+                height: 22px;
+            }
+
+            .table-dokumen th {
+                text-align: center;
+                font-weight: bold;
+                background-color: transparent !important;
+            }
+
+            .catatan-container {
+                font-size: 9pt;
+                margin-bottom: 20px;
+                line-height: 1.4;
+            }
+
+            .ttd-table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: center;
+                font-size: 10pt;
+            }
+
+            .ttd-table td {
+                width: 50%;
+                vertical-align: top;
+            }
+
+            .space-ttd {
+                height: 55px;
+            }
+
+            /* STYLES KOP SKM PUSKESMAS */
+            .kop-puskesmas-container {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .kop-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .kop-table td {
+                vertical-align: middle;
+                border: none !important;
+            }
+
+            .kop-logo-left {
+                width: 100px;
+                text-align: left;
+            }
+
+            .kop-logo-right {
+                width: 100px;
+                text-align: right;
+            }
+
+            .kop-logo-img {
+                max-width: 85px;
+                max-height: 85px;
+                height: auto;
+                object-fit: contain;
+            }
+
+            .kop-text-center {
+                text-align: center;
+                line-height: 1.2;
+            }
+
+            .kop-text-center .h-pem { margin: 0; font-size: 12pt; }
+            .kop-text-center .h-din { margin: 0; font-size: 12pt; }
+            .kop-text-center .h-pkm { margin: 2px 0; font-size: 15pt; font-weight: bold; }
+            .kop-text-center .p-alamat { margin: 2px 0 0 0; font-size: 10pt; }
+            .kop-text-center .p-email { margin: 0; font-size: 10pt; }
+
+            .kop-divider {
+                width: 100%;
+                border-top: 3px solid #000;
+                border-bottom: 1px solid #000;
+                height: 2px;
+                margin-top: 5px;
+                margin-bottom: 12px;
+            }
+
+            .doc-title { text-align: center; font-weight: bold; font-size: 11.5pt; text-decoration: underline; margin-top: 8px; }
+            .doc-no { text-align: center; font-size: 10.5pt; margin-bottom: 12px; }
+
+            table.form-table-skm { width: 100%; border-collapse: collapse; margin: 8px 0; }
+            table.form-table-skm td { padding: 3px 2px; vertical-align: top; font-size: 12pt; }
+
+            /* STYLES DESAIN FORMULIR F-2.02 COMPACT (1 HALAMAN PASS) */
+            .page-f202 {
+                height: 320mm;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                gap: 1px;
+            }
+
+            .top-header-f202 {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 2px;
+            }
+
+            .top-header-f202 td {
+                vertical-align: middle;
+                padding: 0px;
+                font-size: 8.5pt;
+            }
+
+            .spaced-text {
+                letter-spacing: 2px;
+                font-weight: bold;
+            }
+
+            .f202-box {
+                border: 1.5px solid #000;
+                text-align: center;
+                font-weight: bold;
+                font-size: 9.5pt;
+                padding: 1px 12px;
+                display: inline-block;
+            }
+
+            .doc-title-f202 {
+                text-align: center;
+                font-weight: bold;
+                font-size: 10pt;
+                margin: 5px 0;
+                line-height: 1.1;
+            }
+
+            .section-title-f202 {
+                font-weight: bold;
+                font-size: 8.5pt;
+                margin-top: 2px;
+                margin-bottom: 1px;
+                text-transform: uppercase;
+                background-color: #f0f0f0;
+                padding: 2px 4px;
+                border: 1px solid #000;
+            }
+
+            .form-table-f202 {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 2px;
+            }
+
+            .form-table-f202 td {
+                padding: 0.8px 0;
+                vertical-align: middle;
+                font-size: 8pt;
+            }
+
+            .label-col-f202 {
+                width: 25%;
+                padding-right: 2px;
+            }
+
+            .colon-col-f202 {
+                width: 1.5%;
+                text-align: center;
+            }
+
+            .input-col-f202 {
+                width: 73.5%;
+            }
+
+            .char-grid {
+                display: inline-flex;
+                border-top: 1px solid #000;
+                border-left: 1px solid #000;
+                border-bottom: 1px solid #000;
+            }
+
+            .char-grid .box {
+                width: 15px;
+                height: 15px;
+                border-right: 1px solid #000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 7.5pt;
+                font-weight: bold;
+                text-transform: uppercase;
+                overflow: hidden;
+            }
+
+            .date-grid-container {
+                display: flex;
+                align-items: center;
+                gap: 1px;
+                font-size: 7pt;
+                font-weight: bold;
+            }
+
+            .options-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 8pt;
+            }
+
+            .options-table td {
+                border: 1px solid #000;
+                padding: 2px 4px;
+                vertical-align: middle;
+            }
+
+            .options-table td.selected {
+                color: #0066cc;
+                font-weight: bold;
+            }
+
+            .options-table td.selected::before {
+                content: "✓ ";
+                color: #0066cc;
+                font-weight: bold;
+            }
+
+            .syarat-container {
+                font-size: 7.5pt;
+                margin-top: 2px;
+                line-height: 1.15;
+            }
+
+            .syarat-container ol {
+                margin: 1px 0 0 12px;
+                padding: 0;
+            }
+
+            .ttd-f202 {
+                width: 100%;
+                margin-top: 6px;
+                border-collapse: collapse;
+                text-align: center;
+                font-size: 7.5pt;
+            }
+
+            .ttd-f202 td {
+                vertical-align: top;
+                width: 50%;
+            }
+
+            .ttd-space-f202 {
+                height: 35px;
+            }
+        }
+
+/* ===== DEEP SEA FUTURISM THEME: LAYAR APLIKASI ===== */
+@media screen {
+  :root {
+    color-scheme: dark;
+    --ds-bg: #04131f;
+    --ds-panel: rgba(5, 28, 43, .88);
+    --ds-panel-2: rgba(7, 42, 58, .78);
+    --ds-line: rgba(63, 226, 226, .34);
+    --ds-cyan: #54f4ed;
+    --ds-teal: #16c7c1;
+    --ds-text: #e5fbff;
+    --ds-muted: #9bc7d1;
+    --ds-glow: 0 0 22px rgba(40, 230, 220, .13);
+  }
+  html { min-height: 100%; background: var(--ds-bg); }
+  body {
+    background:
+      radial-gradient(ellipse at 12% 0%, rgba(0, 170, 190, .23), transparent 38%),
+      radial-gradient(ellipse at 88% 35%, rgba(0, 88, 145, .24), transparent 42%),
+      linear-gradient(145deg, #020b16 0%, #062235 48%, #03121f 100%) !important;
+    color: var(--ds-text) !important;
+    padding: 24px !important;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    position: relative;
+    isolation: isolate;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: radial-gradient(rgba(83, 242, 234, .19) .8px, transparent .8px);
+    background-size: 27px 27px; opacity: .25;
+    mask-image: linear-gradient(to bottom, black, transparent 90%);
+  }
+  body > .min-h-screen {
+    background: linear-gradient(135deg, rgba(0, 18, 32, .54), rgba(0, 75, 91, .18)) !important;
+    backdrop-filter: blur(5px);
+  }
+  .container, .table-container {
+    background: linear-gradient(145deg, rgba(7, 35, 52, .94), rgba(3, 22, 37, .96)) !important;
+    color: var(--ds-text) !important;
+    border: 1px solid var(--ds-line) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--ds-glow), inset 0 1px 0 rgba(255,255,255,.04) !important;
+    padding: 25px !important;
+    position: relative;
+    overflow: hidden;
+  }
+  .container::before, .table-container::before {
+    content: ""; position: absolute; top: 0; left: 24px; right: 24px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ds-cyan), #168bff, transparent);
+    opacity: .8;
+  }
+  .header-container { border-bottom: 1px solid var(--ds-line) !important; padding-bottom: 15px !important; }
+  h2, h3, .header-container h2 {
+    color: var(--ds-cyan) !important;
+    text-shadow: 0 0 14px rgba(84, 244, 237, .18);
+    border-bottom-color: rgba(65, 224, 222, .45) !important;
+  }
+  .form-group label { color: #c6edf2 !important; letter-spacing: .15px; }
+  .form-group input, .form-group select, input, select {
+    background-color: rgba(2, 17, 30, .92) !important;
+    color: #e8fdff !important;
+    border: 1px solid rgba(94, 202, 213, .35) !important;
+    border-radius: 8px !important;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  input::placeholder { color: #729aa7 !important; }
+  .form-group input:focus, .form-group select:focus, input:focus, select:focus {
+    outline: none !important; border-color: var(--ds-cyan) !important;
+    box-shadow: 0 0 0 3px rgba(48, 224, 218, .13), 0 0 16px rgba(48, 224, 218, .12) !important;
+  }
+  input[readonly] { background: rgba(12, 50, 66, .92) !important; color: #a9dce3 !important; }
+  .input-prefix { background: #0d3548 !important; color: var(--ds-cyan) !important; border-color: var(--ds-line) !important; }
+  .doc-input-row { color: #c8f1f4 !important; }
+  .doc-input-row[style], #input-form form > div[style*="background"] {
+    background: rgba(3, 25, 40, .72) !important;
+    border-color: var(--ds-line) !important;
+    border-radius: 12px !important;
+  }
+  button {
+    background: linear-gradient(135deg, #087f91, #0cb7b2) !important;
+    color: #f2ffff !important; border: 1px solid rgba(111, 255, 247, .32) !important;
+    border-radius: 9px !important; padding: 10px 16px !important;
+    box-shadow: 0 5px 16px rgba(0, 195, 190, .14);
+    transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+  }
+  button:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 7px 22px rgba(0, 220, 213, .23); }
+  button.excel { background: linear-gradient(135deg, #087b71, #0cae8e) !important; }
+  button.reset, .btn-del { background: linear-gradient(135deg, #922e50, #d34a66) !important; }
+  button.dashboard { background: linear-gradient(135deg, #075a91, #087fc1) !important; }
+  .table-container { overflow-x: auto; }
+  table.db-table { color: #dffaff !important; }
+  table.db-table th, table.db-table td { border-color: rgba(88, 198, 210, .24) !important; }
+  table.db-table th { background: linear-gradient(135deg, #0c4558, #0b3449) !important; color: var(--ds-cyan) !important; }
+  table.db-table tbody tr:nth-child(even) { background: rgba(19, 75, 91, .24); }
+  table.db-table tbody tr:hover { background: rgba(31, 164, 169, .13); }
+  .modal-box {
+    background: linear-gradient(145deg, #082c40, #041725) !important;
+    color: var(--ds-text) !important; border: 1px solid var(--ds-line) !important;
+    border-radius: 18px !important; box-shadow: 0 20px 70px rgba(0,0,0,.55), 0 0 28px rgba(45, 220, 216, .12) !important;
+  }
+  .modal-box h2, .modal-box h3 { color: var(--ds-cyan) !important; }
+  #login-overlay, .delete-password-overlay { background: rgba(0, 7, 17, .82) !important; backdrop-filter: blur(9px); }
+  #login-overlay .modal-box > div:first-child { filter: drop-shadow(0 0 12px rgba(84,244,237,.5)); }
+  #login-error, #delete-password-error { color: #ff9fae !important; }
+  @media (max-width: 700px) {
+    body { padding: 10px !important; }
+    .container, .table-container { padding: 16px !important; border-radius: 13px !important; }
+    .header-container { align-items: stretch; }
+    .header-container h2 { font-size: 1.15rem; }
+    .doc-input-row { grid-template-columns: 28px minmax(0,1fr) minmax(0,1fr) !important; gap: 6px !important; }
+    .btn-container button { flex: 1 1 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+}
+
+</style>
+</head>
+<body class="min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
+
+    <div class="min-h-screen bg-teal-950/40 backdrop-blur-xs flex flex-col justify-between py-8 px-4 sm:px-6">
+
+        <main class="max-w-4xl mx-auto w-full flex-grow">
+
+<body class="app-locked">
+
+<!-- OVERLAY LOGIN -->
+<div id="login-overlay">
+    <div class="modal-box">
+        <div style="font-size: 40px;">🔐</div>
+        <h2>Akses Sistem Kematian</h2>
+        <p>Masukkan password untuk membuka sistem Puskesmas Midai.</p>
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <input type="password" id="login-password-input" placeholder="Masukkan password" style="flex:1; padding: 8px;">
+            <button type="button" onclick="toggleLoginPassword()">Lihat</button>
+        </div>
+        <div id="login-error" style="color: red; display: none; font-size: 12px; margin-bottom: 10px;">Password salah!</div>
+        <button type="button" onclick="bukaAplikasiDenganPassword()" style="width:100%;">Masuk</button>
+    </div>
+</div>
+
+<!-- OVERLAY HAPUS -->
+<div class="delete-password-overlay" id="delete-modal">
+    <div class="modal-box">
+        <h3 style="color:#b71c1c; margin-top:0;">Otorisasi Penghapusan Data</h3>
+        <p>Masukkan password admin untuk menghapus data ini:</p>
+        <input type="password" id="delete-password-input" placeholder="Password Admin" style="width:100%; padding:8px; margin-bottom:10px;">
+        <div id="delete-password-error" style="color:red; display:none; font-size:12px; margin-bottom:10px;">Password salah!</div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="reset" onclick="tutupModalHapus()">Batal</button>
+            <button type="button" onclick="konfirmasiHapusData()">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<!-- FORM INPUT UTAMA -->
+<div class="container" id="input-form">
+    <div class="header-container">
+        <h2>Sistem Integrasi Administrasi Kematian Puskesmas Midai</h2>
+        <button type="button" class="dashboard" onclick="window.location.href='korespondensi_terpadu.html'">⬅ Kembali ke Dashboard</button>
+    </div>
+    
+    <form id="mainForm">
+        
+        <h3>1. Data Instansi & Pemohon (Petugas Admin)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Pemohon/Admin</label><input type="text" id="in_p_nama_admin" value="Herman Susilo"></div>
+            <div class="form-group"><label>NIK Pemohon/Admin</label><input type="text" id="in_p_nik_admin" value="2103042008760001" maxlength="16"></div>
+            <div class="form-group"><label>Alamat Instansi</label><input type="text" id="in_instansi" value="Jalan Tanjung Selamat Midai"></div>
+            <div class="form-group"><label>No. HP & Email</label><input type="text" id="in_kontak" value="0821 7077 9697 / puskesmasmidai@gmail.com"></div>
+            <div class="form-group"><label>No. Register Kerjasama</label><input type="text" id="in_no_reg" placeholder="Isi No. Register"></div>
+        </div>
+
+        <h3>2. Dokumen Tambahan yang Diajukan (Baris 2-10 Form Register)</h3>
+        <div style="margin-bottom: 15px; background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #ddd;">
+            <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #555;">
+                <em>* Baris No. 1 diisi otomatis oleh Nama Jenazah & Akta Kematian. Silakan isi baris No. 2 sampai 10 secara manual jika ada dokumen tambahan (opsional):</em>
+            </p>
+            <div class="doc-input-row" style="font-weight: bold; font-size: 0.85rem; color: #333;">
+                <span>No.</span><span>Nama Lengkap</span><span>Jenis Dokumen</span>
+            </div>
+            <div class="doc-input-row"><span>2.</span><input type="text" id="in_doc_nama_2" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_2" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>3.</span><input type="text" id="in_doc_nama_3" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_3" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>4.</span><input type="text" id="in_doc_nama_4" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_4" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>5.</span><input type="text" id="in_doc_nama_5" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_5" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>6.</span><input type="text" id="in_doc_nama_6" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_6" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>7.</span><input type="text" id="in_doc_nama_7" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_7" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>8.</span><input type="text" id="in_doc_nama_8" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_8" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>9.</span><input type="text" id="in_doc_nama_9" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_9" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>10.</span><input type="text" id="in_doc_nama_10" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_10" placeholder="Jenis Dokumen"></div>
+        </div>
+
+        <h3>3. Nomor Surat & Wilayah</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>No. Surat Keluar SKM</label>
+                <div class="input-prefix-container">
+                    <span class="input-prefix">400.12.3.1/</span>
+                    <input type="text" id="in_no_skm" placeholder="Contoh: 015">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Bulan Romawi</label>
+                <select id="in_bln_romawi">
+                    <option value="">-- Pilih Bulan --</option>
+                    <option value="I">I (Januari)</option>
+                    <option value="II">II (Februari)</option>
+                    <option value="III">III (Maret)</option>
+                    <option value="IV">IV (April)</option>
+                    <option value="V">V (Mei)</option>
+                    <option value="VI">VI (Juni)</option>
+                    <option value="VII">VII (Juli)</option>
+                    <option value="VIII">VIII (Agustus)</option>
+                    <option value="IX">IX (September)</option>
+                    <option value="X">X (Oktober)</option>
+                    <option value="XI">XI (November)</option>
+                    <option value="XII">XII (Desember)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Tahun Surat</label><input type="text" id="in_thn_skm" value="2026"></div>
+            <div class="form-group">
+                <label>Tgl Surat / Pelaporan (Kalender)</label>
+                <input type="date" id="in_tgl_surat_picker" onchange="prosesTanggalSurat()">
+            </div>
+            <div class="form-group">
+                <label>Tgl Surat Teks (Otomatis)</label>
+                <input type="text" id="in_tgl_surat" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group"><label>Kode Wilayah (8 Angka)</label><input type="text" id="in_kode_wilayah" placeholder="21030400" maxlength="8"></div>
+            <div class="form-group"><label>Desa / Kelurahan</label><input type="text" id="in_desa_kel" placeholder="Contoh: Midai / Sabang Barat"></div>
+        </div>
+
+        <h3>4. Data Jenazah (Yang Meninggal Dunia)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>NIK Jenazah</label><input type="text" id="in_j_nik" maxlength="16"></div>
+            <div class="form-group"><label>Nama Lengkap Jenazah</label><input type="text" id="in_j_nama"></div>
+            <div class="form-group"><label>Tempat Lahir Jenazah</label><input type="text" id="in_j_tmpt_lahir"></div>
+            <div class="form-group">
+                <label>Tgl Lahir Jenazah (Kalender)</label>
+                <input type="date" id="in_j_tgl_lahir_picker" onchange="prosesTanggalLahirJenazah()">
+            </div>
+            <div class="form-group">
+                <label>Tgl Lahir Teks (Otomatis)</label>
+                <input type="text" id="in_j_tgl_lahir" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>Agama</label>
+                <select id="in_j_agama">
+                    <option value="">-- Pilih Agama --</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Kristen">Kristen</option>
+                    <option value="Katolik">Katolik</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Buddha">Buddha</option>
+                    <option value="Khonghucu">Khonghucu</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Jenis Kelamin</label>
+                <select id="in_j_jk">
+                    <option value="">-- Pilih Jenis Kelamin --</option>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                </select>
+            </div>
+            <div class="form-group full-width"><label>Alamat Jenazah</label><input type="text" id="in_j_alamat"></div>
+            <div class="form-group"><label>Diagnosa / Penyebab Utama</label><input type="text" id="in_j_diagnosa" placeholder="Contoh: Hipertensi, Old Age"></div>
+            <div class="form-group">
+                <label>Tgl Kematian (Kalender)</label>
+                <input type="date" id="in_j_tgl_mati_picker" onchange="prosesTanggalKematian()">
+            </div>
+            <div class="form-group">
+                <label>Hari Kematian (Otomatis)</label>
+                <input type="text" id="in_j_hari_mati" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>Tgl Kematian Teks (Otomatis)</label>
+                <input type="text" id="in_j_tgl_mati" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group"><label>Pukul Kematian (WIB)</label><input type="text" id="in_j_pukul" placeholder="08:30"></div>
+            <div class="form-group"><label>Anak Ke- (Angka)</label><input type="number" id="in_j_anakke" placeholder="1" min="1"></div>
+            <div class="form-group">
+                <label>Sebab Kematian (F-2.02)</label>
+                <select id="in_j_sebab">
+                    <option value="">-- Pilih Sebab --</option>
+                    <option value="1">1. Sakit Biasa/Tua</option>
+                    <option value="2">2. Wabah/Penyakit</option>
+                    <option value="3">3. Kecelakaan</option>
+                    <option value="4">4. Kriminal</option>
+                    <option value="5">5. Bunuh Diri</option>
+                    <option value="6">6. Lainnya</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Tempat Kematian</label><input type="text" id="in_j_tmpt_mati" value="UPTD Puskesmas Midai"></div>
+            <div class="form-group">
+                <label>Yang Menerangkan (F-2.02)</label>
+                <select id="in_j_menerangkan">
+                    <option value="">-- Pilih Kategori --</option>
+                    <option value="1">1. Dokter</option>
+                    <option value="2">2. Tenaga Kesehatan</option>
+                    <option value="3">3. Kepolisian</option>
+                    <option value="4">4. Lainnya</option>
+                </select>
+            </div>
+        </div>
+
+        <h3>5. Penandatangan SKM (Kepala Puskesmas / Pejabat Berwenang)</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nama Penandatangan</label>
+                <select id="in_ttd_nama" onchange="updateDataPenandatangan()">
+                    <option value="">-- Pilih Nama Penandatangan --</option>
+                    <option value="KATARINA, S.Kep">KATARINA, S.Kep</option>
+                    <option value="GITA SUNDARI, AMK">GITA SUNDARI, AMK</option>
+                    <option value="MIDIAWATI, AMKG">MIDIAWATI, AMKG</option>
+                    <option value="NINA AGUSTIKA, S.Farm., Apt.">NINA AGUSTIKA, S.Farm., Apt.</option>
+                    <option value="RAHMI YUSNITA, Amd.Keb">RAHMI YUSNITA, Amd.Keb</option>
+                    <option value="RETNO TRISUSANTI, S.S.T">RETNO TRISUSANTI, S.S.T</option>
+                    <option value="Ns. ELVA RIZQI CHUSNIYAH, S.Kep">Ns. ELVA RIZQI CHUSNIYAH, S.Kep</option>
+                    <option value="dr. ANDIKA">dr. ANDIKA</option>
+                    <option value="dr. MONIKA">dr. MONIKA</option>
+                    <option value="METI MAYA SARI, SKM">METI MAYA SARI, SKM</option>
+                    <option value="HENDRA WIGUNA, Amd.Kep">HENDRA WIGUNA, Amd.Kep</option>
+                    <option value="YORA MIRANDA, A.Md.KL">YORA MIRANDA, A.Md.KL</option>
+                    <option value="OYO RANDA, A.MK">OYO RANDA, A.MK</option>
+                    <option value="RAHIMAH">RAHIMAH</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Jabatan Penandatangan</label>
+                <input type="text" id="in_ttd_jabatan" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>Golongan / Ruang (Pangkat)</label>
+                <input type="text" id="in_ttd_gol" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>NIP Penandatangan</label>
+                <input type="text" id="in_ttd_nip" readonly style="background-color: #e9ecef;">
+            </div>
+        </div>
+
+        <h3>6. Data Pelapor (F-2.02)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Pelapor</label><input type="text" id="in_pel_nama"></div>
+            <div class="form-group"><label>NIK Pelapor</label><input type="text" id="in_pel_nik" maxlength="16"></div>
+            <div class="form-group"><label>No. Dokumen Perjalanan</label><input type="text" id="in_pel_paspor" placeholder="-"></div>
+            <div class="form-group"><label>No. Kartu Keluarga (KK)</label><input type="text" id="in_pel_kk" maxlength="16"></div>
+            <div class="form-group"><label>Kewarganegaraan</label><input type="text" id="in_pel_wn" value="WNI"></div>
+        </div>
+
+        <h3>7. Data Saksi I & Saksi II (F-2.02)</h3>
+        <div class="form-row-4">
+            <div class="form-group"><label>Nama Saksi I</label><input type="text" id="in_s1_nama"></div>
+            <div class="form-group"><label>NIK Saksi I</label><input type="text" id="in_s1_nik" maxlength="16"></div>
+            <div class="form-group"><label>No. KK Saksi I</label><input type="text" id="in_s1_kk" maxlength="16"></div>
+            <div class="form-group"><label>Kewarganegaraan Saksi I</label><input type="text" id="in_s1_wn" value="WNI"></div>
+        </div>
+        <div class="form-row-4">
+            <div class="form-group"><label>Nama Saksi II</label><input type="text" id="in_s2_nama"></div>
+            <div class="form-group"><label>NIK Saksi II</label><input type="text" id="in_s2_nik" maxlength="16"></div>
+            <div class="form-group"><label>No. KK Saksi II</label><input type="text" id="in_s2_kk" maxlength="16"></div>
+            <div class="form-group"><label>Kewarganegaraan Saksi II</label><input type="text" id="in_s2_wn" value="WNI"></div>
+        </div>
+
+        <h3>8. Data Orang Tua Jenazah (F-2.02)</h3>
+        <div class="form-row-5">
+            <div class="form-group"><label>Nama Ayah</label><input type="text" id="in_a_nama"></div>
+            <div class="form-group"><label>NIK Ayah</label><input type="text" id="in_a_nik" maxlength="16"></div>
+            <div class="form-group"><label>Tempat Lahir Ayah</label><input type="text" id="in_a_tmpt_lahir"></div>
+            <div class="form-group"><label>Tgl Lahir Ayah</label><input type="date" id="in_a_tgl_picker"></div>
+            <div class="form-group"><label>Kewarganegaraan Ayah</label><input type="text" id="in_a_wn" value="WNI"></div>
+        </div>
+        <div class="form-row-5">
+            <div class="form-group"><label>Nama Ibu</label><input type="text" id="in_i_nama"></div>
+            <div class="form-group"><label>NIK Ibu</label><input type="text" id="in_i_nik" maxlength="16"></div>
+            <div class="form-group"><label>Tempat Lahir Ibu</label><input type="text" id="in_i_tmpt_lahir"></div>
+            <div class="form-group"><label>Tgl Lahir Ibu</label><input type="date" id="in_i_tgl_picker"></div>
+            <div class="form-group"><label>Kewarganegaraan Ibu</label><input type="text" id="in_i_wn" value="WNI"></div>
+        </div>
+
+        <h3>9. Data Subjek Akta Kedua (Optional - F-2.02)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Subjek Kedua</label><input type="text" id="in_sub2_nama" placeholder="-"></div>
+            <div class="form-group"><label>NIK Subjek Kedua</label><input type="text" id="in_sub2_nik" placeholder="-"></div>
+            <div class="form-group"><label>No. Dokumen Perjalanan</label><input type="text" id="in_sub2_paspor" placeholder="-"></div>
+            <div class="form-group"><label>No. Kartu Keluarga</label><input type="text" id="in_sub2_kk" placeholder="-"></div>
+            <div class="form-group"><label>Kewarganegaraan</label><input type="text" id="in_sub2_wn" value="WNI"></div>
+        </div>
+
+        <div class="btn-container">
+            <button type="submit">Simpan & Cetak Semua Dokumen</button>
+            <button type="button" class="excel" onclick="exportKeExcel()">Ekspor Database ke Excel</button>
+            <button type="button" class="reset" onclick="resetFormulir()">Reset Form</button>
+            <button type="button" class="dashboard" onclick="window.location.href='korespondensi_terpadu.html'">Kembali ke Dashboard</button>
+        </div>
+    </form>
+</div>
+
+<!-- TABEL DATABASE RIWAYAT -->
+<div class="container table-container">
+    <h3>Database Riwayat Surat Kematian</h3>
+    <table class="db-table" id="dbTable">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>No. Surat SKM</th>
+                <th>Nama Jenazah</th>
+                <th>NIK Jenazah</th>
+                <th>Tgl Kematian</th>
+                <th>Diagnosa</th>
+                <th>Nama Pelapor</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="dbTableBody">
+        </tbody>
+    </table>
+</div>
+
+<!-- AREA CETAK DOKUMEN CETAK UTAMA -->
+<div id="print-area">
+
+    <!-- DOKUMEN 1: FORMULIR PERJANJIAN KERJASAMA -->
+    <div class="page-break">
+        <div class="page-container">
+            <div class="header-title">
+                FORMULIR PERJANJIAN KERJASAMA PENERBITAN AKTA KELAHIRAN,<br>
+                KARTU KELUARGA DAN KIA DENGAN PUSKESMAS, RSUD DAN KLINIK BERSALIN
+            </div>
+
+            <div class="section-header">I. DATA PEMOHON</div>
+            
+            <div class="pemohon-wrapper">
+                <div class="register-box">
+                    <div class="register-title">NO.REGISTER</div>
+                    <div style="font-weight: bold; padding-top: 15px; font-size: 11pt;" id="out_reg_box">-</div>
+                </div>
+
+                <div class="pemohon-data">
+                    <table class="pemohon-table">
+                        <tr>
+                            <td width="25">1.</td>
+                            <td width="190">Nama Pemohon</td>
+                            <td width="15">:</td>
+                            <td><span class="dots-line" id="out_p_nama_admin">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>2.</td>
+                            <td>Nomor Induk Kependudukan</td>
+                            <td>:</td>
+                            <td><span class="dots-line" id="out_p_nik_admin">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>3.</td>
+                            <td>Alamat Instansi</td>
+                            <td>:</td>
+                            <td><span class="dots-line" id="out_instansi">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>4.</td>
+                            <td>Nomor Handphone/email</td>
+                            <td>:</td>
+                            <td><span id="out_kontak">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>5.</td>
+                            <td>Tanggal Pendaftaran</td>
+                            <td>:</td>
+                            <td><span class="dots-line" id="out_tgl_daftar">-</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section-header">II. DOKUMEN YANG DIAJUKAN</div>
+            
+            <table class="table-dokumen">
+                <thead>
+                    <tr>
+                        <th width="45">NO</th>
+                        <th>NAMA LENGKAP</th>
+                        <th width="40%">JENIS DOKUMEN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align:center;">1</td>
+                        <td id="out_p_nama_jenazah">-</td>
+                        <td>Akta Kematian</td>
+                    </tr>
+                    <tr><td style="text-align:center;">2</td><td id="out_doc_nama_2"></td><td id="out_doc_jenis_2"></td></tr>
+                    <tr><td style="text-align:center;">3</td><td id="out_doc_nama_3"></td><td id="out_doc_jenis_3"></td></tr>
+                    <tr><td style="text-align:center;">4</td><td id="out_doc_nama_4"></td><td id="out_doc_jenis_4"></td></tr>
+                    <tr><td style="text-align:center;">5</td><td id="out_doc_nama_5"></td><td id="out_doc_jenis_5"></td></tr>
+                    <tr><td style="text-align:center;">6</td><td id="out_doc_nama_6"></td><td id="out_doc_jenis_6"></td></tr>
+                    <tr><td style="text-align:center;">7</td><td id="out_doc_nama_7"></td><td id="out_doc_jenis_7"></td></tr>
+                    <tr><td style="text-align:center;">8</td><td id="out_doc_nama_8"></td><td id="out_doc_jenis_8"></td></tr>
+                    <tr><td style="text-align:center;">9</td><td id="out_doc_nama_9"></td><td id="out_doc_jenis_9"></td></tr>
+                    <tr><td style="text-align:center;">10</td><td id="out_doc_nama_10"></td><td id="out_doc_jenis_10"></td></tr>
+                </tbody>
+            </table>
+
+            <div class="catatan-container">
+                <strong>CATATAN:</strong><br>
+                1.<br>
+                2.<br>
+                3.
+            </div>
+
+            <table class="ttd-table">
+                <tr>
+                    <td>
+                       <br>PEMOHON
+<div class="space-ttd" style="height: 25px;"></div>
+                        <div class="space-ttd"></div>
+                        ( <span id="out_p_ttd_pelapor"><BR>....................................</span> )
+                    </td>
+                    <td>
+                        Ranai, ..........................<br>
+                        DIVERIFIKASI OLEH
+<div class="space-ttd" style="height: 25px;"></div>
+                        <div class="space-ttd"></div>
+                        ( .................................... )
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- DOKUMEN 2: SURAT KETERANGAN KEMATIAN (SKM PUSKESMAS) -->
+    <div class="page-break">
+        <div class="kop-puskesmas-container">
+            <table class="kop-table">
+                <tr>
+                    <td class="kop-logo-left">
+                        <img src="logo_natuna.png" alt="Logo Natuna" class="kop-logo-img">
+                    </td>
+                    <td class="kop-text-center">
+                        <div class="h-pem">PEMERINTAH KABUPATEN NATUNA</div>
+                        <div class="h-din">DINAS KESEHATAN</div>
+                        <div class="h-pkm">UPTD PUSKESMAS MIDAI</div>
+                        <div class="p-alamat">Jalan Tanjung Selamat Midai, Natuna, Kepulauan Riau 29784</div>
+                        <div class="p-email">Pos-el puskesmasmidai@gmail.com</div>
+                    </td>
+                    <td class="kop-logo-right">
+                        <img src="logo_kesehatan.png" alt="Logo Kesehatan" class="kop-logo-img">
+                    </td>
+                </tr>
+            </table>
+            <div class="kop-divider"></div>
+        </div>
+
+        <div class="doc-title"><BR>SURAT KETERANGAN KEMATIAN</div>
+        <div class="doc-no">Nomor: 400.12.3.1/<span id="out_skm_nomor">___</span>/PKM-MD/<span id="out_skm_bln">___</span>/<span id="out_skm_thn">2026</span></div>
+
+        <p style="text-indent: 30px; line-height: 2; font-size: 12pt;">
+            Yang bertanda tangan di bawah ini, menerangkan bahwa pada hari <strong id="out_skm_hari">-</strong> tanggal <strong id="out_skm_tgl_mati">-</strong> pukul <strong id="out_skm_pukul">-</strong> WIB, telah meninggal dunia di <strong id="out_skm_tmpt_mati">-</strong>:
+        </p>
+
+        <table class="form-table-skm" style="margin-left: 20px; width: 95%;">
+            <tr><td width="30%">Nama Lengkap</td><td width="3%">:</td><td><strong id="out_skm_nama">-</strong></td></tr>
+            <tr><td>NIK</td><td>:</td><td id="out_skm_nik">-</td></tr>
+            <tr><td>Tempat / Tgl Lahir</td><td>:</td><td id="out_skm_ttl">-</td></tr>
+            <tr><td>Jenis Kelamin</td><td>:</td><td id="out_skm_jk">-</td></tr>
+            <tr><td>Agama</td><td>:</td><td id="out_skm_agama">-</td></tr>
+            <tr><td>Alamat</td><td>:</td><td id="out_skm_alamat">-</td></tr>
+            <tr><td>Diagnosa / Cause of Death</td><td>:</td><td><strong id="out_skm_diagnosa">-</strong></td></tr>
+        </table>
+
+        <p style="text-indent: 30px; line-height: 2; font-size: 12pt; margin-top: 15px;">
+            Demikian Surat Keterangan Kematian ini dibuat dengan sebenarnya agar dapat dipergunakan sebagaimana mestinya.
+        </p>
+
+        <div style="float: right; text-align: left; width: 50%; margin-top: 30px; font-size: 12pt;">
+            Midai, <span id="out_skm_tgl_surat">-</span><br>
+            <span id="out_skm_ttd_jabatan">Kepala UPTD Puskesmas Midai</span>,
+            <div style="height: 65px;"></div>
+            <div id="out_skm_block_nama">
+                <strong style="text-decoration: underline;" id="out_skm_ttd_nama">-</strong><br>
+                <span id="out_skm_ttd_gol">-</span><br>
+                NIP. <span id="out_skm_ttd_nip">-</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOKUMEN 3: FORMULIR F-2.02 KEMATIAN REVISI (PRESISI 1 HALAMAN PAS) -->
+    <div class="page-break page-f202">
+        <div>
+            <!-- TOP HEADER -->
+            <table class="top-header-f202">
+                <tr>
+                    <td width="100">Provinsi</td>
+                    <td width="10">:</td>
+                    <td class="spaced-text">K E P U L A U A N &nbsp;&nbsp; R I A U</td>
+                    <td width="110" style="text-align: right;">
+                        <div class="f202-box">F-2.02</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kabupaten</td>
+                    <td>:</td>
+                    <td class="spaced-text" colspan="2">N A T U N A</td>
+                </tr>
+                <tr>
+                    <td>Kecamatan</td>
+                    <td>:</td>
+                    <td class="spaced-text" colspan="2">M I D A I</td>
+                </tr>
+                <tr>
+                    <td>Desa/Kelurahan</td>
+                    <td>:</td>
+                    <td id="out_f202_desa_kel" style="font-weight: bold;" colspan="2">-</td>
+                </tr>
+                <tr>
+                    <td>Kode Wilayah</td>
+                    <td>:</td>
+                    <td colspan="2">
+                        <div class="char-grid" id="grid_kode_wilayah"></div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- JUDUL FORMULIR -->
+            <div class="doc-title-f202">
+                FORMULIR PELAPORAN PENCATATAN SIPIL DIDALAM WILAYAH NKRI<br>
+                KEMATIAN
+            </div>
+
+            <!-- DATA PELAPOR -->
+            <div class="section-title-f202">DATA PELAPOR</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">Nama</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Dokumen Perjalanan*</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_paspor"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Kartu Keluarga</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_kk"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA SUBJEK AKTA KEDUA -->
+            <div class="section-title-f202">DATA SUBJEK AKTA KEDUA (JIKA ADA)</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">Nama</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Dokumen Perjalanan*</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_paspor"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Kartu Keluarga</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_kk"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA SAKSI I -->
+            <div class="section-title-f202">DATA SAKSI I</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">Nama</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s1_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s1_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Kartu Keluarga</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s1_kk"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s1_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA SAKSI II -->
+            <div class="section-title-f202">DATA SAKSI II</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">Nama</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s2_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s2_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Kartu Keluarga</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s2_kk"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s2_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA ORANG TUA -->
+            <div class="section-title-f202">DATA ORANG TUA</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202"><strong>Nama Ayah</strong></td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_a_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK Ayah</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_a_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Tempat Lahir Ayah</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_a_tmpt_lahir"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Tanggal Lahir Ayah</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <div class="date-grid-container">
+                            Tgl : <div class="char-grid" id="grid_a_tgl"></div>
+                            Bln : <div class="char-grid" id="grid_a_bln"></div>
+                            Thn : <div class="char-grid" id="grid_a_thn"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_a_wn"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202"><strong>Nama Ibu</strong></td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_i_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK Ibu</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_i_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Tempat Lahir Ibu</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_i_tmpt_lahir"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Tanggal Lahir Ibu</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <div class="date-grid-container">
+                            Tgl : <div class="char-grid" id="grid_i_tgl"></div>
+                            Bln : <div class="char-grid" id="grid_i_bln"></div>
+                            Thn : <div class="char-grid" id="grid_i_thn"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_i_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA KEMATIAN -->
+            <div class="section-title-f202">DATA KEMATIAN</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">1. NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">2. Nama Lengkap</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">3. Anak Ke</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_anakke"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">4. Tanggal Kematian</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <div class="date-grid-container">
+                            Tgl : <div class="char-grid" id="grid_j_tgl"></div>
+                            Bln : <div class="char-grid" id="grid_j_bln"></div>
+                            Thn : <div class="char-grid" id="grid_j_thn"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">5. Pukul</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_pukul"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">6. Sebab Kematian</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <table class="options-table">
+                            <tr>
+                                <td width="33%" id="sebab_opt_1">1. Sakit Biasa/Tua</td>
+                                <td width="33%" id="sebab_opt_2">2. Wabah/Penyakit</td>
+                                <td width="34%" id="sebab_opt_3">3. Kecelakaan</td>
+                            </tr>
+                            <tr>
+                                <td id="sebab_opt_4">4. Kriminal</td>
+                                <td id="sebab_opt_5">5. Bunuh Diri</td>
+                                <td id="sebab_opt_6">6. Lainnya</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">7. Tempat Kematian</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_tmpt_mati"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">8. Yang Menerangkan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <table class="options-table">
+                            <tr>
+                                <td width="25%" id="terang_opt_1">1. Dokter</td>
+                                <td width="25%" id="terang_opt_2">2. Tenaga Kesehatan</td>
+                                <td width="25%" id="terang_opt_3">3. Kepolisian</td>
+                                <td width="25%" id="terang_opt_4">4. Lainnya</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- SYARAT PEMBUATAN AKTA MENJADI BAGIAN ISI DOKUMEN -->
+        <div class="syarat-container">
+            <strong>Syarat Pembuatan Akta Kematian :</strong>
+            <ol>
+                <li>Surat Keterangan Kematian Asli dari (Rumah Sakit/Kelurahan Desa Kepolisian);</li>
+                <li>KK dan KTP Asli Yang Meninggal;</li>
+                <li>Foto Copy KK yang meninggal;</li>
+                <li>Foto Copy KTP Pelapor (Suami/Istri/Anak/Orang Tua/Kakak/Adik);</li>
+                <li>Foto Copy KTP 2 Orang Saksi;</li>
+                <li>Foto Copy Kutipan Akta Kelahiran Bagi Yang Memiliki</li>
+            </ol>
+        </div>
+
+        <!-- TANDA TANGAN BAGIAN ISI DOKUMEN (SEJAJAR KIRI-KANAN) -->
+        <table class="ttd-f202">
+            <tr>
+                <td>
+                    Mengetahui,<br>
+                    Kasi Perubahan Status Anak, Warga Negara<br>
+                    Dan Kematian
+                    <div class="ttd-space-f202"></div>
+                    ( ____________________________________ )
+                </td>
+                <td>
+                    <BR>Midai, <span id="out_f202_tgl_pelaporan">-</span><br>
+                    Pelapor,
+                    <div class="ttd-space-f202"></div>
+                    ( <span style="text-decoration: underline; font-weight: bold;" id="out_f202_pelapor_ttd">Nama Pelapor</span> )
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+
+<!-- SCRIPT LOGIKA PEMROSESAN -->
+<script>
+    const dataPejabat = {
+        "KATARINA, S.Kep": { jabatan: "Kepala UPTD Puskesmas Midai", gol: "Penata Tingkat I/ III.d", nip: "19780824 200804 2 001" },
+        "GITA SUNDARI, AMK": { jabatan: "Penanggung Jawab Mutu", gol: "Penata / III.c", nip: "19830806 200604 2 013" },
+        "MIDIAWATI, AMKG": { jabatan: "an. Kepala UPTD Puskesmas<br>Kepala Tata Usaha", gol: "Penata (III/c)", nip: "19800510 200604 2 017" },
+        "NINA AGUSTIKA, S.Farm., Apt.": { jabatan: "Penanggung Jawab Ukp, Kefarmasian Dan Laboratorium", gol: "Penata / III.c", nip: "19880829 201101 2 004" },
+        "RAHMI YUSNITA, Amd.Keb": { jabatan: "Penanggung Jawab Bangunan Prasarana Dan Peralatan", gol: "Penata / III.c", nip: "19880625 201101 2 008" },
+        "RETNO TRISUSANTI, S.S.T": { jabatan: "Penanggung Jawab Ukm Essensial Dan Keperawatan", gol: "Penata Tingkat I / III.d", nip: "19790326 200212 2 005" },
+        "Ns. ELVA RIZQI CHUSNIYAH, S.Kep": { jabatan: "Plt. Kepala UPTD Puskesmas Midai", gol: "Penata Muda Tk.I / III.b", nip: "19930103 201903 2 009" },
+        "dr. ANDIKA": { jabatan: "Dokter UPTD Puskesmas Midai", gol: "Penata / III.c", nip: "19900101 201801 1 001" },
+        "dr. MONIKA": { jabatan: "Dokter UPTD Puskesmas Midai", gol: "Penata / III.c", nip: "19920202 201902 2 002" },
+        "METI MAYA SARI, SKM": { jabatan: "Kasubag TU Puskesmas Midai", gol: "Penata / III.c", nip: "19850505 201001 2 015" },
+        "HENDRA WIGUNA, Amd.Kep": { jabatan: "Perawat Pelaksana", gol: "Pengatur Tk.I / II.d", nip: "19870707 201101 1 008" },
+        "YORA MIRANDA, A.Md.KL": { jabatan: "Sanitarian UPTD Puskesmas Midai", gol: "Pengatur Tk.I / II.d", nip: "19940404 201704 2 003" },
+        "OYO RANDA, A.MK": { jabatan: "Perawat UPTD Puskesmas Midai", gol: "Pengatur / II.c", nip: "19950505 201805 1 004" },
+        "RAHIMAH": { jabatan: "Staf Administrasi", gol: "-", nip: "-" }
+    };
+
+    function terbilangUrutan(n) {
+        const num = parseInt(n, 10);
+        if (isNaN(num) || num <= 0) return n || "-";
+        
+        const kata = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", 
+                      "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", 
+                      "Delapan Belas", "Sembilan Belas", "Dua Puluh"];
+        
+        let teks = "";
+        if (num <= 20) {
+            teks = kata[num];
+        } else if (num < 100) {
+            const puluhan = Math.floor(num / 10);
+            const satuan = num % 10;
+            teks = kata[puluhan] + " Puluh" + (satuan > 0 ? " " + kata[satuan] : "");
+        } else {
+            teks = num.toString();
+        }
+        
+        return `${num} (${teks})`;
+    }
+
+    function formatTanggalIndo(dateStr) {
+        if (!dateStr) return "";
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function getHariIndo(dateStr) {
+        if (!dateStr) return "";
+        const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "";
+        return days[d.getDay()];
+    }
+
+    function prosesTanggalSurat() {
+        const val = document.getElementById('in_tgl_surat_picker').value;
+        document.getElementById('in_tgl_surat').value = formatTanggalIndo(val);
+    }
+
+    function prosesTanggalLahirJenazah() {
+        const val = document.getElementById('in_j_tgl_lahir_picker').value;
+        document.getElementById('in_j_tgl_lahir').value = formatTanggalIndo(val);
+    }
+
+    function prosesTanggalKematian() {
+        const val = document.getElementById('in_j_tgl_mati_picker').value;
+        document.getElementById('in_j_hari_mati').value = getHariIndo(val);
+        document.getElementById('in_j_tgl_mati').value = formatTanggalIndo(val);
+    }
+
+    function updateDataPenandatangan() {
+        const nama = document.getElementById('in_ttd_nama').value;
+        if (dataPejabat[nama]) {
+            document.getElementById('in_ttd_jabatan').value = dataPejabat[nama].jabatan.replace(/<br>/g, ' ');
+            document.getElementById('in_ttd_gol').value = dataPejabat[nama].gol;
+            document.getElementById('in_ttd_nip').value = dataPejabat[nama].nip;
+        } else {
+            document.getElementById('in_ttd_jabatan').value = "";
+            document.getElementById('in_ttd_gol').value = "";
+            document.getElementById('in_ttd_nip').value = "";
+        }
+    }
+
+    function toggleLoginPassword() {
+        const input = document.getElementById('login-password-input');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function bukaAplikasiDenganPassword() {
+        const pass = document.getElementById('login-password-input').value;
+        if (pass === "admin") {
+            document.body.classList.remove('app-locked');
+            document.getElementById('login-overlay').classList.add('hidden');
+        } else {
+            document.getElementById('login-error').style.display = 'block';
+        }
+    }
+
+    function simpanKeDatabase(data) {
+        let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        db.push(data);
+        localStorage.setItem('db_kematian_midai', JSON.stringify(db));
+        tampilkanDatabase();
+    }
+
+    function tampilkanDatabase() {
+        let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        const tbody = document.getElementById('dbTableBody');
+        tbody.innerHTML = '';
+
+        db.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>400.12.3.1/${item.no_skm}/PKM-MD/${item.bln_romawi}/${item.thn_skm}</td>
+                <td>${item.j_nama}</td>
+                <td>${item.j_nik}</td>
+                <td>${item.j_tgl_mati}</td>
+                <td>${item.j_diagnosa}</td>
+                <td>${item.pel_nama}</td>
+                <td>
+                    <div class="btn-action-group">
+                        <button type="button" onclick="editDataSurat(${index})">Edit</button>
+                        <button type="button" onclick="cetakDataSurat(${index})">Cetak</button>
+                        <button type="button" class="btn-del" onclick="bukaModalHapus(${index})">Hapus</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    let editIndexTarget = null;
+
+    function editDataSurat(index) {
+        const db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        const data = db[index];
+        if (!data) return;
+        editIndexTarget = index;
+        Object.keys(data).forEach(key => {
+            const el = document.getElementById('in_' + key);
+            if (el) el.value = data[key] ?? '';
+        });
+        window.scrollTo({top:0, behavior:'smooth'});
+        alert('Data dimuat kembali ke form. Silakan periksa dan simpan ulang.');
+    }
+
+    function cetakDataSurat(index) {
+        const db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        const data = db[index];
+        if (!data) return;
+        Object.keys(data).forEach(key => {
+            const el = document.getElementById('in_' + key);
+            if (el) el.value = data[key] ?? '';
+        });
+        document.getElementById('mainForm').dispatchEvent(new Event('submit', {cancelable:true}));
+    }
+
+    let hapusIndexTarget = null;
+    function bukaModalHapus(index) {
+        hapusIndexTarget = index;
+        document.getElementById('delete-modal').classList.add('show');
+    }
+
+    function tutupModalHapus() {
+        document.getElementById('delete-modal').classList.remove('show');
+        document.getElementById('delete-password-input').value = '';
+        document.getElementById('delete-password-error').style.display = 'none';
+    }
+
+    function konfirmasiHapusData() {
+        const pass = document.getElementById('delete-password-input').value;
+        if (pass === "y") {
+            let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+            db.splice(hapusIndexTarget, 1);
+            localStorage.setItem('db_kematian_midai', JSON.stringify(db));
+            tampilkanDatabase();
+            tutupModalHapus();
+        } else {
+            document.getElementById('delete-password-error').style.display = 'block';
+        }
+    }
+
+    function exportKeExcel() {
+        let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        if (db.length === 0) {
+            alert("Belum ada data untuk diekspor!");
+            return;
+        }
+        const worksheet = XLSX.utils.json_to_sheet(db);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Riwayat Kematian");
+        XLSX.writeFile(workbook, "Database_Kematian_Puskesmas_Midai.xlsx");
+    }
+
+    function resetFormulir() {
+        document.getElementById('mainForm').reset();
+    }
+
+    /* HELPER FUNGSI POPULATE GRID KARAKTER & TANGGAL F-2.02 */
+    function isiGridChar(containerId, textValue, totalBox = 23) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        const str = (textValue || '').toString().toUpperCase();
+        for (let i = 0; i < totalBox; i++) {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.innerText = str[i] || '';
+            container.appendChild(box);
+        }
+    }
+
+    function isiGridTanggal(pickerVal, gridTglId, gridBlnId, gridThnId) {
+        let dd = '', mm = '', yyyy = '';
+        if (pickerVal) {
+            const d = new Date(pickerVal);
+            if (!isNaN(d.getTime())) {
+                dd = String(d.getDate()).padStart(2, '0');
+                mm = String(d.getMonth() + 1).padStart(2, '0');
+                yyyy = String(d.getFullYear());
+            }
+        }
+        isiGridChar(gridTglId, dd, 2);
+        isiGridChar(gridBlnId, mm, 2);
+        isiGridChar(gridThnId, yyyy, 4);
+    }
+
+    function tandaiOpsi(prefix, selectedVal, totalOpt) {
+        for (let i = 1; i <= totalOpt; i++) {
+            const el = document.getElementById(`${prefix}_${i}`);
+            if (el) {
+                if (String(selectedVal) === String(i)) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            }
+        }
+    }
+
+    document.getElementById('mainForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const rawAnakKe = document.getElementById('in_j_anakke').value;
+        const selectedNamaPejabat = document.getElementById('in_ttd_nama').value;
+        const isMidiawati = selectedNamaPejabat.includes('MIDIAWATI');
+        
+        let jabatanHTML = dataPejabat[selectedNamaPejabat] ? dataPejabat[selectedNamaPejabat].jabatan : 'Kepala UPTD Puskesmas Midai';
+        if (isMidiawati) {
+            jabatanHTML = 'an. Kepala UPTD Puskesmas Midai<br><span style="margin-left: 21px; display: inline-block;">Kepala Tata Usaha</span>';
+        }
+
+        const formData = {
+            p_nama_admin: document.getElementById('in_p_nama_admin').value,
+            p_nik_admin: document.getElementById('in_p_nik_admin').value,
+            instansi: document.getElementById('in_instansi').value,
+            kontak: document.getElementById('in_kontak').value,
+            no_reg: document.getElementById('in_no_reg').value,
+            no_skm: document.getElementById('in_no_skm').value,
+            bln_romawi: document.getElementById('in_bln_romawi').value,
+            thn_skm: document.getElementById('in_thn_skm').value,
+            tgl_surat: document.getElementById('in_tgl_surat').value,
+            tgl_surat_raw: document.getElementById('in_tgl_surat_picker').value,
+            kode_wilayah: document.getElementById('in_kode_wilayah').value,
+            desa_kel: document.getElementById('in_desa_kel').value,
+            j_nik: document.getElementById('in_j_nik').value,
+            j_nama: document.getElementById('in_j_nama').value,
+            j_tmpt_lahir: document.getElementById('in_j_tmpt_lahir').value,
+            j_tgl_lahir: document.getElementById('in_j_tgl_lahir').value,
+            j_agama: document.getElementById('in_j_agama').value,
+            j_jk: document.getElementById('in_j_jk').value,
+            j_alamat: document.getElementById('in_j_alamat').value,
+            j_diagnosa: document.getElementById('in_j_diagnosa').value,
+            j_hari_mati: document.getElementById('in_j_hari_mati').value,
+            j_tgl_mati: document.getElementById('in_j_tgl_mati').value,
+            j_tgl_mati_raw: document.getElementById('in_j_tgl_mati_picker').value,
+            j_pukul: document.getElementById('in_j_pukul').value,
+            j_anakke: terbilangUrutan(rawAnakKe),
+            j_sebab: document.getElementById('in_j_sebab').value,
+            j_tmpt_mati: document.getElementById('in_j_tmpt_mati').value,
+            j_menerangkan: document.getElementById('in_j_menerangkan').value,
+            ttd_nama: document.getElementById('in_ttd_nama').value,
+            ttd_jabatan: jabatanHTML,
+            ttd_gol: document.getElementById('in_ttd_gol').value,
+            ttd_nip: document.getElementById('in_ttd_nip').value,
+            pel_nama: document.getElementById('in_pel_nama').value,
+            pel_nik: document.getElementById('in_pel_nik').value,
+            pel_paspor: document.getElementById('in_pel_paspor').value,
+            pel_kk: document.getElementById('in_pel_kk').value,
+            pel_wn: document.getElementById('in_pel_wn').value,
+            s1_nama: document.getElementById('in_s1_nama').value,
+            s1_nik: document.getElementById('in_s1_nik').value,
+            s1_kk: document.getElementById('in_s1_kk').value,
+            s1_wn: document.getElementById('in_s1_wn').value,
+            s2_nama: document.getElementById('in_s2_nama').value,
+            s2_nik: document.getElementById('in_s2_nik').value,
+            s2_kk: document.getElementById('in_s2_kk').value,
+            s2_wn: document.getElementById('in_s2_wn').value,
+            a_nama: document.getElementById('in_a_nama').value,
+            a_nik: document.getElementById('in_a_nik').value,
+            a_tmpt_lahir: document.getElementById('in_a_tmpt_lahir').value,
+            a_tgl_raw: document.getElementById('in_a_tgl_picker').value,
+            a_wn: document.getElementById('in_a_wn').value,
+            i_nama: document.getElementById('in_i_nama').value,
+            i_nik: document.getElementById('in_i_nik').value,
+            i_tmpt_lahir: document.getElementById('in_i_tmpt_lahir').value,
+            i_tgl_raw: document.getElementById('in_i_tgl_picker').value,
+            i_wn: document.getElementById('in_i_wn').value,
+            sub2_nama: document.getElementById('in_sub2_nama').value,
+            sub2_nik: document.getElementById('in_sub2_nik').value,
+            sub2_paspor: document.getElementById('in_sub2_paspor').value,
+            sub2_kk: document.getElementById('in_sub2_kk').value,
+            sub2_wn: document.getElementById('in_sub2_wn').value
+        };
+
+        // Populate Form Perjanjian Kerja Sama
+        document.getElementById('out_reg_box').innerText = formData.no_reg || '-';
+        document.getElementById('out_p_nama_admin').innerText = formData.p_nama_admin || '-';
+        document.getElementById('out_p_nik_admin').innerText = formData.p_nik_admin || '-';
+        document.getElementById('out_instansi').innerText = formData.instansi || '-';
+        document.getElementById('out_kontak').innerText = formData.kontak || '-';
+        document.getElementById('out_tgl_daftar').innerText = formData.tgl_surat || '-';
+        document.getElementById('out_p_nama_jenazah').innerText = formData.j_nama || '-';
+        document.getElementById('out_p_ttd_pelapor').innerText = formData.p_nama_admin || '....................................';
+
+        for (let i = 2; i <= 10; i++) {
+            const elNama = document.getElementById(`in_doc_nama_${i}`);
+            const elJenis = document.getElementById(`in_doc_jenis_${i}`);
+            const outNama = document.getElementById(`out_doc_nama_${i}`);
+            const outJenis = document.getElementById(`out_doc_jenis_${i}`);
+            if (outNama) outNama.innerText = elNama ? elNama.value : '';
+            if (outJenis) outJenis.innerText = elJenis ? elJenis.value : '';
+        }
+
+        // Populate Surat Keterangan Kematian (SKM)
+        document.getElementById('out_skm_nomor').innerText = formData.no_skm || '___';
+        document.getElementById('out_skm_bln').innerText = formData.bln_romawi || '___';
+        document.getElementById('out_skm_thn').innerText = formData.thn_skm || '2026';
+        document.getElementById('out_skm_hari').innerText = formData.j_hari_mati || '-';
+        document.getElementById('out_skm_tgl_mati').innerText = formData.j_tgl_mati || '-';
+        document.getElementById('out_skm_pukul').innerText = formData.j_pukul || '-';
+        document.getElementById('out_skm_tmpt_mati').innerText = formData.j_tmpt_mati || '-';
+        document.getElementById('out_skm_nama').innerText = formData.j_nama || '-';
+        document.getElementById('out_skm_nik').innerText = formData.j_nik || '-';
+        document.getElementById('out_skm_ttl').innerText = (formData.j_tmpt_lahir ? formData.j_tmpt_lahir + ', ' : '') + (formData.j_tgl_lahir || '-');
+        document.getElementById('out_skm_jk').innerText = formData.j_jk || '-';
+        document.getElementById('out_skm_agama').innerText = formData.j_agama || '-';
+        document.getElementById('out_skm_alamat').innerText = formData.j_alamat || '-';
+        document.getElementById('out_skm_diagnosa').innerText = formData.j_diagnosa || '-';
+        document.getElementById('out_skm_tgl_surat').innerText = formData.tgl_surat || '-';
+        document.getElementById('out_skm_ttd_jabatan').innerHTML = formData.ttd_jabatan || 'Kepala UPTD Puskesmas Midai';
+        document.getElementById('out_skm_ttd_nama').innerText = formData.ttd_nama || '-';
+        document.getElementById('out_skm_ttd_gol').innerText = formData.ttd_gol || '-';
+        document.getElementById('out_skm_ttd_nip').innerText = formData.ttd_nip || '-';
+
+        const blockNama = document.getElementById('out_skm_block_nama');
+        if (blockNama) {
+            if (isMidiawati) {
+                blockNama.style.marginLeft = '21px';
+            } else {
+                blockNama.style.marginLeft = '0px';
+            }
+        }
+
+        // Populate F-2.02
+        document.getElementById('out_f202_desa_kel').innerText = formData.desa_kel || '-';
+        document.getElementById('out_f202_tgl_pelaporan').innerText = formData.tgl_surat || '-';
+        document.getElementById('out_f202_pelapor_ttd').innerText = formData.pel_nama || 'Nama Pelapor';
+
+        isiGridChar('grid_kode_wilayah', formData.kode_wilayah, 8);
+        isiGridChar('grid_pel_nama', formData.pel_nama, 23);
+        isiGridChar('grid_pel_nik', formData.pel_nik, 16);
+        isiGridChar('grid_pel_paspor', formData.pel_paspor, 16);
+        isiGridChar('grid_pel_kk', formData.pel_kk, 16);
+        isiGridChar('grid_pel_wn', formData.pel_wn, 10);
+
+        isiGridChar('grid_sub2_nama', formData.sub2_nama, 23);
+        isiGridChar('grid_sub2_nik', formData.sub2_nik, 16);
+        isiGridChar('grid_sub2_paspor', formData.sub2_paspor, 16);
+        isiGridChar('grid_sub2_kk', formData.sub2_kk, 16);
+        isiGridChar('grid_sub2_wn', formData.sub2_wn, 10);
+
+        isiGridChar('grid_s1_nama', formData.s1_nama, 23);
+        isiGridChar('grid_s1_nik', formData.s1_nik, 16);
+        isiGridChar('grid_s1_kk', formData.s1_kk, 16);
+        isiGridChar('grid_s1_wn', formData.s1_wn, 10);
+
+        isiGridChar('grid_s2_nama', formData.s2_nama, 23);
+        isiGridChar('grid_s2_nik', formData.s2_nik, 16);
+        isiGridChar('grid_s2_kk', formData.s2_kk, 16);
+        isiGridChar('grid_s2_wn', formData.s2_wn, 10);
+
+        isiGridChar('grid_a_nama', formData.a_nama, 23);
+        isiGridChar('grid_a_nik', formData.a_nik, 16);
+        isiGridChar('grid_a_tmpt_lahir', formData.a_tmpt_lahir, 18);
+        isiGridTanggal(formData.a_tgl_raw, 'grid_a_tgl', 'grid_a_bln', 'grid_a_thn');
+        isiGridChar('grid_a_wn', formData.a_wn, 10);
+
+        isiGridChar('grid_i_nama', formData.i_nama, 23);
+        isiGridChar('grid_i_nik', formData.i_nik, 16);
+        isiGridChar('grid_i_tmpt_lahir', formData.i_tmpt_lahir, 18);
+        isiGridTanggal(formData.i_tgl_raw, 'grid_i_tgl', 'grid_i_bln', 'grid_i_thn');
+        isiGridChar('grid_i_wn', formData.i_wn, 10);
+
+        isiGridChar('grid_j_nik', formData.j_nik, 16);
+        isiGridChar('grid_j_nama', formData.j_nama, 23);
+        isiGridChar('grid_j_anakke', rawAnakKe, 3);
+        isiGridTanggal(formData.j_tgl_mati_raw, 'grid_j_tgl', 'grid_j_bln', 'grid_j_thn');
+        isiGridChar('grid_j_pukul', formData.j_pukul, 5);
+        isiGridChar('grid_j_tmpt_mati', formData.j_tmpt_mati, 23);
+
+        tandaiOpsi('sebab_opt', formData.j_sebab, 6);
+        tandaiOpsi('terang_opt', formData.j_menerangkan, 4);
+
+        if (editIndexTarget !== null) {
+            let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+            db[editIndexTarget] = formData;
+            localStorage.setItem('db_kematian_midai', JSON.stringify(db));
+            tampilkanDatabase();
+            editIndexTarget = null;
+        } else {
+            simpanKeDatabase(formData);
+        }
+
+        window.print();
+    });
+
+    // Inisialisasi awal
+    document.addEventListener('DOMContentLoaded', function() {
+        tampilkanDatabase();
+    });
+</script>
+</body>
+</html>

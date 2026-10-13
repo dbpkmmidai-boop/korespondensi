@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daftar Hadir</title>
+<style>
+    /* Ukuran kertas aktif untuk layar/cetak */
+    :root {
+        --paper-width: 210mm;
+        --paper-height: 297mm;
+    }
+
+    @page {
+        size: var(--paper-width) var(--paper-height);
+        margin: 15mm 15mm 25mm 15mm;
+    }
+
+    @page f4 {
+        size: 215.9mm 330.2mm;
+        margin: 15mm 15mm 25mm 15mm;
+    }
+
+    body.paper-f4 {
+        --paper-width: 215.9mm;
+        --paper-height: 330.2mm;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #eef1f4;
+        color: #000;
+    }
+
+    /* Layar login aplikasi */
+    .login-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eef1f4;
+    }
+
+    .login-box {
+        width: min(390px, calc(100% - 30px));
+        padding: 28px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 25px rgba(0,0,0,.18);
+        text-align: center;
+    }
+
+    .login-box h2 { margin: 0 0 8px; }
+    .login-box p { margin: 0 0 18px; color: #555; font-size: 13px; }
+    .login-box input { margin-bottom: 10px; text-align: center; }
+    .login-error { min-height: 18px; margin-top: 8px; color: #a33; font-size: 12px; font-weight: 700; }
+
+    .kop-head {
+        display: grid;
+        grid-template-columns: 25mm 1fr 25mm;
+        align-items: center;
+        column-gap: 6mm;
+    }
+
+    .kop-logo {
+        width: 23mm;
+        height: 23mm;
+        object-fit: contain;
+        display: block;
+    }
+
+    .kop-logo-left { justify-self: start; }
+    .kop-logo-right { justify-self: end; }
+    .kop-center { text-align: center; }
+
+    @media screen and (max-width: 600px) {
+        .kop-head { grid-template-columns: 45px 1fr 45px; column-gap: 8px; }
+        .kop-logo { width: 42px; height: 42px; }
+    }
+
+    .controls {
+        width: 210mm;
+        margin: 20px auto;
+        padding: 18px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.12);
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .controls h2 {
+        margin: 0 0 14px;
+        font-size: 20px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 14px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field.full { grid-column: 1 / -1; }
+
+    label { font-weight: 700; font-size: 13px; }
+
+    input, textarea, button {
+        font: inherit;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 9px 10px;
+        border: 1px solid #bbb;
+        border-radius: 5px;
+    }
+
+    textarea { resize: vertical; min-height: 60px; }
+
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    button {
+        border: 0;
+        border-radius: 5px;
+        padding: 10px 16px;
+        cursor: pointer;
+        background: #1769aa;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    button.secondary { background: #666; }
+    button.danger { background: #a33; }
+
+    .hint {
+        margin: 10px 0 0;
+        color: #555;
+        font-size: 12px;
+    }
+
+    .paper {
+        width: var(--paper-width);
+        min-height: var(--paper-height);
+        margin: 0 auto 20px;
+        padding: 15mm;
+        background: #fff;
+        position: relative;
+    }
+    
+    .paper-size-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #f7f9fb;
+    }
+
+    .paper-size-row label {
+        margin: 0;
+    }
+
+    #ukuranKertas {
+        width: auto;
+        min-width: 140px;
+        padding: 8px 10px;
+    }
+
+    .kop {
+        text-align: center;
+        line-height: 1.15;
+        border-bottom: 3px double #000;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .kop .instansi-1 { font-size: 15pt; font-weight: 700; }
+    .kop .instansi-2 { font-size: 14pt; font-weight: 700; }
+    .kop .instansi-3 { font-size: 13pt; font-weight: 700; }
+    .kop .alamat { font-size: 10pt; margin-top: 3px; }
+
+    .judul {
+        text-align: center;
+        font-size: 15pt;
+        font-weight: 700;
+        margin: 13px 0 15px;
+    }
+
+    .info {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 13px;
+        font-size: 11pt;
+    }
+
+    .info td {
+        padding: 2px 0;
+        vertical-align: top;
+    }
+
+    .info .label {
+        width: 32mm;
+        font-weight: 400;
+    }
+
+    .info .colon { width: 5mm; }
+
+    .attendance {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 10.5pt;
+    }
+
+    .attendance th,
+    .attendance td {
+        border: 1px solid #000;
+        padding: 5px 6px;
+    }
+
+    .attendance th {
+        text-align: center;
+        font-weight: 700;
+        height: 30px;
+    }
+
+    .attendance .no { width: 10%; text-align: center; }
+    .attendance .nama { width: 38%; }
+    .attendance .jabatan { width: 25%; }
+    .attendance .ttd { width: 27%; text-align: center; }
+
+    .attendance tbody tr { height: 15mm; }
+    .attendance tbody td {
+        height: 15mm;
+        vertical-align: middle;
+    }
+
+    .attendance tbody td.ttd {
+        font-size: 9pt;
+    }
+
+    .attendance tbody td.ttd-ganjil {
+        text-align: left;
+        padding-left: 8px;
+    }
+
+    .attendance tbody td.ttd-genap {
+        text-align: center;
+    }
+
+    .footer-sign {
+        width: 48%;
+        margin-left: auto;
+        margin-top: 25px;
+        text-align: center;
+        font-size: 11pt;
+        line-height: 1.25;
+    }
+
+    .footer-sign .space { height: 55px; }
+
+    .editable {
+        outline: none;
+    }
+
+    @media screen and (max-width: 850px) {
+        .controls, .paper { width: 100%; }
+        .paper { padding: 20px; }
+        .grid { grid-template-columns: 1fr; }
+        .field.full { grid-column: auto; }
+    }
+
+    @media print {
+        body { background: #fff; }
+
+        .controls { display: none !important; }
+        .controls a[href="./korespondensi_terpadu.html"] {
+            display: none !important;
+        }
+
+        .paper {
+            width: auto;
+            min-height: auto;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+            position: relative;
+        }
+
+        .attendance { break-inside: auto; }
+        .attendance tr { break-inside: avoid; }
+        body.paper-f4 .paper {
+            page: f4;
+        }
+    }
+</style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<style>
+
+/* === DEEP SEA FUTURISM THEME === */
+:root {
+  --ds-bg: #041521;
+  --ds-panel: rgba(7, 30, 48, .88);
+  --ds-panel-2: rgba(10, 43, 64, .92);
+  --ds-cyan: #55e6ff;
+  --ds-blue: #168aad;
+  --ds-text: #e8fbff;
+  --ds-muted: #9bc6d3;
+  --ds-line: rgba(85, 230, 255, .28);
+  --ds-glow: 0 0 22px rgba(35, 201, 239, .13);
+}
+body {
+  color: var(--ds-text);
+  background-color: var(--ds-bg) !important;
+  background-image:
+    radial-gradient(ellipse at 15% 0%, rgba(0, 181, 216, .22), transparent 38%),
+    radial-gradient(ellipse at 90% 35%, rgba(22, 138, 173, .20), transparent 35%),
+    linear-gradient(145deg, #020b14 0%, #062338 48%, #03111e 100%) !important;
+  background-attachment: fixed;
+}
+.controls, .login-box {
+  color: var(--ds-text) !important;
+  background: linear-gradient(145deg, rgba(8, 35, 54, .97), rgba(4, 21, 33, .96)) !important;
+  border: 1px solid var(--ds-line);
+  border-radius: 14px !important;
+  box-shadow: var(--ds-glow), inset 0 1px rgba(255,255,255,.035) !important;
+}
+.controls h2, .login-box h2 { color: #b8f5ff; letter-spacing: .03em; }
+.controls label { color: #c8f5ff; }
+.controls p, .controls .hint, .login-box p { color: var(--ds-muted) !important; }
+input, textarea, select, #ukuranKertas {
+  color: #e8fbff !important;
+  background: rgba(2, 15, 27, .9) !important;
+  border: 1px solid rgba(85, 230, 255, .32) !important;
+  border-radius: 8px !important;
+  outline-color: var(--ds-cyan);
+}
+input::placeholder, textarea::placeholder { color: #729eae; }
+button {
+  color: #03131d !important;
+  background: linear-gradient(135deg, #79f0ff, #22b8d5) !important;
+  border: 1px solid rgba(159, 246, 255, .6) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(34, 184, 213, .16);
+  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+}
+button:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 0 18px rgba(85,230,255,.22); }
+button.secondary { color: #e4faff !important; background: linear-gradient(135deg, #17445b, #0b2b40) !important; border-color: var(--ds-line) !important; }
+button.danger { color: #fff !important; background: linear-gradient(135deg, #a83f5a, #70243e) !important; border-color: rgba(255,130,160,.4) !important; }
+.paper-size-row { background: rgba(5, 25, 40, .78) !important; border-color: var(--ds-line) !important; border-radius: 10px !important; }
+#riwayatTable th { color: #b8f5ff; background: #0b3046; }
+#riwayatTable td { color: #e8fbff; border-color: rgba(85,230,255,.22) !important; }
+#riwayatTable tbody tr:nth-child(even) { background: rgba(30, 112, 139, .14); }
+#riwayatTable tbody tr:nth-child(odd) { background: rgba(2, 18, 30, .42); }
+.login-overlay { background: rgba(1, 9, 17, .92) !important; backdrop-filter: blur(14px); }
+.login-box input { text-align: center; }
+.login-error { color: #ff9db2 !important; }
+.controls a[href="./korespondensi_terpadu.html"] { background: linear-gradient(135deg, #17445b, #0b2b40) !important; border: 1px solid var(--ds-line); }
+/* Area dokumen resmi tetap putih agar hasil cetak tidak terpengaruh tema */
+.paper { color: #000 !important; background: #fff !important; box-shadow: 0 14px 44px rgba(0,0,0,.32); }
+@media print {
+  body { color: #000 !important; background: #fff !important; background-image: none !important; }
+  .paper { color: #000 !important; background: #fff !important; box-shadow: none !important; }
+}
+
+</style>
+</head>
+<!-- Menggunakan Background Image dari folder yang sama -->
+<body class="min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
+
+    <!-- Container Utama dengan Overlay Transparan -->
+    <div class="min-h-screen bg-teal-950/40 backdrop-blur-xs flex flex-col justify-between py-8 px-4 sm:px-6">
+
+        <!-- Main Content Centered -->
+        <main class="max-w-4xl mx-auto w-full flex-grow">
+
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+    <form class="login-box" onsubmit="event.preventDefault(); masukAplikasi();">
+        <h2>Daftar Hadir</h2>
+        <p>Masukkan password untuk masuk ke aplikasi.</p>
+        <input id="passwordMasuk" type="password" autocomplete="off" placeholder="Password aplikasi" autofocus>
+        <button type="submit">Masuk</button>
+        <div class="login-error" id="loginError"></div>
+    </form>
+</div>
+
+<div class="controls">
+    <!-- Tombol Kembali ke Dashboard Utama -->
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+        <h2 style="margin:0;">Pengaturan Daftar Hadir</h2>
+        <a href="./korespondensi_terpadu.html"
+           style="display:inline-flex; align-items:center; justify-content:center; gap:8px;
+                  background:#0f766e; color:#fff; text-decoration:none; font-weight:600;
+                  padding:9px 14px; border-radius:8px; font-size:14px; transition: background 0.2s;">
+            <span>←</span>
+            <span>Kembali ke Dashboard</span>
+        </a>
+    </div>
+
+    <div class="grid">
+        <div class="field full">
+            <label for="jumlah">Jumlah baris/peserta</label>
+            <input id="jumlah" type="number" min="1" max="200" value="25">
+        </div>
+
+        <div class="field">
+            <label for="tanggal">Tanggal kegiatan</label>
+            <input id="tanggal" type="date">
+        </div>
+
+        <div class="field">
+            <label for="waktu">Waktu</label>
+            <input id="waktu" type="text" placeholder="Contoh: 09.00 s.d. selesai">
+        </div>
+
+        <div class="field">
+            <label for="tempat">Tempat</label>
+            <input id="tempat" type="text" placeholder="Masukkan tempat">
+        </div>
+
+        <div class="field">
+            <label for="acara">Acara</label>
+            <textarea id="acara" placeholder="Masukkan acara"></textarea>
+        </div>
+
+        <div class="field">
+            <label for="jabatanPenandatangan">Jabatan penandatangan</label>
+            <input id="jabatanPenandatangan" type="text" value="Penata Tingkat I (III/d)">
+        </div>
+
+        <div class="field">
+            <label for="namaPenandatangan">Nama penandatangan</label>
+            <input id="namaPenandatangan" type="text" value="Nama Penandatangan">
+        </div>
+
+        <div class="field">
+            <label for="golonganPenandatangan">Golongan penandatangan</label>
+            <input id="golonganPenandatangan" type="text" value="III/d" placeholder="Contoh: III/d">
+        </div>
+
+        <div class="field">
+            <label for="nip">NIP</label>
+            <input id="nip" type="text" value="19790724 200212 2 005">
+        </div>
+    </div>
+
+    <div class="paper-size-row">
+        <label for="ukuranKertas">Ukuran kertas saat mencetak</label>
+        <select id="ukuranKertas" onchange="ubahUkuranKertas(this.value)">
+            <option value="A4">A4 (210 × 297 mm)</option>
+            <option value="F4">F4 / Folio (215,9 × 330,2 mm)</option>
+        </select>
+    </div>
+
+    <div class="actions">
+        <button onclick="buatTabel()">Buat / Perbarui Tabel</button>
+        <button onclick="document.getElementById('fileImport').click()">Import Nama & Jabatan</button>
+        <input id="fileImport" type="file" accept=".xlsx,.xls,.csv" hidden onchange="importData(this.files[0])">
+        <button onclick="tambahBaris()">+ Tambah 1 Baris</button>
+        <button onclick="simpanRiwayat()">Simpan</button>
+        <button class="secondary" onclick="cetakSekarang()">Cetak</button>
+        <button class="secondary" onclick="eksporExcel()">Ekspor Database ke Excel</button>
+        <button class="danger" onclick="resetForm()">Reset Form</button>
+    </div>
+
+    <div class="hint">
+        Nama dan jabatan dapat diketik langsung. Import Excel/CSV akan mengisi data dan menambahkan baris kosong sesuai jumlah baris. Data yang disimpan masuk ke database riwayat.
+        Nomor dan nomor pada kolom tanda tangan dibuat otomatis.
+    </div>
+</div>
+
+<div class="controls" id="riwayatBox">
+    <h2>Database Riwayat Input</h2>
+    <div class="actions">
+        <button class="secondary" onclick="muatRiwayat()">Refresh Riwayat</button>
+        <button class="secondary" onclick="buatRiwayatBaru()">+ Riwayat Baru</button>
+        <button class="danger" onclick="hapusSemuaRiwayat()">Hapus Semua Riwayat</button>
+    </div>
+    <div style="overflow:auto;margin-top:12px;">
+      <table id="riwayatTable" style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr>
+            <th style="border:1px solid #bbb;padding:8px;">No</th>
+            <th style="border:1px solid #bbb;padding:8px;">Tanggal</th>
+            <th style="border:1px solid #bbb;padding:8px;">Acara</th>
+            <th style="border:1px solid #bbb;padding:8px;">Peserta</th>
+            <th style="border:1px solid #bbb;padding:8px;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="riwayatBody"></tbody>
+      </table>
+    </div>
+</div>
+
+<div class="paper" id="paper">
+    <div class="kop">
+        <div class="kop-head">
+            <img class="kop-logo kop-logo-left" src="logo_natuna.png" alt="Logo Kabupaten Natuna">
+            <div class="kop-center">
+                <div class="instansi-1">PEMERINTAH KABUPATEN NATUNA</div>
+                <div class="instansi-2">DINAS KESEHATAN</div>
+                <div class="instansi-3">UPTD PUSKESMAS MIDAI</div>
+                <div class="alamat">Jalan Tanjung Selamat Midai Kec. Midai,Natuna,Kepulauan Riau 29784</div>
+                <div class="alamat">Pos-el Puskesmasmidai@gmail.com</div>
+            </div>
+            <img class="kop-logo kop-logo-right" src="logo_kesehatan.jpg" alt="Logo Kesehatan" onerror="this.onerror=null;this.src='logo_kesehatan';">
+        </div>
+    </div>
+
+    <div class="judul">DAFTAR HADIR</div>
+
+    <table class="info">
+        <tr>
+            <td class="label">Hari/Tanggal</td>
+            <td class="colon">:</td>
+            <td id="hariTanggal">-</td>
+        </tr>
+        <tr>
+            <td class="label">Waktu</td>
+            <td class="colon">:</td>
+            <td id="tampilWaktu">-</td>
+        </tr>
+        <tr>
+            <td class="label">Tempat</td>
+            <td class="colon">:</td>
+            <td id="tampilTempat">-</td>
+        </tr>
+        <tr>
+            <td class="label">Acara</td>
+            <td class="colon">:</td>
+            <td id="tampilAcara">-</td>
+        </tr>
+    </table>
+
+    <table class="attendance">
+        <thead>
+            <tr>
+                <th class="no">NO</th>
+                <th class="nama">NAMA</th>
+                <th class="jabatan">JABATAN</th>
+                <th class="ttd">TANDA TANGAN</th>
+            </tr>
+        </thead>
+        <tbody id="bodyTabel"></tbody>
+    </table>
+
+    <div class="footer-sign">
+        <div>Midai, <span id="tanggalFooter">-</span></div>
+        <div id="tampilJabatan">Penata Tingkat I (III/d)</div>
+        <div class="space"></div>
+        <div id="tampilNama">Nama Penandatangan</div>
+        <div id="tampilGolongan">III/d</div>
+        <div id="tampilNip">NIP 19790724 200212 2 005</div>
+    </div>
+</div>
+
+<script>
+const namaHari = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+let editId = null;
+let ukuranKertas = localStorage.getItem("daftarHadirUkuranKertas") || "A4";
+
+function ubahUkuranKertas(value) {
+    ukuranKertas = value === "F4" ? "F4" : "A4";
+    document.body.classList.toggle("paper-f4", ukuranKertas === "F4");
+    const select = document.getElementById("ukuranKertas");
+    if (select) select.value = ukuranKertas;
+    localStorage.setItem("daftarHadirUkuranKertas", ukuranKertas);
+}
+
+function cetakSekarang() {
+    ubahUkuranKertas(document.getElementById("ukuranKertas").value);
+    window.print();
+}
+
+// Password aplikasi: admin
+function masukAplikasi() {
+    const input = document.getElementById("passwordMasuk");
+    const error = document.getElementById("loginError");
+    if (input.value === "admin") {
+        document.getElementById("loginOverlay").style.display = "none";
+        error.textContent = "";
+        sessionStorage.setItem("daftarHadirLogin", "1");
+    } else {
+        error.textContent = "Password salah.";
+        input.value = "";
+        input.focus();
+    }
+}
+
+function pastikanPasswordHapus() {
+    const password = prompt("Masukkan password untuk menghapus data riwayat:");
+    if (password === null) return false;
+    if (password !== "y") {
+        alert("Password penghapusan salah.");
+        return false;
+    }
+    return true;
+}
+
+function inisialisasiLogin() {
+    const overlay = document.getElementById("loginOverlay");
+    const input = document.getElementById("passwordMasuk");
+    if (sessionStorage.getItem("daftarHadirLogin") === "1") {
+        overlay.style.display = "none";
+    } else {
+        overlay.style.display = "flex";
+        setTimeout(() => input?.focus(), 50);
+    }
+}
+
+function formatTanggal(tanggalString) {
+    if (!tanggalString) return "-";
+    const parts = tanggalString.split("-");
+    if (parts.length !== 3) return "-";
+    const date = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+    return `${namaHari[date.getDay()]}, ${date.getDate()} ${namaBulan[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function getRows() {
+    return [...document.querySelectorAll("#bodyTabel tr")].map(tr => ({
+        nama: tr.querySelector(".nama")?.innerText.trim() || "",
+        jabatan: tr.querySelector(".jabatan")?.innerText.trim() || ""
+    }));
+}
+
+function renderRows(rows) {
+    const tbody = document.getElementById("bodyTabel");
+    tbody.innerHTML = "";
+    rows.forEach((row, idx) => {
+        const i = idx + 1;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="no">${i}</td>
+            <td class="nama editable" contenteditable="true">${escapeHtml(row.nama || "")}</td>
+            <td class="jabatan editable" contenteditable="true">${escapeHtml(row.jabatan || "")}</td>
+            <td class="ttd ${i % 2 ? "ttd-ganjil" : "ttd-genap"}">${i}</td>`;
+        tbody.appendChild(tr);
+    });
+    document.getElementById("jumlah").value = Math.max(1, rows.length);
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+}
+
+function buatTabel() {
+    let jumlah = Number(document.getElementById("jumlah").value);
+    if (!Number.isInteger(jumlah) || jumlah < 1) {
+        alert("Jumlah baris harus berupa angka minimal 1.");
+        return;
+    }
+    jumlah = Math.min(jumlah, 200);
+    const old = getRows();
+    const rows = Array.from({length: jumlah}, (_, i) => old[i] || {nama:"", jabatan:""});
+    renderRows(rows);
+    perbaruiIsi();
+}
+
+function tambahBaris() {
+    const rows = getRows();
+    if (rows.length >= 200) return alert("Maksimal 200 baris.");
+    rows.push({nama:"", jabatan:""});
+    renderRows(rows);
+}
+
+function perbaruiIsi() {
+    const tanggal = document.getElementById("tanggal").value;
+    const waktu = document.getElementById("waktu").value.trim();
+    const tempat = document.getElementById("tempat").value.trim();
+    const acara = document.getElementById("acara").value.trim();
+
+    document.getElementById("hariTanggal").textContent = formatTanggal(tanggal);
+    document.getElementById("tampilWaktu").textContent = waktu || "-";
+    document.getElementById("tampilTempat").textContent = tempat || "-";
+    document.getElementById("tampilAcara").textContent = acara || "-";
+    document.getElementById("tanggalFooter").textContent =
+        tanggal ? formatTanggal(tanggal).replace(/^[^,]+, /, "") : "-";
+    document.getElementById("tampilJabatan").textContent =
+        document.getElementById("jabatanPenandatangan").value.trim() || "Penata Tingkat I (III/d)";
+    document.getElementById("tampilNama").textContent =
+        document.getElementById("namaPenandatangan").value.trim() || "Nama Penandatangan";
+    document.getElementById("tampilGolongan").textContent =
+        document.getElementById("golonganPenandatangan").value.trim() || "";
+    const nip = document.getElementById("nip").value.trim();
+    document.getElementById("tampilNip").textContent = nip ? "NIP " + nip : "";
+}
+
+async function importData(file) {
+    if (!file) return;
+    try {
+        const buffer = await file.arrayBuffer();
+        let rows;
+        if (file.name.toLowerCase().endsWith(".csv")) {
+            const text = new TextDecoder("utf-8").decode(buffer);
+            rows = parseCSV(text);
+        } else {
+            if (typeof XLSX === "undefined") throw new Error("Library Excel belum termuat. Periksa koneksi internet.");
+            const wb = XLSX.read(buffer, {type:"array"});
+            rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:""});
+        }
+
+        const mapped = rows.map(r => {
+            const keys = Object.keys(r);
+            const findKey = names => keys.find(k => names.includes(String(k).trim().toLowerCase()));
+            const nk = findKey(["nama","name","nama lengkap"]);
+            const jk = findKey(["jabatan","position"]);
+            return {
+                nama: nk ? String(r[nk] ?? "") : String(r[keys[0]] ?? ""),
+                jabatan: jk ? String(r[jk] ?? "") : String(r[keys[1]] ?? "")
+            };
+        }).filter(r => r.nama || r.jabatan);
+
+        if (!mapped.length) return alert("Tidak ditemukan data Nama/Jabatan.");
+        const jumlah = Math.min(200, Math.max(Number(document.getElementById("jumlah").value) || mapped.length, mapped.length));
+        document.getElementById("jumlah").value = jumlah;
+        renderRows(Array.from({length: jumlah}, (_,i) => mapped[i] || {nama:"",jabatan:""}));
+        perbaruiIsi();
+        alert(`${mapped.length} data berhasil diimport. Baris kosong tetap ditambahkan sampai ${jumlah} baris.`);
+    } catch (err) {
+        alert("Import gagal: " + err.message);
+    } finally {
+        document.getElementById("fileImport").value = "";
+    }
+}
+
+function parseCSV(text) {
+    const lines = text.split(/\r?\n/).filter(x => x.trim());
+    if (!lines.length) return [];
+    const parseLine = line => {
+        const out=[]; let cur="", q=false;
+        for(let i=0;i<line.length;i++){
+            const c=line[i];
+            if(c === '"') {
+                if(q && line[i+1] === '"'){cur+='"'; i++;}
+                else q=!q;
+            } else if(c === "," && !q){out.push(cur.trim());cur="";}
+            else cur+=c;
+        }
+        out.push(cur.trim()); return out;
+    };
+    const headers=parseLine(lines[0]);
+    return lines.slice(1).map(line=>{
+        const vals=parseLine(line), o={};
+        headers.forEach((h,i)=>o[h]=vals[i]??"");
+        return o;
+    });
+}
+
+function getFormData() {
+    return {
+        id: editId || (Date.now().toString() + "-" + Math.random().toString(36).slice(2, 8)),
+        jumlah: Number(document.getElementById("jumlah").value) || getRows().length,
+        tanggal: document.getElementById("tanggal").value,
+        waktu: document.getElementById("waktu").value,
+        tempat: document.getElementById("tempat").value,
+        acara: document.getElementById("acara").value,
+        jabatanPenandatangan: document.getElementById("jabatanPenandatangan").value,
+        namaPenandatangan: document.getElementById("namaPenandatangan").value,
+        golonganPenandatangan: document.getElementById("golonganPenandatangan").value,
+        nip: document.getElementById("nip").value,
+        ukuranKertas: ukuranKertas,
+        peserta: getRows(),
+        updatedAt: new Date().toISOString()
+    };
+}
+
+function simpanRiwayat() {
+    perbaruiIsi();
+
+    const data = getFormData();
+    const list = JSON.parse(localStorage.getItem("daftarHadirRiwayat") || "[]");
+
+    if (editId) {
+        const idx = list.findIndex(x => x.id === editId);
+        if (idx >= 0) {
+            data.id = editId;
+            list[idx] = data;
+        } else {
+            list.unshift(data);
+        }
+    } else {
+        list.unshift(data);
+    }
+
+    localStorage.setItem("daftarHadirRiwayat", JSON.stringify(list));
+
+    editId = null;
+    muatRiwayat();
+    alert("Data berhasil disimpan sebagai riwayat baru.");
+}
+
+function muatRiwayat() {
+    const body = document.getElementById("riwayatBody");
+    if (!body) return;
+    const list = JSON.parse(localStorage.getItem("daftarHadirRiwayat") || "[]");
+    body.innerHTML = "";
+    list.forEach((item, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="border:1px solid #bbb;padding:8px;text-align:center">${i+1}</td>
+          <td style="border:1px solid #bbb;padding:8px">${formatTanggal(item.tanggal)}</td>
+          <td style="border:1px solid #bbb;padding:8px">${escapeHtml(item.acara || "-")}</td>
+          <td style="border:1px solid #bbb;padding:8px;text-align:center">${item.peserta?.length || 0}</td>
+          <td style="border:1px solid #bbb;padding:8px;text-align:center">
+            <button onclick="editRiwayat('${item.id}')">Edit</button>
+            <button class="secondary" onclick="cetakRiwayat('${item.id}')">Cetak</button>
+            <button class="danger" onclick="hapusRiwayat('${item.id}')">Hapus</button>
+          </td>`;
+        body.appendChild(tr);
+    });
+}
+
+function editRiwayat(id) {
+    const list = JSON.parse(localStorage.getItem("daftarHadirRiwayat") || "[]");
+    const d = list.find(x => x.id === id);
+    if (!d) return;
+    editId = id;
+    ["jumlah","tanggal","waktu","tempat","acara","jabatanPenandatangan","namaPenandatangan","golonganPenandatangan","nip"]
+      .forEach(k => { if(document.getElementById(k)) document.getElementById(k).value = d[k] ?? ""; });
+    ubahUkuranKertas(d.ukuranKertas || "A4");
+    renderRows(d.peserta || []);
+    perbaruiIsi();
+    window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function buatRiwayatBaru() {
+    editId = null;
+    document.getElementById("jumlah").value = 25;
+    document.getElementById("tanggal").value = "";
+    document.getElementById("waktu").value = "";
+    document.getElementById("tempat").value = "";
+    document.getElementById("acara").value = "";
+    document.getElementById("jabatanPenandatangan").value = "Penata Tingkat I (III/d)";
+    document.getElementById("namaPenandatangan").value = "Nama Penandatangan";
+    document.getElementById("golonganPenandatangan").value = "III/d";
+    document.getElementById("nip").value = "19790724 200212 2 005";
+    buatTabel();
+    window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+function hapusRiwayat(id) {
+    if (!pastikanPasswordHapus()) return;
+    if (!confirm("Hapus riwayat ini?")) return;
+    let list = JSON.parse(localStorage.getItem("daftarHadirRiwayat") || "[]");
+    list = list.filter(x => x.id !== id);
+    localStorage.setItem("daftarHadirRiwayat", JSON.stringify(list));
+    muatRiwayat();
+}
+
+function hapusSemuaRiwayat() {
+    if (!pastikanPasswordHapus()) return;
+    if (!confirm("Hapus semua riwayat input?")) return;
+    localStorage.removeItem("daftarHadirRiwayat");
+    muatRiwayat();
+}
+
+function cetakRiwayat(id) {
+    editRiwayat(id);
+    setTimeout(() => cetakSekarang(), 150);
+}
+
+function eksporExcel() {
+    const list = JSON.parse(localStorage.getItem("daftarHadirRiwayat") || "[]");
+    if (!list.length) return alert("Belum ada database riwayat.");
+    if (typeof XLSX === "undefined") return alert("Library Excel belum termuat. Periksa koneksi internet.");
+    const rows = [];
+    list.forEach(item => (item.peserta || []).forEach((p,i) => rows.push({
+        ID: item.id,
+        Tanggal: item.tanggal,
+        Waktu: item.waktu,
+        Tempat: item.tempat,
+        Acara: item.acara,
+        No: i+1,
+        Nama: p.nama,
+        Jabatan: p.jabatan
+    })));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Database");
+    XLSX.writeFile(wb, "database_daftar_hadir.xlsx");
+}
+
+function resetForm() {
+    if (!confirm("Reset semua isian dan tabel?")) return;
+    editId = null;
+    document.getElementById("jumlah").value = 25;
+    document.getElementById("tanggal").value = "";
+    document.getElementById("waktu").value = "";
+    document.getElementById("tempat").value = "";
+    document.getElementById("acara").value = "";
+    document.getElementById("jabatanPenandatangan").value = "Penata Tingkat I (III/d)";
+    document.getElementById("namaPenandatangan").value = "Nama Penandatangan";
+    document.getElementById("golonganPenandatangan").value = "III/d";
+    document.getElementById("nip").value = "19790724 200212 2 005";
+    ubahUkuranKertas("A4");
+    buatTabel();
+}
+
+document.querySelectorAll("#tanggal,#waktu,#tempat,#acara,#jabatanPenandatangan,#namaPenandatangan,#golonganPenandatangan,#nip")
+.forEach(el => el.addEventListener("input", perbaruiIsi));
+
+document.getElementById("tanggal").addEventListener("change", perbaruiIsi);
+buatTabel();
+muatRiwayat();
+inisialisasiLogin();
+</script>
+
+</body>
+</html>

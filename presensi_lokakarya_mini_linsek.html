@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Hadir Pertemuan Rapat - UPTD Puskesmas Midai</title>
+  <style>
+    /* DEEP SEA FUTURISM — Tampilan Antarmuka Layar */
+    :root {
+      --abyss: #041522;
+      --deep-ocean: #06263a;
+      --ocean: #0a4057;
+      --cyan: #53e7f4;
+      --aqua: #20c9d8;
+      --sea-glass: #a5f3ec;
+      --ink: #102b3a;
+      --panel: rgba(7, 35, 52, .92);
+      --line: rgba(83, 231, 244, .28);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(ellipse at 12% 8%, rgba(32,201,216,.17), transparent 30%),
+        radial-gradient(ellipse at 88% 24%, rgba(29,113,164,.22), transparent 32%),
+        linear-gradient(145deg, #020b15 0%, #06263a 48%, #041522 100%);
+      background-attachment: fixed;
+      color: #e5fbff; padding: 24px; font-size: 11pt;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      background-image: radial-gradient(rgba(83,231,244,.24) .7px, transparent .7px);
+      background-size: 26px 26px; opacity: .23;
+    }
+
+    /* PANEL KONTROL */
+    .control-panel {
+      max-width: 210mm;
+      margin: 0 auto 20px auto;
+      background: linear-gradient(145deg, rgba(8,43,62,.97), rgba(4,22,36,.97));
+      padding: 22px; border-radius: 16px;
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 40px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.04);
+      backdrop-filter: blur(14px);
+    }
+    .control-panel h3 { margin-bottom: 14px; color: var(--cyan); font-size: 1.1rem; border-bottom: 1px solid var(--line); padding-bottom: 10px; letter-spacing: .06em; text-transform: uppercase; }
+    .control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .control-group { display: flex; flex-direction: column; gap: 5px; }
+    .control-group label { font-size: 0.85rem; font-weight: bold; color: #b8e8f0; letter-spacing: .02em; }
+    .control-group select, .control-group input { padding: 10px 12px; font-size: 0.9rem; color: #e9fcff; background: #061b2a; border: 1px solid #236078; border-radius: 8px; outline: none; }
+    .control-group select:focus, .control-group input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(83,231,244,.12); }
+
+    /* RIWAYAT CETAK SECTION */
+    .history-section {
+      max-width: 210mm;
+      margin: 20px auto 30px auto;
+      background: linear-gradient(145deg, rgba(8,43,62,.97), rgba(4,22,36,.97));
+      padding: 22px; border-radius: 16px; border: 1px solid var(--line);
+      box-shadow: 0 16px 40px rgba(0,0,0,.25); overflow-x: auto;
+    }
+    .history-section h4 { margin-bottom: 12px; color: var(--cyan); font-size: 1rem; letter-spacing: .04em; }
+    .history-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #d9f5fa; }
+    .history-table th, .history-table td { border: 1px solid rgba(83,231,244,.2); padding: 9px; text-align: left; }
+    .history-table th { background: #0a4057; color: #a5f3ec; font-weight: bold; }
+    .history-table tbody tr:nth-child(even) { background: rgba(83,231,244,.045); }
+
+    /* DOKUMEN CETAK A4 / F4 */
+    .document-container {
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 15mm 20mm;
+      box-shadow: 0 18px 55px rgba(0,0,0,.38), 0 0 0 1px rgba(83,231,244,.25);
+      border-radius: 3px;
+      position: relative; color: #000; transition: width 0.3s ease;
+    }
+
+    .size-a4 { width: 210mm; min-height: 297mm; }
+    .size-f4 { width: 215mm; min-height: 330mm; }
+
+    /* KOP SURAT */
+    .kop-surat {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px double #000;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+    .kop-logo { width: 75px; height: auto; object-fit: contain; }
+    .kop-teks { text-align: center; flex-grow: 1; padding: 0 10px; }
+    .kop-teks h4 { margin: 0; font-size: 10pt; font-weight: normal; text-transform: uppercase; }
+    .kop-teks h3 { margin: 2px 0; font-size: 12pt; font-weight: bold; text-transform: uppercase; }
+    .kop-teks h2 { margin: 2px 0; font-size: 13pt; font-weight: bold; text-transform: uppercase; }
+    .kop-teks p { margin: 2px 0 0 0; font-size: 8.5pt; font-style: italic; line-height: 1.2; }
+
+    /* JUDUL & METADATA */
+    .doc-title { 
+      text-align: center; 
+      font-weight: bold; 
+      font-size: 12pt; 
+      margin: 15px 0 25px 0; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+    }
+    
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 110px 15px 1fr;
+      row-gap: 8px;
+      font-size: 11pt;
+      margin-bottom: 25px;
+      margin-left: 20px;
+    }
+    .meta-label { font-weight: normal; }
+    .meta-input-field { border: 1px solid #ccc; padding: 4px 8px; font-size: 11pt; border-radius: 4px; width: 100%; max-width: 450px; }
+
+    /* TABEL PRESENSI */
+    .presensi-table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 10.5pt; 
+      margin-bottom: 25px; 
+      line-height: 1.6;
+    }
+    .presensi-table thead {
+      display: table-header-group;
+    }
+    .presensi-table tr {
+      page-break-inside: avoid;
+    }
+    .presensi-table th { 
+      border: 1px solid #000; 
+      padding: 10px 6px; 
+      vertical-align: middle;
+      background-color: #fff;
+      text-align: center; 
+      font-weight: bold; 
+      text-transform: uppercase; 
+    }
+    .presensi-table td { 
+      border: 1px solid #000; 
+      padding: 12px 8px; 
+      vertical-align: middle; 
+    }
+    
+    .text-center { text-align: center; }
+    .ttd-col-left { text-align: left; padding-left: 15px !important; }
+    .ttd-col-center { text-align: center; }
+
+    /* TANDA TANGAN */
+    .signature-container { display: flex; justify-content: flex-end; margin-top: 35px; page-break-inside: avoid; }
+    .signature-box { 
+      width: 260px; 
+      text-align: left; 
+      font-size: 11pt; 
+      font-weight: normal !important; 
+    }
+    .signature-box p, .signature-box span { 
+      font-weight: normal !important; 
+    }
+    .signature-space { height: 75px; }
+    .signature-name { 
+      font-weight: normal !important; 
+      text-decoration: underline; 
+      margin-bottom: 2px; 
+    }
+
+    /* TOMBOL MELAYANG */
+    .floating-nav {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 9999;
+    }
+    .btn-float {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background-color: #00695c;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-float:hover { background-color: #004d40; transform: translateY(-3px); }
+    .btn-home { background-color: #0288d1; }
+    .btn-home:hover { background-color: #01579b; }
+
+    @media (max-width: 700px) {
+      body { padding: 12px; }
+      .control-panel, .history-section { padding: 16px; border-radius: 12px; }
+      .document-container { transform-origin: top left; }
+      .floating-nav { right: 12px; bottom: 12px; }
+      .btn-float { padding: 11px 14px; font-size: .85rem; }
+    }
+
+    /* MEDIA CETAK (PRINT) */
+    @media print {
+      body { background: #fff !important; background-image: none !important; padding: 0; font-size: 11pt; color: #000; }
+      body::before { display: none !important; }
+      .control-panel, .history-section, .floating-nav { display: none !important; }
+      .document-container { background: #fff !important; border-radius: 0; box-shadow: none; padding: 0; width: 100% !important; min-height: auto !important; }
+      
+      #input_tanggal { display: none !important; }
+      
+      .meta-input-field { border: none !important; padding: 0 !important; background: transparent !important; }
+      .presensi-table thead { display: table-header-group !important; }
+      
+      input[type="date"]::-webkit-calendar-picker-indicator,
+      input[type="time"]::-webkit-calendar-picker-indicator { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- KONTROL PENGATURAN LAYAR -->
+  <div class="control-panel">
+    <h3>Pengaturan Cetak & Dokumen Rapat</h3>
+    <div class="control-grid">
+      <div class="control-group">
+        <label>Pilih Ukuran Kertas:</label>
+        <select id="selectKertas" onchange="updateUkuranKertas()">
+          <option value="A4" selected>A4 (210 x 297 mm)</option>
+          <option value="F4">F4 / Folio (215 x 330 mm)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Jumlah Baris Kosong:</label>
+        <input type="number" id="inputJumlahBaris" value="30" min="1" max="100" onchange="renderTable()" onkeyup="renderTable()">
+      </div>
+      <div class="control-group">
+        <label>Penandatangan Instansi:</label>
+        <select id="selectPenandatangan" onchange="updatePenandatangan()">
+          <option value="KATARINA" data-nama="Katarina, S.Kep" data-pangkat="Penata Tingkat I (III/d)" data-nip="19790724 200212 2 005" data-jabatan="Kepala UPTD Puskesmas Midai">KATARINA, S.Kep (Kepala Puskesmas)</option>
+          <option value="MIDIAWATI" data-nama="Midiawati, AMKG" data-pangkat="Penata (III/c)" data-nip="19800510 200604 2 017" data-jabatan="An. Kepala UPTD Puskesmas Midai<br>Kepala Tata Usaha">MIDIAWATI, AMKG (An. Kepala Puskesmas / KTU)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOKUMEN CETAK PRESENSI -->
+  <div id="docContainer" class="document-container size-a4">
+    
+    <!-- KOP SURAT -->
+    <div class="kop-surat">
+      <img src="https://lh3.googleusercontent.com/d/1JfTP0WEGmvLUCRbYKhZM_637CvdKnWJj" class="kop-logo" alt="Logo Pemkab Natuna">
+      <div class="kop-teks">
+        <h4>PEMERINTAH KABUPATEN NATUNA</h4>
+        <h3>DINAS KESEHATAN</h3>
+        <h2>UPTD PUSKESMAS MIDAI</h2>
+        <p>Jalan Tanjung Selamat Midai, Natuna, Kepulauan Riau 29784<br>Pos-el: puskesmasmidai@gmail.com</p>
+      </div>
+      <img src="https://lh3.googleusercontent.com/d/1NmFQR4xUMkHx1IlbhlE6V0GXktaS90fJ" class="kop-logo" alt="Logo Kesehatan">
+    </div>
+
+    <!-- JUDUL DOKUMEN -->
+    <div class="doc-title">DAFTAR HADIR PERTEMUAN RAPAT</div>
+
+    <!-- METADATA INFORMASI ACARA -->
+    <div class="meta-grid">
+      <div class="meta-label">Hari</div>
+      <div>:</div>
+      <div>
+        <span id="text_hari">-</span>
+      </div>
+
+      <div class="meta-label">Tanggal</div>
+      <div>:</div>
+      <div>
+        <input type="date" id="input_tanggal" class="meta-input-field" onchange="updateTanggalFormat(this.value)">
+        <span id="text_tanggal_formatted"></span>
+      </div>
+
+      <div class="meta-label">Waktu</div>
+      <div>:</div>
+      <div>
+        <input type="text" id="input_waktu" class="meta-input-field" value="08.00 Wib s.d Selesai" style="width: 220px;">
+      </div>
+
+      <div class="meta-label">Tempat</div>
+      <div>:</div>
+      <div>
+        <input type="text" id="input_tempat" class="meta-input-field" value="Aula Kantor Camat Midai">
+      </div>
+
+      <div class="meta-label">Acara</div>
+      <div>:</div>
+      <div>
+        <input type="text" id="input_acara" class="meta-input-field" value="Loka Karya Mini Lintas Sektor Puskesmas Midai">
+      </div>
+    </div>
+
+    <!-- TABEL DAFTAR HADIR DINAMIS -->
+    <table class="presensi-table">
+      <thead>
+        <tr>
+          <th style="width: 6%;">NO</th>
+          <th style="width: 36%;">NAMA</th>
+          <th style="width: 30%;">JABATAN / INSTANSI</th>
+          <th style="width: 28%;">TANDA TANGAN</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- Render dinamis via JS -->
+      </tbody>
+    </table>
+
+    <!-- TANDA TANGAN -->
+    <div class="signature-container">
+      <div class="signature-box">
+        <p>Midai, <span id="ttd_tanggal_indo">-</span></p>
+        <p id="ttd_jabatan">Kepala Puskesmas</p>
+        <div class="signature-space"></div>
+        <p class="signature-name" id="ttd_nama">Katarina, S.Kep</p>
+        <p id="ttd_pangkat">Penata Tingkat I (III/d)</p>
+        <p>NIP <span id="ttd_nip">19790724 200212 2 005</span></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TABEL RIWAYAT CETAK -->
+  <div class="history-section">
+    <h4>Riwayat Pencetakan Dokumen</h4>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th style="width: 5%;">No</th>
+          <th style="width: 20%;">Waktu Cetak</th>
+          <th style="width: 25%;">Acara</th>
+          <th style="width: 20%;">Tanggal Acara</th>
+          <th style="width: 15%;">Ukuran Kertas</th>
+          <th style="width: 15%;">Penandatangan</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody">
+        <!-- Log riwayat akan dirender di sini -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TOMBOL NAVIGASI MELAYANG -->
+  <div class="floating-nav">
+    <button type="button" class="btn-float" onclick="prosesCetakDokumen()">
+      🖨️ Cetak Dokumen
+    </button>
+    <a href="korespondensi_terpadu.html" class="btn-float btn-home">
+      🏠 Kembali ke Dashboard
+    </a>
+  </div>
+
+  <style id="dynamicPrintPageStyle">
+    @page { size: 210mm 297mm; margin: 12mm 15mm 12mm 15mm; }
+  </style>
+
+  <script>
+    let logCetak = [];
+
+    window.onload = function() {
+      renderTable();
+      
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('input_tanggal').value = today;
+      updateTanggalFormat(today);
+
+      updateUkuranKertas();
+      updatePenandatangan();
+      loadHistory();
+    };
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      let jumlah = parseInt(document.getElementById('inputJumlahBaris').value) || 30;
+      if (jumlah < 1) jumlah = 1;
+
+      for (let i = 1; i <= jumlah; i++) {
+        const isGanjil = i % 2 !== 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="text-center">${i}</td>
+          <td></td>
+          <td></td>
+          <td class="${isGanjil ? 'ttd-col-left' : 'ttd-col-center'}">${i}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function updateUkuranKertas() {
+      const val = document.getElementById('selectKertas').value;
+      const doc = document.getElementById('docContainer');
+      const pageStyle = document.getElementById('dynamicPrintPageStyle');
+
+      if (val === 'A4') {
+        doc.className = 'document-container size-a4';
+        pageStyle.innerHTML = '@page { size: 210mm 297mm; margin: 12mm 15mm 12mm 15mm; }';
+      } else {
+        doc.className = 'document-container size-f4';
+        pageStyle.innerHTML = '@page { size: 215mm 330mm; margin: 12mm 15mm 12mm 15mm; }';
+      }
+    }
+
+    function updateTanggalFormat(val) {
+      if (!val) {
+        document.getElementById('text_hari').innerText = '-';
+        document.getElementById('text_tanggal_formatted').innerText = '';
+        document.getElementById('ttd_tanggal_indo').innerText = '-';
+        return;
+      }
+
+      // Hindari pergeseran zona waktu dengan parsing komponen tanggal secara manual
+      const parts = val.split('-');
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      
+      const dateObj = new Date(year, month, day);
+
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum’at', 'Sabtu'];
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+      const hari = days[dateObj.getDay()];
+      const tgl = dateObj.getDate();
+      const bln = months[dateObj.getMonth()];
+      const thn = dateObj.getFullYear();
+
+      document.getElementById('text_hari').innerText = hari;
+      document.getElementById('text_tanggal_formatted').innerText = `${tgl} ${bln} ${thn}`;
+      document.getElementById('ttd_tanggal_indo').innerText = `${tgl} ${bln} ${thn}`;
+    }
+
+    function updatePenandatangan() {
+      const select = document.getElementById('selectPenandatangan');
+      const opt = select.options[select.selectedIndex];
+
+      document.getElementById('ttd_nama').innerText = opt.getAttribute('data-nama');
+      document.getElementById('ttd_pangkat').innerText = opt.getAttribute('data-pangkat');
+      document.getElementById('ttd_nip').innerText = opt.getAttribute('data-nip');
+      document.getElementById('ttd_jabatan').innerHTML = opt.getAttribute('data-jabatan');
+    }
+
+    function prosesCetakDokumen() {
+      try {
+        const tglAcara = document.getElementById('input_tanggal').value;
+        const acara = document.getElementById('input_acara').value;
+        const kertas = document.getElementById('selectKertas').value;
+        const ttdOpt = document.getElementById('selectPenandatangan');
+        const ttdNama = ttdOpt ? ttdOpt.options[ttdOpt.selectedIndex].getAttribute('data-nama') : '-';
+
+        const now = new Date();
+        const timestamp = `${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID')}`;
+
+        const newLog = {
+          waktuCetak: timestamp,
+          acara: acara || 'Presensi Rapat',
+          tglAcara: tglAcara || '-',
+          kertas: kertas,
+          penandatangan: ttdNama
+        };
+
+        logCetak.unshift(newLog);
+        localStorage.setItem('riwayat_cetak_presensi_rapat', JSON.stringify(logCetak));
+        renderHistoryTable();
+      } catch (err) {
+        console.error("Error logging print history:", err);
+      }
+
+      window.print();
+    }
+
+    function loadHistory() {
+      try {
+        const stored = localStorage.getItem('riwayat_cetak_presensi_rapat');
+        if (stored) {
+          logCetak = JSON.parse(stored);
+        }
+      } catch (err) {
+        logCetak = [];
+      }
+      renderHistoryTable();
+    }
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('historyBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (logCetak.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">Belum ada riwayat cetak.</td></tr>';
+        return;
+      }
+
+      logCetak.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${item.waktuCetak}</td>
+          <td><b>${item.acara}</b></td>
+          <td>${item.tglAcara}</td>
+          <td>${item.kertas}</td>
+          <td>${item.penandatangan}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>

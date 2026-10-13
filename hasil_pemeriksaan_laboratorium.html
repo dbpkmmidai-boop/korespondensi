@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Pemeriksaan Laboratorium - Puskesmas Midai</title>
+    <!-- CDN Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Library PrintJS untuk Cetak PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/print-js/1.6.0/print.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/print-js/1.6.0/print.min.css">
+
+<style>
+
+/* === DEEP SEA FUTURISM THEME === */
+:root {
+  --ds-bg: #041521;
+  --ds-panel: rgba(7, 30, 48, .88);
+  --ds-panel-2: rgba(10, 43, 64, .92);
+  --ds-cyan: #55e6ff;
+  --ds-blue: #168aad;
+  --ds-text: #e8fbff;
+  --ds-muted: #9bc6d3;
+  --ds-line: rgba(85, 230, 255, .28);
+  --ds-glow: 0 0 22px rgba(35, 201, 239, .13);
+}
+body {
+  color: var(--ds-text);
+  background-color: var(--ds-bg) !important;
+  background-image:
+    radial-gradient(ellipse at 15% 0%, rgba(0, 181, 216, .22), transparent 38%),
+    radial-gradient(ellipse at 90% 35%, rgba(22, 138, 173, .20), transparent 35%),
+    linear-gradient(145deg, #020b14 0%, #062338 48%, #03111e 100%) !important;
+  background-attachment: fixed;
+}
+.controls, .login-box {
+  color: var(--ds-text) !important;
+  background: linear-gradient(145deg, rgba(8, 35, 54, .97), rgba(4, 21, 33, .96)) !important;
+  border: 1px solid var(--ds-line);
+  border-radius: 14px !important;
+  box-shadow: var(--ds-glow), inset 0 1px rgba(255,255,255,.035) !important;
+}
+.controls h2, .login-box h2 { color: #b8f5ff; letter-spacing: .03em; }
+.controls label { color: #c8f5ff; }
+.controls p, .controls .hint, .login-box p { color: var(--ds-muted) !important; }
+input, textarea, select, #ukuranKertas {
+  color: #e8fbff !important;
+  background: rgba(2, 15, 27, .9) !important;
+  border: 1px solid rgba(85, 230, 255, .32) !important;
+  border-radius: 8px !important;
+  outline-color: var(--ds-cyan);
+}
+input::placeholder, textarea::placeholder { color: #729eae; }
+button {
+  color: #03131d !important;
+  background: linear-gradient(135deg, #79f0ff, #22b8d5) !important;
+  border: 1px solid rgba(159, 246, 255, .6) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(34, 184, 213, .16);
+  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+}
+button:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 0 18px rgba(85,230,255,.22); }
+button.secondary { color: #e4faff !important; background: linear-gradient(135deg, #17445b, #0b2b40) !important; border-color: var(--ds-line) !important; }
+button.danger { color: #fff !important; background: linear-gradient(135deg, #a83f5a, #70243e) !important; border-color: rgba(255,130,160,.4) !important; }
+.paper-size-row { background: rgba(5, 25, 40, .78) !important; border-color: var(--ds-line) !important; border-radius: 10px !important; }
+#riwayatTable th { color: #b8f5ff; background: #0b3046; }
+#riwayatTable td { color: #e8fbff; border-color: rgba(85,230,255,.22) !important; }
+#riwayatTable tbody tr:nth-child(even) { background: rgba(30, 112, 139, .14); }
+#riwayatTable tbody tr:nth-child(odd) { background: rgba(2, 18, 30, .42); }
+.login-overlay { background: rgba(1, 9, 17, .92) !important; backdrop-filter: blur(14px); }
+.login-box input { text-align: center; }
+.login-error { color: #ff9db2 !important; }
+.controls a[href="./korespondensi_terpadu.html"] { background: linear-gradient(135deg, #17445b, #0b2b40) !important; border: 1px solid var(--ds-line); }
+/* Area dokumen resmi tetap putih agar hasil cetak tidak terpengaruh tema */
+.paper { color: #000 !important; background: #fff !important; box-shadow: 0 14px 44px rgba(0,0,0,.32); }
+@media print {
+  body { color: #000 !important; background: #fff !important; background-image: none !important; }
+  .paper { color: #000 !important; background: #fff !important; box-shadow: none !important; }
+}
+
+/* Tema Deep Sea Futurism untuk halaman viewer laboratorium */
+body.bg-slate-100 { background-color: #041521 !important; color: #e8fbff !important; }
+header.bg-teal-700 { background: linear-gradient(100deg, #041521, #0a3c55 58%, #07516a) !important; border-bottom: 1px solid rgba(85,230,255,.35); box-shadow: 0 8px 28px rgba(0,0,0,.28) !important; }
+header h1 { color: #d9faff; letter-spacing: .025em; }
+header p { color: #8cecff !important; }
+header a { background: rgba(8,35,54,.8) !important; border: 1px solid rgba(85,230,255,.3); }
+header button { color: #03131d !important; background: linear-gradient(135deg,#79f0ff,#22b8d5) !important; }
+main > div { border-color: rgba(85,230,255,.25) !important; box-shadow: 0 18px 50px rgba(0,0,0,.3) !important; }
+
+</style>
+</head>
+<!-- Menggunakan Background Image dari folder yang sama -->
+<body class="min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
+
+    <!-- Container Utama dengan Overlay Transparan -->
+    <div class="min-h-screen bg-teal-950/40 backdrop-blur-xs flex flex-col justify-between py-8 px-4 sm:px-6">
+
+        <!-- Main Content Centered -->
+        <main class="max-w-4xl mx-auto w-full flex-grow">
+            
+
+<body class="bg-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Header / Navigasi Atas -->
+    <header class="bg-teal-700 text-white shadow-md py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-bed-pulse text-2xl text-teal-200"></i>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Hasil Pemeriksaan Laboratorium</h1>
+                    <p class="text-xs text-teal-100">UPTD Puskesmas Midai</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Tombol Kembali ke Dashboard -->
+                <a href="./korespondensi_terpadu.html" class="inline-flex items-center gap-2 bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    <span>Kembali ke Dashboard</span>
+                </a>
+                
+                <!-- Tombol Cetak PDF -->
+                <button onclick="printJS('./hasil_pemeriksaan_laboratorium.pdf')" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors shadow-sm">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Cetak PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Display / PDF Viewer -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col">
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 flex-1 overflow-hidden min-h-[85vh]">
+            <embed src="./hasil_pemeriksaan_laboratorium.pdf" type="application/pdf" class="w-full h-full min-h-[85vh]">
+        </div>
+    </main>
+
+</body>
+</html>
