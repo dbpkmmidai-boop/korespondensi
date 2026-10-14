@@ -333,7 +333,7 @@
         }
     </style>
 
-    <!-- Script Google Login & Whitelist Email + Auto Session -->
+    <!-- Script Google Login & Whitelist Email + Auto Session Instan -->
     <script>
       // Daftar email resmi yang diizinkan mengakses dashboard
       const ALLOWED_EMAILS = [
@@ -355,7 +355,7 @@
         return JSON.parse(jsonPayload);
       }
 
-      // Fungsi menampilkan Dashboard jika terverifikasi
+      // Fungsi menampilkan Dashboard dan menyembunyikan Login
       function showDashboard() {
         const authContainer = document.getElementById("auth-container");
         const mainDashboard = document.getElementById("main-dashboard");
@@ -363,47 +363,56 @@
         if (mainDashboard) mainDashboard.style.display = "block";
       }
 
-      // Callback setelah pengguna berhasil login Google
+      // 1. CEK SESI SECARA INSTAN SAAT SKRIP DIBACA BROWSER
+      (function checkSessionImmediately() {
+        const savedUser = sessionStorage.getItem('authorized_user');
+        if (savedUser && ALLOWED_EMAILS.includes(savedUser)) {
+          // Suntikkan CSS langsung agar layar login tidak sempat berkedip
+          document.write('<style>#auth-container{display:none !important;} #main-dashboard{display:block !important;}</style>');
+        }
+      })();
+
+      // Callback setelah pengguna berhasil login Google pertama kali
       function handleCredentialResponse(response) {
         try {
           const responsePayload = parseJwt(response.credential);
           const userEmail = responsePayload.email.toLowerCase().trim();
 
           if (ALLOWED_EMAILS.includes(userEmail)) {
-            // Simpan email ke memory sesi browser
             sessionStorage.setItem('authorized_user', userEmail);
             showDashboard();
           } else {
-            // Akses ditolak
             const errorMsg = document.getElementById("auth-error");
-            errorMsg.innerText = `Akses Ditolak! Email (${userEmail}) tidak memiliki izin untuk melihat dokumen ini.`;
-            errorMsg.classList.remove("hidden");
+            if (errorMsg) {
+              errorMsg.innerText = `Akses Ditolak! Email (${userEmail}) tidak memiliki izin untuk melihat dokumen ini.`;
+              errorMsg.classList.remove("hidden");
+            }
           }
         } catch (e) {
           console.error("Gagal verifikasi token:", e);
         }
       }
 
-      // Inisialisasi Google Auth & Pengecekan Sesi Aktif
-      window.onload = function () {
-        // Cek apakah pengguna sudah login sebelumnya
+      // 2. INISIALISASI TOMBOL GOOGLE JIKA BELUM LOGIN
+      window.addEventListener('DOMContentLoaded', function () {
         const savedUser = sessionStorage.getItem('authorized_user');
         if (savedUser && ALLOWED_EMAILS.includes(savedUser)) {
           showDashboard();
-          return; // Lewati pembuatan tombol login jika sesi masih aktif
+          return;
         }
 
-        // Jika belum login, siapkan tombol Google Sign-In
-        google.accounts.id.initialize({
-          client_id: "248765631152-7khfc6g0r5lk7rlqbdm47vm2pn8o2d9h.apps.googleusercontent.com",
-          callback: handleCredentialResponse
-        });
+        if (window.google && google.accounts) {
+          google.accounts.id.initialize({
+            client_id: "248765631152-7khfc6g0r5lk7rlqbdm47vm2pn8o2d9h.apps.googleusercontent.com",
+            callback: handleCredentialResponse
+          });
 
-        google.accounts.id.renderButton(
-          document.getElementById("googleBtnContainer"),
-          { theme: "filled_blue", size: "large", shape: "pill", width: 280 }
-        );
-      }
+          google.accounts.id.renderButton(
+            document.getElementById("googleBtnContainer"),
+            { theme: "filled_blue", size: "large", shape: "pill", width: 280 }
+          );
+        }
+      });
     </script>
 </head>
 
