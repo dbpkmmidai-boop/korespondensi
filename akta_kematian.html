@@ -3,680 +3,1175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Korespondensi - UPTD Puskesmas Midai</title>
-    <!-- Google Identity Services Library -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- CDN Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <title>Sistem Integrasi Administrasi Kematian UPTD Puskesmas Midai</title>
+    <!-- Library XLSX untuk Ekspor Data ke Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        * { box-sizing: border-box; }
-
-        html { scroll-behavior: smooth; }
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #031522;
-            overflow-x: hidden;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            font-size: 11pt;
+            color: #000;
         }
 
-        /* Latar futuristik 3D dan bercahaya */
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            z-index: -3;
-            pointer-events: none;
-            background:
-                radial-gradient(circle at 15% 20%, rgba(0, 229, 255, .30), transparent 25%),
-                radial-gradient(circle at 85% 18%, rgba(124, 58, 237, .28), transparent 27%),
-                radial-gradient(circle at 50% 85%, rgba(16, 185, 129, .22), transparent 30%),
-                linear-gradient(135deg, rgba(2, 24, 40, .15), rgba(2, 8, 23, .60)),
-                url('./latar1.png') center / cover fixed;
-            filter: saturate(1.25) contrast(1.08) brightness(1.08);
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        body::after {
-            content: "";
-            position: fixed;
-            inset: 0;
-            z-index: -2;
-            pointer-events: none;
-            opacity: .34;
-            background-image:
-                linear-gradient(rgba(80, 220, 255, .16) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(80, 220, 255, .16) 1px, transparent 1px);
-            background-size: 42px 42px;
-            mask-image: linear-gradient(to bottom, rgba(0,0,0,.95), transparent 88%);
-        }
-
-        .page-glow {
-            position: fixed;
-            width: 360px;
-            height: 360px;
-            border-radius: 50%;
-            filter: blur(45px);
-            pointer-events: none;
-            z-index: -1;
-            opacity: .42;
-            animation: floatGlow 9s ease-in-out infinite;
-        }
-
-        .page-glow.one { top: 8%; left: -90px; background: rgba(0, 229, 255, .42); }
-        .page-glow.two { top: 42%; right: -100px; background: rgba(139, 92, 246, .38); animation-delay: -3s; }
-        .page-glow.three { bottom: -100px; left: 35%; background: rgba(16, 185, 129, .30); animation-delay: -6s; }
-
-        @keyframes floatGlow {
-            0%,100% { transform: translate3d(0,0,0) scale(1); }
-            50% { transform: translate3d(0,-28px,0) scale(1.08); }
-        }
-
-        .glass-panel {
-            background: linear-gradient(135deg, rgba(5, 34, 51, .88), rgba(4, 91, 104, .62));
-            border: 1px solid rgba(101, 241, 255, .38);
-            box-shadow:
-                0 24px 65px rgba(0, 0, 0, .45),
-                0 0 32px rgba(34, 211, 238, .13),
-                inset 0 2px 0 rgba(255,255,255,.14),
-                inset 0 -18px 35px rgba(0,0,0,.16);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-        }
-
-        /* Header tetap berada di atas ketika halaman di-scroll */
-        .welcome-sticky {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding-top: 10px;
-            padding-bottom: 12px;
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #81c784;
+            padding-bottom: 6px;
             margin-bottom: 20px;
-            background: linear-gradient(to bottom, rgba(2, 18, 31, .96) 0%, rgba(2, 18, 31, .84) 76%, transparent 100%);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            isolation: isolate;
-            contain: paint;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .welcome-sticky.scrolled {
-            padding-top: 6px;
-            padding-bottom: 8px;
-            margin-bottom: 14px;
+        .header-container h2 {
+            margin: 0;
+            border-bottom: none;
+            padding-bottom: 0;
         }
 
-        .welcome-sticky.scrolled .glass-panel {
-            padding-top: 12px !important;
-            padding-bottom: 12px !important;
-            border-radius: 14px;
+        h2, h3 {
+            color: #1b5e20;
+            border-bottom: 2px solid #81c784;
+            padding-bottom: 6px;
         }
 
-        .welcome-sticky.scrolled img {
-            height: 48px !important;
-            width: auto;
-        }
-
-        .welcome-sticky.scrolled img.rounded-full {
-            width: 48px !important;
-        }
-
-        .welcome-sticky.scrolled h1 { font-size: 1.25rem !important; }
-        .welcome-sticky.scrolled h2 { font-size: 1rem !important; }
-        .welcome-sticky.scrolled p { display: none; }
-
-        .category {
-            overflow: visible;
-        }
-
-        .category-header {
-            border-radius: 16px 16px 0 0;
-        }
-
-        .menu-content {
-            border-radius: 0 0 16px 16px;
-        }
-
-        .category {
-            scroll-margin-top: 145px;
-        }
-
-        .welcome-sticky .glass-panel {
-            position: relative;
-            transform: perspective(1100px) rotateX(0deg);
-            box-shadow:
-                0 26px 70px rgba(0,0,0,.48),
-                0 0 45px rgba(34,211,238,.16),
-                inset 0 2px 0 rgba(255,255,255,.16),
-                inset 0 -24px 42px rgba(0,0,0,.18);
-        }
-
-        .welcome-sticky .glass-panel::before {
-            content: "";
-            position: absolute;
-            inset: 1px;
-            border-radius: 15px;
-            pointer-events: none;
-            background: linear-gradient(110deg, transparent 15%, rgba(255,255,255,.12) 48%, transparent 68%);
-            transform: translateX(-120%);
-            animation: panelShine 6s ease-in-out infinite;
-        }
-
-        @keyframes panelShine {
-            0%,55% { transform: translateX(-120%); }
-            80%,100% { transform: translateX(120%); }
-        }
-
-        .category {
-            overflow: visible;
-            position: relative;
-            z-index: 1;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,.12);
-            background: rgba(4, 25, 39, .54);
-            box-shadow: 0 14px 35px rgba(0,0,0,.22);
-        }
-
-        .category-header {
-            position: relative;
-            width: 100%;
-            border: 0;
-            cursor: pointer;
-            text-align: left;
-            transition: all .28s ease;
-        }
-
-        .category-header::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
-            transform: translateX(-100%);
-            transition: transform .65s ease;
-        }
-
-        .category-header:hover::after { transform: translateX(100%); }
-
-        .category-header:hover {
-            filter: brightness(1.08);
-        }
-
-        .category-header .folder-icon {
-            transition: transform .3s ease, color .3s ease;
-        }
-
-        .category-header .chevron {
-            transition: transform .3s ease;
-        }
-
-        .category-header[aria-expanded="true"] .chevron {
-            transform: rotate(180deg);
-        }
-
-        .category-header[aria-expanded="true"] .folder-icon {
-            transform: scale(1.08);
-        }
-
-        .menu-content {
+        .form-grid {
             display: grid;
-            grid-template-rows: 0fr;
-            opacity: 0;
-            transition: grid-template-rows .4s cubic-bezier(.4,0,.2,1), opacity .28s ease;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
         }
 
-        .menu-content > div {
-            min-height: 0;
-            overflow: hidden;
+        .form-row-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
-        .menu-content.open {
-            grid-template-rows: 1fr;
-            opacity: 1;
-            overflow: visible;
+        .form-row-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
-        .category:has(.menu-content.open) {
-            scroll-margin-top: 170px;
+        @media (max-width: 900px) {
+            .form-row-5, .form-row-4 {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
         }
 
-        .menu-content.open > div {
-            overflow: visible;
+        .form-group {
+            display: flex;
+            flex-direction: column;
         }
 
-        .btn-row {
-            transition: transform .22s ease, box-shadow .22s ease, filter .22s ease, border-color .22s ease;
-            box-shadow: 0 5px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.16);
+        .form-group label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: #333;
         }
 
-        .btn-row:hover {
-            transform: translateX(5px) translateY(-1px);
-            box-shadow: 0 9px 22px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.24);
-            filter: brightness(1.08);
-            border-color: rgba(255,255,255,.45);
+        .form-group input, .form-group select {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
         }
 
-        .neon-line {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(76, 232, 224, .65), transparent);
+        .input-prefix-container {
+            display: flex;
+            align-items: center;
         }
 
-        @media (max-width: 640px) {
-            .category-header { padding: 14px 16px; }
-            .btn-row { padding-top: 12px; padding-bottom: 12px; }
+        .input-prefix {
+            background: #e9ecef;
+            border: 1px solid #ccc;
+            border-right: none;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            border-radius: 4px 0 0 4px;
+            color: #495057;
+            font-weight: bold;
         }
 
-        :root {
-            color-scheme: dark;
-            --deep-bg: #03121f;
-            --deep-panel: rgba(4, 30, 46, .88);
-            --deep-cyan: #67f3f5;
-            --deep-teal: #21d4c2;
-            --deep-border: rgba(103, 243, 245, .34);
+        .input-prefix-container input {
+            border-radius: 0 4px 4px 0;
+            width: 100%;
         }
 
-        body {
-            background-color: #03121f !important;
-            color: #e7fbff;
+        .full-width {
+            grid-column: 1 / -1;
         }
 
-        body::before {
-            background:
-                radial-gradient(ellipse at 12% 15%, rgba(0, 211, 230, .20), transparent 34%),
-                radial-gradient(ellipse at 88% 30%, rgba(0, 125, 164, .22), transparent 36%),
-                radial-gradient(ellipse at 48% 100%, rgba(13, 148, 136, .18), transparent 38%),
-                linear-gradient(135deg, rgba(2, 15, 28, .94), rgba(3, 35, 51, .82)),
-                url('./latar1.png') center / cover fixed;
-            filter: saturate(1.12) contrast(1.04);
+        .doc-input-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
         }
 
-        body::after {
-            opacity: .22;
-            background-image:
-                linear-gradient(rgba(103, 243, 245, .15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(103, 243, 245, .15) 1px, transparent 1px);
-            background-size: 36px 36px;
-            mask-image: linear-gradient(to bottom, #000 0%, transparent 94%);
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
         }
 
-        .page-glow.one { background: rgba(0, 214, 230, .32) !important; }
-        .page-glow.two { background: rgba(0, 132, 170, .30) !important; }
-        .page-glow.three { background: rgba(20, 184, 166, .24) !important; }
-
-        .glass-panel {
-            background: linear-gradient(135deg, rgba(3, 28, 44, .94), rgba(5, 69, 82, .78)) !important;
-            border: 1px solid rgba(103, 243, 245, .42) !important;
-            box-shadow: 0 22px 60px rgba(0,0,0,.46),
-                        0 0 28px rgba(34,211,238,.13),
-                        inset 0 1px 0 rgba(255,255,255,.12) !important;
-            backdrop-filter: blur(18px);
+        button {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
         }
 
-        .welcome-sticky {
-            background: linear-gradient(to bottom, rgba(2, 15, 28, .97), rgba(2, 21, 35, .86) 76%, transparent) !important;
+        button:hover { background-color: #1b5e20; }
+        button.excel { background-color: #157347; }
+        button.excel:hover { background-color: #0e4b2e; }
+        button.reset { background-color: #d32f2f; }
+        button.reset:hover { background-color: #9a0007; }
+        button.dashboard { background-color: #0288d1; }
+        button.dashboard:hover { background-color: #01579b; }
+
+        /* TABEL DATABASE RIWAYAT */
+        .table-container {
+            margin-top: 30px;
+            overflow-x: auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
         }
 
-        .welcome-sticky h1,
-        .welcome-sticky h2,
-        .welcome-sticky p {
-            text-shadow: 0 0 16px rgba(34, 211, 238, .16);
+        table.db-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
         }
 
-        .welcome-sticky h2 { color: #8af8f3 !important; }
-
-        .category {
-            background: linear-gradient(145deg, rgba(3, 26, 41, .88), rgba(4, 49, 61, .72)) !important;
-            border: 1px solid rgba(103, 243, 245, .23) !important;
-            box-shadow: 0 14px 34px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.04) !important;
-            overflow: visible;
+        table.db-table th, table.db-table td {
+            border: 1px solid #ccc;
+            padding: 6px 8px;
+            text-align: left;
         }
 
-        .category-header {
-            background: linear-gradient(100deg, rgba(5, 94, 113, .98), rgba(7, 72, 99, .98), rgba(6, 48, 70, .98)) !important;
-            border: 1px solid rgba(103, 243, 245, .23) !important;
-            color: #e8feff !important;
+        table.db-table th {
+            background-color: #e8f5e9;
+            color: #1b5e20;
         }
 
-        .category-header .folder-icon { color: #79f6ee !important; }
-        .category-header .chevron { color: #b8ffff !important; }
-
-        .category-header:hover {
-            box-shadow: inset 0 0 0 1px rgba(103,243,245,.22), 0 0 22px rgba(34,211,238,.12);
+        .btn-action-group {
+            display: flex;
+            gap: 4px;
+            flex-wrap: nowrap;
         }
 
-        .menu-content {
-            background: rgba(2, 19, 31, .58);
+        .btn-del {
+            background-color: #e53935;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 8pt;
         }
 
-        .btn-row {
-            background: linear-gradient(100deg, rgba(5, 100, 122, .94), rgba(7, 71, 99, .96), rgba(5, 48, 72, .98)) !important;
-            border: 1px solid rgba(103, 243, 245, .28) !important;
-            color: #edfeff !important;
-            box-shadow: 0 5px 16px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.10) !important;
+        /* MODAL & LOGIN OVERLAY */
+        .delete-password-overlay, #login-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .btn-row:hover {
-            background: linear-gradient(100deg, rgba(8, 133, 151, .98), rgba(7, 91, 119, .98)) !important;
-            border-color: rgba(103, 243, 245, .70) !important;
-            box-shadow: 0 8px 24px rgba(0,0,0,.30), 0 0 18px rgba(34,211,238,.15) !important;
+        .delete-password-overlay:not(.show), #login-overlay.hidden {
+            display: none;
         }
 
-        .btn-row i { color: #a9fbf5; }
-        .neon-line {
-            background: linear-gradient(90deg, transparent, rgba(103,243,245,.8), rgba(20,184,166,.55), transparent) !important;
-            box-shadow: 0 0 12px rgba(34,211,238,.25);
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: min(400px, 100%);
+            text-align: center;
         }
 
-        footer {
-            color: rgba(198, 250, 255, .72) !important;
-            border-color: rgba(103,243,245,.22) !important;
+        body.app-locked > *:not(#login-overlay) {
+            visibility: hidden !important;
         }
-    </style>
 
-    <!-- Script Google Login & Whitelist Email -->
-    <script>
-      // Daftar email resmi yang diizinkan mengakses dashboard
-      const ALLOWED_EMAILS = [
-        "natunassl@gmail.com",
-        "witapebrianti33@gmail.com",
-        "cyyessi25@gmail.com",
-        "midiawati.midai@gmail.com",
-        "wandisusanto21@gmail.com"
-      ];
-
-      // Fungsi membaca payload JWT Token dari Google
-      function parseJwt (token) {
-        var base64Url = token.split('.')[1];
-        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
-      }
-
-      // Callback setelah pengguna berhasil login Google
-      function handleCredentialResponse(response) {
-        const responsePayload = parseJwt(response.credential);
-        const userEmail = responsePayload.email.toLowerCase().trim();
-
-        if (ALLOWED_EMAILS.includes(userEmail)) {
-          // Akses diterima
-          document.getElementById("auth-container").style.display = "none";
-          document.getElementById("main-dashboard").style.display = "block";
-        } else {
-          // Akses ditolak
-          const errorMsg = document.getElementById("auth-error");
-          errorMsg.innerText = `Akses Ditolak! Email (${userEmail}) tidak memiliki izin untuk melihat dokumen ini.`;
-          errorMsg.classList.remove("hidden");
+        /* AREA CETAK DOKUMEN VIA @MEDIA PRINT */
+        #print-area {
+            display: none;
         }
-      }
 
-      window.onload = function () {
-        google.accounts.id.initialize({
-          client_id: "248765631152-7khfc6g0r5lk7rlqbdm47vm2pn8o2d9h.apps.googleusercontent.com",
-          callback: handleCredentialResponse
-        });
+        @media print {
+            @page {
+                size: 210mm 330mm; /* Ukuran F4 / Folio */
+                margin-top: 10mm;
+                margin-right: 20mm;
+                margin-bottom: 10mm;
+                margin-left: 30mm;   /* kiri 3 cm, kanan 2 cm */
+            }
 
-        google.accounts.id.renderButton(
-          document.getElementById("googleBtnContainer"),
-          { theme: "filled_blue", size: "large", shape: "pill", width: 280 }
-        );
-      }
-    </script>
+            body * {
+                visibility: hidden;
+            }
+
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+
+            #print-area {
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                color: #000;
+            }
+
+            .page-break {
+                page-break-after: always;
+                page-break-inside: avoid;
+                clear: both;
+            }
+
+            /* STYLES FORMULIR PERJANJIAN KERJASAMA */
+            .page-container {
+                width: 100%;
+                border: none;
+                padding: 0;
+            }
+
+            .header-title {
+                text-align: center;
+                font-weight: bold;
+                font-size: 11pt;
+                margin-bottom: 15px;
+                text-transform: uppercase;
+                line-height: 1.3;
+            }
+
+            .section-header {
+                font-weight: bold;
+                font-size: 10.5pt;
+                margin-bottom: 8px;
+            }
+
+            .pemohon-wrapper {
+                position: relative;
+                width: 100%;
+                margin-bottom: 15px;
+                min-height: 120px;
+            }
+
+            .pemohon-data {
+                width: 72%;
+            }
+
+            .pemohon-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .pemohon-table td {
+                padding: 3px 0;
+                vertical-align: top;
+                font-size: 10pt;
+            }
+
+            .dots-line {
+                border-bottom: 1px dotted #000;
+                display: inline-block;
+                width: 98%;
+            }
+
+            .register-box {
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 180px;
+                height: 85px;
+                border: 1.5px solid #000;
+                text-align: center;
+            }
+
+            .register-title {
+                font-weight: bold;
+                font-size: 9.5pt;
+                border-bottom: 1.5px solid #000;
+                padding: 3px 0;
+                letter-spacing: 0.5px;
+            }
+
+            .table-dokumen {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 6px;
+                margin-bottom: 15px;
+            }
+
+            .table-dokumen th, .table-dokumen td {
+                border: 1px solid #000;
+                padding: 4px 6px;
+                font-size: 9.5pt;
+                height: 22px;
+            }
+
+            .table-dokumen th {
+                text-align: center;
+                font-weight: bold;
+                background-color: transparent !important;
+            }
+
+            .catatan-container {
+                font-size: 9pt;
+                margin-bottom: 20px;
+                line-height: 1.4;
+            }
+
+            .ttd-table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: center;
+                font-size: 10pt;
+            }
+
+            .ttd-table td {
+                width: 50%;
+                vertical-align: top;
+            }
+
+            .space-ttd {
+                height: 55px;
+            }
+
+            /* STYLES KOP SKM PUSKESMAS */
+            .kop-puskesmas-container {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .kop-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .kop-table td {
+                vertical-align: middle;
+                border: none !important;
+            }
+
+            .kop-logo-left {
+                width: 100px;
+                text-align: left;
+            }
+
+            .kop-logo-right {
+                width: 100px;
+                text-align: right;
+            }
+
+            .kop-logo-img {
+                max-width: 85px;
+                max-height: 85px;
+                height: auto;
+                object-fit: contain;
+            }
+
+            .kop-text-center {
+                text-align: center;
+                line-height: 1.2;
+            }
+
+            .kop-text-center .h-pem { margin: 0; font-size: 12pt; }
+            .kop-text-center .h-din { margin: 0; font-size: 12pt; }
+            .kop-text-center .h-pkm { margin: 2px 0; font-size: 15pt; font-weight: bold; }
+            .kop-text-center .p-alamat { margin: 2px 0 0 0; font-size: 10pt; }
+            .kop-text-center .p-email { margin: 0; font-size: 10pt; }
+
+            .kop-divider {
+                width: 100%;
+                border-top: 3px solid #000;
+                border-bottom: 1px solid #000;
+                height: 2px;
+                margin-top: 5px;
+                margin-bottom: 12px;
+            }
+
+            .doc-title { text-align: center; font-weight: bold; font-size: 11.5pt; text-decoration: underline; margin-top: 8px; }
+            .doc-no { text-align: center; font-size: 10.5pt; margin-bottom: 12px; }
+
+            table.form-table-skm { width: 100%; border-collapse: collapse; margin: 8px 0; }
+            table.form-table-skm td { padding: 3px 2px; vertical-align: top; font-size: 12pt; }
+
+            /* STYLES DESAIN FORMULIR F-2.02 COMPACT (1 HALAMAN PASS) */
+            .page-f202 {
+                height: 320mm;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                gap: 1px;
+            }
+
+            .top-header-f202 {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 2px;
+            }
+
+            .top-header-f202 td {
+                vertical-align: middle;
+                padding: 0px;
+                font-size: 8.5pt;
+            }
+
+            .spaced-text {
+                letter-spacing: 2px;
+                font-weight: bold;
+            }
+
+            .f202-box {
+                border: 1.5px solid #000;
+                text-align: center;
+                font-weight: bold;
+                font-size: 9.5pt;
+                padding: 1px 12px;
+                display: inline-block;
+            }
+
+            .doc-title-f202 {
+                text-align: center;
+                font-weight: bold;
+                font-size: 10pt;
+                margin: 5px 0;
+                line-height: 1.1;
+            }
+
+            .section-title-f202 {
+                font-weight: bold;
+                font-size: 8.5pt;
+                margin-top: 2px;
+                margin-bottom: 1px;
+                text-transform: uppercase;
+                background-color: #f0f0f0;
+                padding: 2px 4px;
+                border: 1px solid #000;
+            }
+
+            .form-table-f202 {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 2px;
+            }
+
+            .form-table-f202 td {
+                padding: 0.8px 0;
+                vertical-align: middle;
+                font-size: 8pt;
+            }
+
+            .label-col-f202 {
+                width: 25%;
+                padding-right: 2px;
+            }
+
+            .colon-col-f202 {
+                width: 1.5%;
+                text-align: center;
+            }
+
+            .input-col-f202 {
+                width: 73.5%;
+            }
+
+            .char-grid {
+                display: inline-flex;
+                border-top: 1px solid #000;
+                border-left: 1px solid #000;
+                border-bottom: 1px solid #000;
+            }
+
+            .char-grid .box {
+                width: 15px;
+                height: 15px;
+                border-right: 1px solid #000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 7.5pt;
+                font-weight: bold;
+                text-transform: uppercase;
+                overflow: hidden;
+            }
+
+            .date-grid-container {
+                display: flex;
+                align-items: center;
+                gap: 1px;
+                font-size: 7pt;
+                font-weight: bold;
+            }
+
+            .options-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 8pt;
+            }
+
+            .options-table td {
+                border: 1px solid #000;
+                padding: 2px 4px;
+                vertical-align: middle;
+            }
+
+            .options-table td.selected {
+                color: #0066cc;
+                font-weight: bold;
+            }
+
+            .options-table td.selected::before {
+                content: "✓ ";
+                color: #0066cc;
+                font-weight: bold;
+            }
+
+            .syarat-container {
+                font-size: 7.5pt;
+                margin-top: 2px;
+                line-height: 1.15;
+            }
+
+            .syarat-container ol {
+                margin: 1px 0 0 12px;
+                padding: 0;
+            }
+
+            .ttd-f202 {
+                width: 100%;
+                margin-top: 6px;
+                border-collapse: collapse;
+                text-align: center;
+                font-size: 7.5pt;
+            }
+
+            .ttd-f202 td {
+                vertical-align: top;
+                width: 50%;
+            }
+
+            .ttd-space-f202 {
+                height: 35px;
+            }
+        }
+
+/* ===== DEEP SEA FUTURISM THEME: LAYAR APLIKASI ===== */
+@media screen {
+  :root {
+    color-scheme: dark;
+    --ds-bg: #04131f;
+    --ds-panel: rgba(5, 28, 43, .88);
+    --ds-panel-2: rgba(7, 42, 58, .78);
+    --ds-line: rgba(63, 226, 226, .34);
+    --ds-cyan: #54f4ed;
+    --ds-teal: #16c7c1;
+    --ds-text: #e5fbff;
+    --ds-muted: #9bc7d1;
+    --ds-glow: 0 0 22px rgba(40, 230, 220, .13);
+  }
+  html { min-height: 100%; background: var(--ds-bg); }
+  body {
+    background:
+      radial-gradient(ellipse at 12% 0%, rgba(0, 170, 190, .23), transparent 38%),
+      radial-gradient(ellipse at 88% 35%, rgba(0, 88, 145, .24), transparent 42%),
+      linear-gradient(145deg, #020b16 0%, #062235 48%, #03121f 100%) !important;
+    color: var(--ds-text) !important;
+    padding: 24px !important;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    position: relative;
+    isolation: isolate;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: radial-gradient(rgba(83, 242, 234, .19) .8px, transparent .8px);
+    background-size: 27px 27px; opacity: .25;
+    mask-image: linear-gradient(to bottom, black, transparent 90%);
+  }
+  body > .min-h-screen {
+    background: linear-gradient(135deg, rgba(0, 18, 32, .54), rgba(0, 75, 91, .18)) !important;
+    backdrop-filter: blur(5px);
+  }
+  .container, .table-container {
+    background: linear-gradient(145deg, rgba(7, 35, 52, .94), rgba(3, 22, 37, .96)) !important;
+    color: var(--ds-text) !important;
+    border: 1px solid var(--ds-line) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--ds-glow), inset 0 1px 0 rgba(255,255,255,.04) !important;
+    padding: 25px !important;
+    position: relative;
+    overflow: hidden;
+  }
+  .container::before, .table-container::before {
+    content: ""; position: absolute; top: 0; left: 24px; right: 24px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ds-cyan), #168bff, transparent);
+    opacity: .8;
+  }
+  .header-container { border-bottom: 1px solid var(--ds-line) !important; padding-bottom: 15px !important; }
+  h2, h3, .header-container h2 {
+    color: var(--ds-cyan) !important;
+    text-shadow: 0 0 14px rgba(84, 244, 237, .18);
+    border-bottom-color: rgba(65, 224, 222, .45) !important;
+  }
+  .form-group label { color: #c6edf2 !important; letter-spacing: .15px; }
+  .form-group input, .form-group select, input, select {
+    background-color: rgba(2, 17, 30, .92) !important;
+    color: #e8fdff !important;
+    border: 1px solid rgba(94, 202, 213, .35) !important;
+    border-radius: 8px !important;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  input::placeholder { color: #729aa7 !important; }
+  .form-group input:focus, .form-group select:focus, input:focus, select:focus {
+    outline: none !important; border-color: var(--ds-cyan) !important;
+    box-shadow: 0 0 0 3px rgba(48, 224, 218, .13), 0 0 16px rgba(48, 224, 218, .12) !important;
+  }
+  input[readonly] { background: rgba(12, 50, 66, .92) !important; color: #a9dce3 !important; }
+  .input-prefix { background: #0d3548 !important; color: var(--ds-cyan) !important; border-color: var(--ds-line) !important; }
+  .doc-input-row { color: #c8f1f4 !important; }
+  .doc-input-row[style], #input-form form > div[style*="background"] {
+    background: rgba(3, 25, 40, .72) !important;
+    border-color: var(--ds-line) !important;
+    border-radius: 12px !important;
+  }
+  button {
+    background: linear-gradient(135deg, #087f91, #0cb7b2) !important;
+    color: #f2ffff !important; border: 1px solid rgba(111, 255, 247, .32) !important;
+    border-radius: 9px !important; padding: 10px 16px !important;
+    box-shadow: 0 5px 16px rgba(0, 195, 190, .14);
+    transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+  }
+  button:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 7px 22px rgba(0, 220, 213, .23); }
+  button.excel { background: linear-gradient(135deg, #087b71, #0cae8e) !important; }
+  button.reset, .btn-del { background: linear-gradient(135deg, #922e50, #d34a66) !important; }
+  button.dashboard { background: linear-gradient(135deg, #075a91, #087fc1) !important; }
+  .table-container { overflow-x: auto; }
+  table.db-table { color: #dffaff !important; }
+  table.db-table th, table.db-table td { border-color: rgba(88, 198, 210, .24) !important; }
+  table.db-table th { background: linear-gradient(135deg, #0c4558, #0b3449) !important; color: var(--ds-cyan) !important; }
+  table.db-table tbody tr:nth-child(even) { background: rgba(19, 75, 91, .24); }
+  table.db-table tbody tr:hover { background: rgba(31, 164, 169, .13); }
+  .modal-box {
+    background: linear-gradient(145deg, #082c40, #041725) !important;
+    color: var(--ds-text) !important; border: 1px solid var(--ds-line) !important;
+    border-radius: 18px !important; box-shadow: 0 20px 70px rgba(0,0,0,.55), 0 0 28px rgba(45, 220, 216, .12) !important;
+  }
+  .modal-box h2, .modal-box h3 { color: var(--ds-cyan) !important; }
+  #login-overlay, .delete-password-overlay { background: rgba(0, 7, 17, .82) !important; backdrop-filter: blur(9px); }
+  #login-overlay .modal-box > div:first-child { filter: drop-shadow(0 0 12px rgba(84,244,237,.5)); }
+  #login-error, #delete-password-error { color: #ff9fae !important; }
+  @media (max-width: 700px) {
+    body { padding: 10px !important; }
+    .container, .table-container { padding: 16px !important; border-radius: 13px !important; }
+    .header-container { align-items: stretch; }
+    .header-container h2 { font-size: 1.15rem; }
+    .doc-input-row { grid-template-columns: 28px minmax(0,1fr) minmax(0,1fr) !important; gap: 6px !important; }
+    .btn-container button { flex: 1 1 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+}
+
+</style>
 </head>
+<body class="app-locked min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
 
-<body class="min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
+<!-- OVERLAY LOGIN -->
+<div id="login-overlay">
+    <div class="modal-box">
+        <div style="font-size: 40px;">🔐</div>
+        <h2>Akses Sistem Kematian</h2>
+        <p>Masukkan password untuk membuka sistem Puskesmas Midai.</p>
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <input type="password" id="login-password-input" placeholder="Masukkan password" style="flex:1; padding: 8px;">
+            <button type="button" onclick="toggleLoginPassword()">Lihat</button>
+        </div>
+        <div id="login-error" style="color: red; display: none; font-size: 12px; margin-bottom: 10px;">Password salah!</div>
+        <button type="button" onclick="bukaAplikasiDenganPassword()" style="width:100%;">Masuk</button>
+    </div>
+</div>
 
-    <!-- Efek cahaya 3D latar -->
-    <div class="page-glow one"></div>
-    <div class="page-glow two"></div>
-    <div class="page-glow three"></div>
+<!-- OVERLAY HAPUS -->
+<div class="delete-password-overlay" id="delete-modal">
+    <div class="modal-box">
+        <h3 style="color:#b71c1c; margin-top:0;">Otorisasi Penghapusan Data</h3>
+        <p>Masukkan password admin untuk menghapus data ini:</p>
+        <input type="password" id="delete-password-input" placeholder="Password Admin" style="width:100%; padding:8px; margin-bottom:10px;">
+        <div id="delete-password-error" style="color:red; display:none; font-size:12px; margin-bottom:10px;">Password salah!</div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="reset" onclick="tutupModalHapus()">Batal</button>
+            <button type="button" onclick="konfirmasiHapusData()">Hapus</button>
+        </div>
+    </div>
+</div>
 
-    <!-- LAYAR AUTHENTICATION (Ditampilkan Default) -->
-    <div id="auth-container" class="min-h-screen flex items-center justify-center px-4">
-        <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center space-y-6">
-            <div class="flex justify-center gap-4 mb-2">
-                <img src="./logo_puskesmas.png" alt="Logo Puskesmas Midai" class="h-16 w-16 rounded-full object-cover">
-                <img src="./logo_natuna.png" alt="Logo Natuna" class="h-16 w-auto object-contain">
+<!-- KONTEN APLIKASI -->
+<div class="min-h-screen bg-teal-950/40 backdrop-blur-xs flex flex-col justify-between py-8 px-4 sm:px-6">
+
+    <main class="max-w-4xl mx-auto w-full flex-grow">
+
+<!-- FORM INPUT UTAMA -->
+<div class="container" id="input-form">
+    <div class="header-container">
+        <h2>Sistem Integrasi Administrasi Kematian Puskesmas Midai</h2>
+        <button type="button" class="dashboard" onclick="window.location.href='korespondensi_terpadu.html'">⬅ Kembali ke Dashboard</button>
+    </div>
+    
+    <form id="mainForm">
+        
+        <h3>1. Data Instansi & Pemohon (Petugas Admin)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Pemohon/Admin</label><input type="text" id="in_p_nama_admin" value="Herman Susilo"></div>
+            <div class="form-group"><label>NIK Pemohon/Admin</label><input type="text" id="in_p_nik_admin" value="2103042008760001" maxlength="16"></div>
+            <div class="form-group"><label>Alamat Instansi</label><input type="text" id="in_instansi" value="Jalan Tanjung Selamat Midai"></div>
+            <div class="form-group"><label>No. HP & Email</label><input type="text" id="in_kontak" value="0821 7077 9697 / puskesmasmidai@gmail.com"></div>
+            <div class="form-group"><label>No. Register Kerjasama</label><input type="text" id="in_no_reg" placeholder="Isi No. Register"></div>
+        </div>
+
+        <h3>2. Dokumen Tambahan yang Diajukan (Baris 2-10 Form Register)</h3>
+        <div style="margin-bottom: 15px; background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #ddd;">
+            <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #555;">
+                <em>* Baris No. 1 diisi otomatis oleh Nama Jenazah & Akta Kematian. Silakan isi baris No. 2 sampai 10 secara manual jika ada dokumen tambahan (opsional):</em>
+            </p>
+            <div class="doc-input-row" style="font-weight: bold; font-size: 0.85rem; color: #333;">
+                <span>No.</span><span>Nama Lengkap</span><span>Jenis Dokumen</span>
             </div>
-            <div>
-                <h1 class="text-xl font-bold text-white tracking-wide">Area Terbatas & Keamanan</h1>
-                <h2 class="text-sm font-semibold text-cyan-300 mt-1">UPTD PUSKESMAS MIDAI</h2>
-                <p class="text-xs text-cyan-100/70 mt-3">Silakan gunakan akun Google terdaftar untuk membuka Panel Surat Korespondensi.</p>
+            <div class="doc-input-row"><span>2.</span><input type="text" id="in_doc_nama_2" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_2" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>3.</span><input type="text" id="in_doc_nama_3" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_3" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>4.</span><input type="text" id="in_doc_nama_4" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_4" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>5.</span><input type="text" id="in_doc_nama_5" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_5" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>6.</span><input type="text" id="in_doc_nama_6" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_6" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>7.</span><input type="text" id="in_doc_nama_7" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_7" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>8.</span><input type="text" id="in_doc_nama_8" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_8" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>9.</span><input type="text" id="in_doc_nama_9" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_9" placeholder="Jenis Dokumen"></div>
+            <div class="doc-input-row"><span>10.</span><input type="text" id="in_doc_nama_10" placeholder="Nama Lengkap"><input type="text" id="in_doc_jenis_10" placeholder="Jenis Dokumen"></div>
+        </div>
+
+        <h3>3. Nomor Surat & Wilayah</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>No. Surat Keluar SKM</label>
+                <div class="input-prefix-container">
+                    <span class="input-prefix">400.12.3.1/</span>
+                    <input type="text" id="in_no_skm" placeholder="Contoh: 015">
+                </div>
             </div>
+            <div class="form-group">
+                <label>Bulan Romawi</label>
+                <select id="in_bln_romawi">
+                    <option value="">-- Pilih Bulan --</option>
+                    <option value="I">I (Januari)</option>
+                    <option value="II">II (Februari)</option>
+                    <option value="III">III (Maret)</option>
+                    <option value="IV">IV (April)</option>
+                    <option value="V">V (Mei)</option>
+                    <option value="VI">VI (Juni)</option>
+                    <option value="VII">VII (Juli)</option>
+                    <option value="VIII">VIII (Agustus)</option>
+                    <option value="IX">IX (September)</option>
+                    <option value="X">X (Oktober)</option>
+                    <option value="XI">XI (November)</option>
+                    <option value="XII">XII (Desember)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Tahun Surat</label><input type="text" id="in_thn_skm" value="2026"></div>
+            <div class="form-group">
+                <label>Tgl Surat / Pelaporan (Kalender)</label>
+                <input type="date" id="in_tgl_surat_picker" onchange="prosesTanggalSurat()">
+            </div>
+            <div class="form-group">
+                <label>Tgl Surat Teks (Otomatis)</label>
+                <input type="text" id="in_tgl_surat" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group"><label>Kode Wilayah (8 Angka)</label><input type="text" id="in_kode_wilayah" placeholder="21030400" maxlength="8"></div>
+            <div class="form-group"><label>Desa / Kelurahan</label><input type="text" id="in_desa_kel" placeholder="Contoh: Midai / Sabang Barat"></div>
+        </div>
+
+        <h3>4. Data Jenazah (Yang Meninggal Dunia)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>NIK Jenazah</label><input type="text" id="in_j_nik" maxlength="16"></div>
+            <div class="form-group"><label>Nama Lengkap Jenazah</label><input type="text" id="in_j_nama"></div>
+            <div class="form-group"><label>Tempat Lahir Jenazah</label><input type="text" id="in_j_tmpt_lahir"></div>
+            <div class="form-group">
+                <label>Tgl Lahir Jenazah (Kalender)</label>
+                <input type="date" id="in_j_tgl_lahir_picker" onchange="prosesTanggalLahirJenazah()">
+            </div>
+            <div class="form-group">
+                <label>Tgl Lahir Teks (Otomatis)</label>
+                <input type="text" id="in_j_tgl_lahir" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>Agama</label>
+                <select id="in_j_agama">
+                    <option value="">-- Pilih Agama --</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Kristen">Kristen</option>
+                    <option value="Katolik">Katolik</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Buddha">Buddha</option>
+                    <option value="Khonghucu">Khonghucu</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Jenis Kelamin</label>
+                <select id="in_j_jk">
+                    <option value="">-- Pilih Jenis Kelamin --</option>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                </select>
+            </div>
+            <div class="form-group full-width"><label>Alamat Jenazah</label><input type="text" id="in_j_alamat"></div>
+            <div class="form-group"><label>Diagnosa / Penyebab Utama</label><input type="text" id="in_j_diagnosa" placeholder="Contoh: Hipertensi, Old Age"></div>
+            <div class="form-group">
+                <label>Tgl Kematian (Kalender)</label>
+                <input type="date" id="in_j_tgl_mati_picker" onchange="prosesTanggalKematian()">
+            </div>
+            <div class="form-group">
+                <label>Hari Kematian (Otomatis)</label>
+                <input type="text" id="in_j_hari_mati" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>Tgl Kematian Teks (Otomatis)</label>
+                <input type="text" id="in_j_tgl_mati" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group"><label>Pukul Kematian (WIB)</label><input type="text" id="in_j_pukul" placeholder="08:30"></div>
+            <div class="form-group"><label>Anak Ke- (Angka)</label><input type="number" id="in_j_anakke" placeholder="1" min="1"></div>
+            <div class="form-group">
+                <label>Sebab Kematian (F-2.02)</label>
+                <select id="in_j_sebab">
+                    <option value="">-- Pilih Sebab --</option>
+                    <option value="1">1. Sakit Biasa/Tua</option>
+                    <option value="2">2. Wabah/Penyakit</option>
+                    <option value="3">3. Kecelakaan</option>
+                    <option value="4">4. Kriminal</option>
+                    <option value="5">5. Bunuh Diri</option>
+                    <option value="6">6. Lainnya</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Tempat Kematian</label><input type="text" id="in_j_tmpt_mati" value="UPTD Puskesmas Midai"></div>
+            <div class="form-group">
+                <label>Yang Menerangkan (F-2.02)</label>
+                <select id="in_j_menerangkan">
+                    <option value="">-- Pilih Kategori --</option>
+                    <option value="1">1. Dokter</option>
+                    <option value="2">2. Tenaga Kesehatan</option>
+                    <option value="3">3. Kepolisian</option>
+                    <option value="4">4. Lainnya</option>
+                </select>
+            </div>
+        </div>
+
+        <h3>5. Penandatangan SKM (Kepala Puskesmas / Pejabat Berwenang)</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nama Penandatangan</label>
+                <select id="in_ttd_nama" onchange="updateDataPenandatangan()">
+                    <option value="">-- Pilih Nama Penandatangan --</option>
+                    <option value="KATARINA, S.Kep">KATARINA, S.Kep</option>
+                    <option value="GITA SUNDARI, AMK">GITA SUNDARI, AMK</option>
+                    <option value="MIDIAWATI, AMKG">MIDIAWATI, AMKG</option>
+                    <option value="NINA AGUSTIKA, S.Farm., Apt.">NINA AGUSTIKA, S.Farm., Apt.</option>
+                    <option value="RAHMI YUSNITA, Amd.Keb">RAHMI YUSNITA, Amd.Keb</option>
+                    <option value="RETNO TRISUSANTI, S.S.T">RETNO TRISUSANTI, S.S.T</option>
+                    <option value="Ns. ELVA RIZQI CHUSNIYAH, S.Kep">Ns. ELVA RIZQI CHUSNIYAH, S.Kep</option>
+                    <option value="dr. ANDIKA">dr. ANDIKA</option>
+                    <option value="dr. MONIKA">dr. MONIKA</option>
+                    <option value="METI MAYA SARI, SKM">METI MAYA SARI, SKM</option>
+                    <option value="HENDRA WIGUNA, Amd.Kep">HENDRA WIGUNA, Amd.Kep</option>
+                    <option value="YORA MIRANDA, A.Md.KL">YORA MIRANDA, A.Md.KL</option>
+                    <option value="OYO RANDA, A.MK">OYO RANDA, A.MK</option>
+                    <option value="RAHIMAH">RAHIMAH</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Jabatan Penandatangan</label>
+                <input type="text" id="in_ttd_jabatan" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>Golongan / Ruang (Pangkat)</label>
+                <input type="text" id="in_ttd_gol" readonly style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label>NIP Penandatangan</label>
+                <input type="text" id="in_ttd_nip" readonly style="background-color: #e9ecef;">
+            </div>
+        </div>
+
+        <h3>6. Data Pelapor (F-2.02)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Pelapor</label><input type="text" id="in_pel_nama"></div>
+            <div class="form-group"><label>NIK Pelapor</label><input type="text" id="in_pel_nik" maxlength="16"></div>
+            <div class="form-group"><label>No. Dokumen Perjalanan</label><input type="text" id="in_pel_paspor" placeholder="-"></div>
+            <div class="form-group"><label>No. Kartu Keluarga (KK)</label><input type="text" id="in_pel_kk" maxlength="16"></div>
+            <div class="form-group"><label>Kewarganegaraan</label><input type="text" id="in_pel_wn" value="WNI"></div>
+        </div>
+
+        <h3>7. Data Saksi I & Saksi II (F-2.02)</h3>
+        <div class="form-row-4">
+            <div class="form-group"><label>Nama Saksi I</label><input type="text" id="in_s1_nama"></div>
+            <div class="form-group"><label>NIK Saksi I</label><input type="text" id="in_s1_nik" maxlength="16"></div>
+            <div class="form-group"><label>No. KK Saksi I</label><input type="text" id="in_s1_kk" maxlength="16"></div>
+            <div class="form-group"><label>Kewarganegaraan Saksi I</label><input type="text" id="in_s1_wn" value="WNI"></div>
+        </div>
+        <div class="form-row-4">
+            <div class="form-group"><label>Nama Saksi II</label><input type="text" id="in_s2_nama"></div>
+            <div class="form-group"><label>NIK Saksi II</label><input type="text" id="in_s2_nik" maxlength="16"></div>
+            <div class="form-group"><label>No. KK Saksi II</label><input type="text" id="in_s2_kk" maxlength="16"></div>
+            <div class="form-group"><label>Kewarganegaraan Saksi II</label><input type="text" id="in_s2_wn" value="WNI"></div>
+        </div>
+
+        <h3>8. Data Orang Tua Jenazah (F-2.02)</h3>
+        <div class="form-row-5">
+            <div class="form-group"><label>Nama Ayah</label><input type="text" id="in_a_nama"></div>
+            <div class="form-group"><label>NIK Ayah</label><input type="text" id="in_a_nik" maxlength="16"></div>
+            <div class="form-group"><label>Tempat Lahir Ayah</label><input type="text" id="in_a_tmpt_lahir"></div>
+            <div class="form-group"><label>Tgl Lahir Ayah</label><input type="date" id="in_a_tgl_picker"></div>
+            <div class="form-group"><label>Kewarganegaraan Ayah</label><input type="text" id="in_a_wn" value="WNI"></div>
+        </div>
+        <div class="form-row-5">
+            <div class="form-group"><label>Nama Ibu</label><input type="text" id="in_i_nama"></div>
+            <div class="form-group"><label>NIK Ibu</label><input type="text" id="in_i_nik" maxlength="16"></div>
+            <div class="form-group"><label>Tempat Lahir Ibu</label><input type="text" id="in_i_tmpt_lahir"></div>
+            <div class="form-group"><label>Tgl Lahir Ibu</label><input type="date" id="in_i_tgl_picker"></div>
+            <div class="form-group"><label>Kewarganegaraan Ibu</label><input type="text" id="in_i_wn" value="WNI"></div>
+        </div>
+
+        <h3>9. Data Subjek Akta Kedua (Optional - F-2.02)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Nama Subjek Kedua</label><input type="text" id="in_sub2_nama" placeholder="-"></div>
+            <div class="form-group"><label>NIK Subjek Kedua</label><input type="text" id="in_sub2_nik" placeholder="-"></div>
+            <div class="form-group"><label>No. Dokumen Perjalanan</label><input type="text" id="in_sub2_paspor" placeholder="-"></div>
+            <div class="form-group"><label>No. Kartu Keluarga</label><input type="text" id="in_sub2_kk" placeholder="-"></div>
+            <div class="form-group"><label>Kewarganegaraan</label><input type="text" id="in_sub2_wn" value="WNI"></div>
+        </div>
+
+        <div class="btn-container">
+            <button type="submit">Simpan & Cetak Semua Dokumen</button>
+            <button type="button" class="excel" onclick="exportKeExcel()">Ekspor Database ke Excel</button>
+            <button type="button" class="reset" onclick="resetFormulir()">Reset Form</button>
+            <button type="button" class="dashboard" onclick="window.location.href='korespondensi_terpadu.html'">Kembali ke Dashboard</button>
+        </div>
+    </form>
+</div>
+
+<!-- TABEL DATABASE RIWAYAT -->
+<div class="container table-container">
+    <h3>Database Riwayat Surat Kematian</h3>
+    <table class="db-table" id="dbTable">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>No. Surat SKM</th>
+                <th>Nama Jenazah</th>
+                <th>NIK Jenazah</th>
+                <th>Tgl Kematian</th>
+                <th>Diagnosa</th>
+                <th>Nama Pelapor</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="dbTableBody">
+        </tbody>
+    </table>
+</div>
+
+    </main>
+
+</div>
+
+<!-- AREA CETAK DOKUMEN CETAK UTAMA -->
+<div id="print-area">
+
+    <!-- DOKUMEN 1: FORMULIR PERJANJIAN KERJASAMA -->
+    <div class="page-break">
+        <div class="page-container">
+            <div class="header-title">
+                FORMULIR PERJANJIAN KERJASAMA PENERBITAN AKTA KELAHIRAN,<br>
+                KARTU KELUARGA DAN KIA DENGAN PUSKESMAS, RSUD DAN KLINIK BERSALIN
+            </div>
+
+            <div class="section-header">I. DATA PEMOHON</div>
             
-            <div id="googleBtnContainer" class="flex justify-center pt-2"></div>
+            <div class="pemohon-wrapper">
+                <div class="register-box">
+                    <div class="register-title">NO.REGISTER</div>
+                    <div style="font-weight: bold; padding-top: 15px; font-size: 11pt;" id="out_reg_box">-</div>
+                </div>
 
-            <p id="auth-error" class="text-red-400 text-xs font-semibold hidden bg-red-950/60 p-3 rounded-lg border border-red-500/30"></p>
+                <div class="pemohon-data">
+                    <table class="pemohon-table">
+                        <tr>
+                            <td width="25">1.</td>
+                            <td width="190">Nama Pemohon</td>
+                            <td width="15">:</td>
+                            <td><span class="dots-line" id="out_p_nama_admin">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>2.</td>
+                            <td>Nomor Induk Kependudukan</td>
+                            <td>:</td>
+                            <td><span class="dots-line" id="out_p_nik_admin">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>3.</td>
+                            <td>Alamat Instansi</td>
+                            <td>:</td>
+                            <td><span class="dots-line" id="out_instansi">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>4.</td>
+                            <td>Nomor Handphone/email</td>
+                            <td>:</td>
+                            <td><span id="out_kontak">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>5.</td>
+                            <td>Tanggal Pendaftaran</td>
+                            <td>:</td>
+                            <td><span class="dots-line" id="out_tgl_daftar">-</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section-header">II. DOKUMEN YANG DIAJUKAN</div>
+            
+            <table class="table-dokumen">
+                <thead>
+                    <tr>
+                        <th width="45">NO</th>
+                        <th>NAMA LENGKAP</th>
+                        <th width="40%">JENIS DOKUMEN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align:center;">1</td>
+                        <td id="out_p_nama_jenazah">-</td>
+                        <td>Akta Kematian</td>
+                    </tr>
+                    <tr><td style="text-align:center;">2</td><td id="out_doc_nama_2"></td><td id="out_doc_jenis_2"></td></tr>
+                    <tr><td style="text-align:center;">3</td><td id="out_doc_nama_3"></td><td id="out_doc_jenis_3"></td></tr>
+                    <tr><td style="text-align:center;">4</td><td id="out_doc_nama_4"></td><td id="out_doc_jenis_4"></td></tr>
+                    <tr><td style="text-align:center;">5</td><td id="out_doc_nama_5"></td><td id="out_doc_jenis_5"></td></tr>
+                    <tr><td style="text-align:center;">6</td><td id="out_doc_nama_6"></td><td id="out_doc_jenis_6"></td></tr>
+                    <tr><td style="text-align:center;">7</td><td id="out_doc_nama_7"></td><td id="out_doc_jenis_7"></td></tr>
+                    <tr><td style="text-align:center;">8</td><td id="out_doc_nama_8"></td><td id="out_doc_jenis_8"></td></tr>
+                    <tr><td style="text-align:center;">9</td><td id="out_doc_nama_9"></td><td id="out_doc_jenis_9"></td></tr>
+                    <tr><td style="text-align:center;">10</td><td id="out_doc_nama_10"></td><td id="out_doc_jenis_10"></td></tr>
+                </tbody>
+            </table>
+
+            <div class="catatan-container">
+                <strong>CATATAN:</strong><br>
+                1.<br>
+                2.<br>
+                3.
+            </div>
+
+            <table class="ttd-table">
+                <tr>
+                    <td>
+                       <br>PEMOHON
+<div class="space-ttd" style="height: 25px;"></div>
+                        <div class="space-ttd"></div>
+                        ( <span id="out_p_ttd_pelapor"><BR>....................................</span> )
+                    </td>
+                    <td>
+                        Ranai, ..........................<br>
+                        DIVERIFIKASI OLEH
+<div class="space-ttd" style="height: 25px;"></div>
+                        <div class="space-ttd"></div>
+                        ( .................................... )
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 
-    <!-- DASHBOARD UTAMA (Disembunyikan Bawaan Sampai Login Diterima) -->
-    <div id="main-dashboard" style="display: none;" class="min-h-screen bg-slate-950/0 flex flex-col justify-between py-4 sm:py-6 px-4 sm:px-6">
+    <!-- DOKUMEN 2: SURAT KETERANGAN KEMATIAN (SKM PUSKESMAS) -->
+    <div class="page-break">
+        <div class="kop-puskesmas-container">
+            <table class="kop-table">
+                <tr>
+                    <td class="kop-logo-left">
+                        <img src="logo_natuna.png" alt="Logo Natuna" class="kop-logo-img">
+                    </td>
+                    <td class="kop-text-center">
+                        <div class="h-pem">PEMERINTAH KABUPATEN NATUNA</div>
+                        <div class="h-din">DINAS KESEHATAN</div>
+                        <div class="h-pkm">UPTD PUSKESMAS MIDAI</div>
+                        <div class="p-alamat">Jalan Tanjung Selamat Midai, Natuna, Kepulauan Riau 29784</div>
+                        <div class="p-email">Pos-el puskesmasmidai@gmail.com</div>
+                    </td>
+                    <td class="kop-logo-right">
+                        <img src="logo_kesehatan.png" alt="Logo Kesehatan" class="kop-logo-img">
+                    </td>
+                </tr>
+            </table>
+            <div class="kop-divider"></div>
+        </div>
 
-        <!-- Main Content Centered -->
-        <main class="max-w-4xl mx-auto w-full flex-grow">
-            <div class="neon-line mb-5"></div>
-            
-            <!-- Welcome Banner tetap di atas saat scrolling -->
-            <div class="welcome-sticky">
-                <div class="glass-panel rounded-2xl shadow-2xl p-5 sm:p-6 relative overflow-hidden">
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="flex-shrink-0">
-                            <img src="./logo_puskesmas.png" alt="Logo Puskesmas Midai" class="h-14 sm:h-20 w-14 sm:w-20 rounded-full object-cover drop-shadow-md">
-                        </div>
-                        <div class="text-center text-white flex-grow">
-                            <h1 class="text-xl sm:text-3xl font-extrabold tracking-wide drop-shadow-md">
-                                Selamat Datang di Panel Surat
-                            </h1>
-                            <h2 class="text-lg sm:text-2xl font-bold text-cyan-200 mt-1 tracking-wider drop-shadow-sm">
-                                UPTD PUSKESMAS MIDAI
-                            </h2>
-                            <p class="text-cyan-100 text-xs sm:text-sm mt-2 font-medium opacity-90">
-                                Pilih Kategori atau jenis surat yang ingin dibuat.
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <img src="./logo_natuna.png" alt="Logo Kab. Natuna" class="h-14 sm:h-20 w-auto drop-shadow-md object-contain">
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="doc-title"><BR>SURAT KETERANGAN KEMATIAN</div>
+        <div class="doc-no">Nomor: 400.12.3.1/<span id="out_skm_nomor">___</span>/PKM-MD/<span id="out_skm_bln">___</span>/<span id="out_skm_thn">2026</span></div>
 
-            <!-- SECTION 1: SURAT PELAYANAN PASIEN & PENDUDUK -->
-            <section class="category mb-5 sm:mb-6">
-                <div class="category-header bg-gradient-to-r from-cyan-700/90 via-blue-700/90 to-indigo-800/90 text-white font-bold py-3.5 px-5 flex items-center gap-3 text-sm sm:text-base uppercase tracking-wider" data-accordion-button aria-expanded="false" aria-controls="menu-pelayanan">
-                    <i class="fa-solid fa-folder-closed folder-icon text-lg text-cyan-200"></i>
-                    <span class="relative z-10 flex-grow">SURAT PELAYANAN PASIEN & PENDUDUK</span>
-                    <i class="fa-solid fa-chevron-down chevron text-sm opacity-80 relative z-10"></i>
-                </div>
+        <p style="text-indent: 30px; line-height: 2; font-size: 12pt;">
+            Yang bertanda tangan di bawah ini, menerangkan bahwa pada hari <strong id="out_skm_hari">-</strong> tanggal <strong id="out_skm_tgl_mati">-</strong> pukul <strong id="out_skm_pukul">-</strong> WIB, telah meninggal dunia di <strong id="out_skm_tmpt_mati">-</strong>:
+        </p>
 
-                <div class="menu-content" id="menu-pelayanan"><div class="space-y-2.5 p-3 sm:p-4">
-                    <a href="./akta_kelahiran.html" class="btn-row flex items-center bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-blue-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">1.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Surat Keterangan / Akta Kelahiran</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
+        <table class="form-table-skm" style="margin-left: 20px; width: 95%;">
+            <tr><td width="30%">Nama Lengkap</td><td width="3%">:</td><td><strong id="out_skm_nama">-</strong></td></tr>
+            <tr><td>NIK</td><td>:</td><td id="out_skm_nik">-</td></tr>
+            <tr><td>Tempat / Tgl Lahir</td><td>:</td><td id="out_skm_ttl">-</td></tr>
+            <tr><td>Jenis Kelamin</td><td>:</td><td id="out_skm_jk">-</td></tr>
+            <tr><td>Agama</td><td>:</td><td id="out_skm_agama">-</td></tr>
+            <tr><td>Alamat</td><td>:</td><td id="out_skm_alamat">-</td></tr>
+            <tr><td>Diagnosa / Cause of Death</td><td>:</td><td><strong id="out_skm_diagnosa">-</strong></td></tr>
+        </table>
 
-                    <a href="./akta_kematian.html" class="btn-row flex items-center bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-blue-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">2.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Surat Keterangan / Akta Kematian</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
+        <p style="text-indent: 30px; line-height: 2; font-size: 12pt; margin-top: 15px;">
+            Demikian Surat Keterangan Kematian ini dibuat dengan sebenarnya agar dapat dipergunakan sebagaimana mestinya.
+        </p>
 
-                    <a href="./rujukan_kapus.html" class="btn-row flex items-center bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-blue-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">3.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Administrasi Rujukan Puskel</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                </div></div>
-            </section>
-
-            <!-- SECTION 2: TEMPLATE PRESENSI -->
-            <section class="category mb-5 sm:mb-6">
-                <div class="category-header bg-gradient-to-r from-violet-700/90 via-purple-700/90 to-indigo-800/90 text-white font-bold py-3.5 px-5 flex items-center gap-3 text-sm sm:text-base uppercase tracking-wider" data-accordion-button aria-expanded="false" aria-controls="menu-presensi">
-                    <i class="fa-solid fa-folder-closed folder-icon text-lg text-violet-200"></i>
-                    <span class="relative z-10 flex-grow">TEMPLATE PRESENSI</span>
-                    <i class="fa-solid fa-chevron-down chevron text-sm opacity-80 relative z-10"></i>
-                </div>
-
-                <div class="menu-content" id="menu-presensi"><div class="space-y-2.5 p-3 sm:p-4">
-                    <a href="./daftar_hadir.html" class="btn-row flex items-center bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 hover:from-purple-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-purple-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">1.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Presensi/Daftar Hadir Kosong</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./presensi_lokakarya_mini_bulanan.html" class="btn-row flex items-center bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 hover:from-purple-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-purple-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">2.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Presensi/Daftar Hadir Lokakarya Mini Bulanan</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./presensi_lokakarya_mini_linsek.html" class="btn-row flex items-center bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 hover:from-purple-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-purple-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">3.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Presensi/Daftar Hadir Lokakarya Mini Lintas Sektor</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                </div></div>
-            </section>
-
-            <!-- SECTION 3: PENCETAKAN FORMULIR -->
-            <section class="category mb-5 sm:mb-6">
-                <div class="category-header bg-gradient-to-r from-rose-700/90 via-fuchsia-700/90 to-purple-800/90 text-white font-bold py-3.5 px-5 flex items-center gap-3 text-sm sm:text-base uppercase tracking-wider" data-accordion-button aria-expanded="false" aria-controls="menu-formulir">
-                    <i class="fa-solid fa-folder-closed folder-icon text-lg text-rose-200"></i>
-                    <span class="relative z-10 flex-grow">PENCETAKAN FORMULIR</span>
-                    <i class="fa-solid fa-chevron-down chevron text-sm opacity-80 relative z-10"></i>
-                </div>
-
-                <div class="menu-content" id="menu-formulir"><div class="space-y-2.5 p-3 sm:p-4">
-                    <a href="./status_poli_umum.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">1.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Status Rawat Jalan Poli Umum</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./status_poli_gigi.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">2.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Status Rawat Jalan Poli Gigi</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./status_rawat_inap.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">3.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Status Rawat Inap</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./status_rawat_inap_kebidanan.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">4.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Status Rawat Inap Kebidanan</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./permintaan_pemeriksaan_laboratorium.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">5.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Permintaan Pemeriksaan Laboratorium</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./hasil_pemeriksaan_laboratorium.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">6.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Hasil Pemeriksaan Laboratorium</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./surat_pernyataan_penolakan_rujukan_kebidanan.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">7.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Surat Pernyataan Penolakan Rujukan Kebidanan</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./surat_pernyataan_penolakan_rujukan_umum.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">8.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Surat Pernyataan Penolakan Rujukan Umum</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./surat_pernyataan_penolakan_rawat_inap.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">9.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Surat Pernyataan Penolakan Rawat Inap</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./surat_pernyataan_pulang_atas_permintaan_sendiri.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">10.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Surat Pernyataan Pulang Atas Permintaan Sendiri</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="./resep.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">11.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Resep</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                </div></div>
-            </section>
-
-        </main>
-
-        <!-- Footer -->
-        <footer class="text-center text-cyan-100/70 text-xs sm:text-sm py-5 border-t border-cyan-400/20 max-w-4xl mx-auto w-full">
-            <p>&copy; UPTD Puskesmas Midai - Sistem Tata Usaha & Korespondensi Digital</p>
-        </footer>
-
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const buttons = document.querySelectorAll('[data-accordion-button]');
-            const welcome = document.querySelector('.welcome-sticky');
-
-            const getStickyHeight = () => {
-                return welcome ? welcome.getBoundingClientRect().height : 0;
-            };
-
-            const keepHeaderBelowWelcome = (button, behavior = 'smooth') => {
-                const gap = 14;
-                const top = button.getBoundingClientRect().top + window.scrollY - getStickyHeight() - gap;
-                window.scrollTo({ top: Math.max(0, top), behavior });
-            };
-
-            buttons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetId = button.getAttribute('aria-controls');
-                    const target = document.getElementById(targetId);
-                    if (!target) return;
-
-                    const willOpen = button.getAttribute('aria-expanded') !== 'true';
-                    button.setAttribute('aria-expanded', String(willOpen));
-                    target.classList.toggle('open', willOpen);
-
-                    const folder = button.querySelector('.folder-icon');
-                    if (folder) {
-                        folder.classList.toggle('fa-folder-open', willOpen);
-                        folder.classList.toggle('fa-folder-closed', !willOpen);
-                    }
-
-                    if (willOpen) {
-                        requestAnimationFrame(() => keepHeaderBelowWelcome(button));
-                    }
-                });
-            });
-
-            const updateSticky = () => {
-                if (welcome) welcome.classList.toggle('scrolled', window.scrollY > 40);
-            };
-            updateSticky();
-            window.addEventListener('scroll', updateSticky, { passive: true });
-
-            window.addEventListener('resize', () => {
-                const openButton = document.querySelector('[data-accordion-button][aria-expanded="true"]');
-                if (openButton && window.scrollY > 0) {
-                    requestAnimationFrame(() => keepHeaderBelowWelcome(openButton, 'auto'));
-                }
-            });
-        });
-    </script>
-
-</body>
-</html>
+        <div style="float: right; text-align: left; width: 50%; margin-top: 30px; font
