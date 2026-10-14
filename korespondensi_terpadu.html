@@ -127,48 +127,7 @@
 
         .category {
             overflow: visible;
-        }
-
-        .category-header {
-            border-radius: 16px 16px 0 0;
-        }
-
-        .menu-content {
-            border-radius: 0 0 16px 16px;
-        }
-
-        .category {
             scroll-margin-top: 145px;
-        }
-
-        .welcome-sticky .glass-panel {
-            position: relative;
-            transform: perspective(1100px) rotateX(0deg);
-            box-shadow:
-                0 26px 70px rgba(0,0,0,.48),
-                0 0 45px rgba(34,211,238,.16),
-                inset 0 2px 0 rgba(255,255,255,.16),
-                inset 0 -24px 42px rgba(0,0,0,.18);
-        }
-
-        .welcome-sticky .glass-panel::before {
-            content: "";
-            position: absolute;
-            inset: 1px;
-            border-radius: 15px;
-            pointer-events: none;
-            background: linear-gradient(110deg, transparent 15%, rgba(255,255,255,.12) 48%, transparent 68%);
-            transform: translateX(-120%);
-            animation: panelShine 6s ease-in-out infinite;
-        }
-
-        @keyframes panelShine {
-            0%,55% { transform: translateX(-120%); }
-            80%,100% { transform: translateX(120%); }
-        }
-
-        .category {
-            overflow: visible;
             position: relative;
             z-index: 1;
             border-radius: 16px;
@@ -178,6 +137,7 @@
         }
 
         .category-header {
+            border-radius: 16px 16px 0 0;
             position: relative;
             width: 100%;
             border: 0;
@@ -218,6 +178,7 @@
         }
 
         .menu-content {
+            border-radius: 0 0 16px 16px;
             display: grid;
             grid-template-rows: 0fr;
             opacity: 0;
@@ -372,10 +333,11 @@
         }
     </style>
 
-    <!-- Script Google Login & Whitelist Email -->
+    <!-- Script Google Login & Whitelist Email + Auto Session -->
     <script>
       // Daftar email resmi yang diizinkan mengakses dashboard
       const ALLOWED_EMAILS = [
+        "dbpkmmidai@gmail.com",
         "natunassl@gmail.com",
         "witapebrianti33@gmail.com",
         "cyyessi25@gmail.com",
@@ -393,24 +355,45 @@
         return JSON.parse(jsonPayload);
       }
 
+      // Fungsi menampilkan Dashboard jika terverifikasi
+      function showDashboard() {
+        const authContainer = document.getElementById("auth-container");
+        const mainDashboard = document.getElementById("main-dashboard");
+        if (authContainer) authContainer.style.display = "none";
+        if (mainDashboard) mainDashboard.style.display = "block";
+      }
+
       // Callback setelah pengguna berhasil login Google
       function handleCredentialResponse(response) {
-        const responsePayload = parseJwt(response.credential);
-        const userEmail = responsePayload.email.toLowerCase().trim();
+        try {
+          const responsePayload = parseJwt(response.credential);
+          const userEmail = responsePayload.email.toLowerCase().trim();
 
-        if (ALLOWED_EMAILS.includes(userEmail)) {
-          // Akses diterima
-          document.getElementById("auth-container").style.display = "none";
-          document.getElementById("main-dashboard").style.display = "block";
-        } else {
-          // Akses ditolak
-          const errorMsg = document.getElementById("auth-error");
-          errorMsg.innerText = `Akses Ditolak! Email (${userEmail}) tidak memiliki izin untuk melihat dokumen ini.`;
-          errorMsg.classList.remove("hidden");
+          if (ALLOWED_EMAILS.includes(userEmail)) {
+            // Simpan email ke memory sesi browser
+            sessionStorage.setItem('authorized_user', userEmail);
+            showDashboard();
+          } else {
+            // Akses ditolak
+            const errorMsg = document.getElementById("auth-error");
+            errorMsg.innerText = `Akses Ditolak! Email (${userEmail}) tidak memiliki izin untuk melihat dokumen ini.`;
+            errorMsg.classList.remove("hidden");
+          }
+        } catch (e) {
+          console.error("Gagal verifikasi token:", e);
         }
       }
 
+      // Inisialisasi Google Auth & Pengecekan Sesi Aktif
       window.onload = function () {
+        // Cek apakah pengguna sudah login sebelumnya
+        const savedUser = sessionStorage.getItem('authorized_user');
+        if (savedUser && ALLOWED_EMAILS.includes(savedUser)) {
+          showDashboard();
+          return; // Lewati pembuatan tombol login jika sesi masih aktif
+        }
+
+        // Jika belum login, siapkan tombol Google Sign-In
         google.accounts.id.initialize({
           client_id: "248765631152-7khfc6g0r5lk7rlqbdm47vm2pn8o2d9h.apps.googleusercontent.com",
           callback: handleCredentialResponse
@@ -626,6 +609,7 @@
 
     </div>
 
+    <!-- Script Accordion & Header Scroll -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const buttons = document.querySelectorAll('[data-accordion-button]');
