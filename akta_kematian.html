@@ -237,10 +237,12 @@
         @media print {
             @page {
                 size: 210mm 330mm; /* Ukuran F4 / Folio */
-                margin-top: 10mm;
-                margin-right: 20mm;
-                margin-bottom: 10mm;
-                margin-left: 30mm;   /* kiri 3 cm, kanan 2 cm */
+               size: 210mm 330mm; /* Ukuran F4 / Folio */
+        margin: 0; /* Menghilangkan margin bawaan browser yang memicu header/footer */
+    }
+
+    body {
+        padding: 10mm 20mm 10mm 30mm !important; /* Pindahkan margin ke body */
             }
 
             body * {
