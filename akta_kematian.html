@@ -1174,4 +1174,692 @@
             Demikian Surat Keterangan Kematian ini dibuat dengan sebenarnya agar dapat dipergunakan sebagaimana mestinya.
         </p>
 
-        <div style="float: right; text-align: left; width: 50%; margin-top: 30px; font
+        <div style="float: right; text-align: left; width: 50%; margin-top: 30px; font-size: 12pt;">
+            Midai, <span id="out_skm_tgl_surat">-</span><br>
+            <span id="out_skm_ttd_jabatan">Kepala UPTD Puskesmas Midai</span>,
+            <div style="height: 65px;"></div>
+            <div id="out_skm_block_nama">
+                <strong style="text-decoration: underline;" id="out_skm_ttd_nama">-</strong><br>
+                <span id="out_skm_ttd_gol">-</span><br>
+                NIP. <span id="out_skm_ttd_nip">-</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOKUMEN 3: FORMULIR F-2.02 KEMATIAN REVISI (PRESISI 1 HALAMAN PAS) -->
+    <div class="page-break page-f202">
+        <div>
+            <!-- TOP HEADER -->
+            <table class="top-header-f202">
+                <tr>
+                    <td width="100">Provinsi</td>
+                    <td width="10">:</td>
+                    <td class="spaced-text">K E P U L A U A N &nbsp;&nbsp; R I A U</td>
+                    <td width="110" style="text-align: right;">
+                        <div class="f202-box">F-2.02</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kabupaten</td>
+                    <td>:</td>
+                    <td class="spaced-text" colspan="2">N A T U N A</td>
+                </tr>
+                <tr>
+                    <td>Kecamatan</td>
+                    <td>:</td>
+                    <td class="spaced-text" colspan="2">M I D A I</td>
+                </tr>
+                <tr>
+                    <td>Desa/Kelurahan</td>
+                    <td>:</td>
+                    <td id="out_f202_desa_kel" style="font-weight: bold;" colspan="2">-</td>
+                </tr>
+                <tr>
+                    <td>Kode Wilayah</td>
+                    <td>:</td>
+                    <td colspan="2">
+                        <div class="char-grid" id="grid_kode_wilayah"></div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- JUDUL FORMULIR -->
+            <div class="doc-title-f202">
+                FORMULIR PELAPORAN PENCATATAN SIPIL DIDALAM WILAYAH NKRI<br>
+                KEMATIAN
+            </div>
+
+            <!-- DATA PELAPOR -->
+            <div class="section-title-f202">DATA PELAPOR</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">Nama</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Dokumen Perjalanan*</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_paspor"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Kartu Keluarga</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_kk"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_pel_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA SUBJEK AKTA KEDUA -->
+            <div class="section-title-f202">DATA SUBJEK AKTA KEDUA (JIKA ADA)</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">Nama</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Dokumen Perjalanan*</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_paspor"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Kartu Keluarga</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_kk"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_sub2_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA SAKSI I -->
+            <div class="section-title-f202">DATA SAKSI I</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">Nama</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s1_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s1_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Kartu Keluarga</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s1_kk"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s1_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA SAKSI II -->
+            <div class="section-title-f202">DATA SAKSI II</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">Nama</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s2_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s2_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Nomor Kartu Keluarga</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s2_kk"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_s2_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA ORANG TUA -->
+            <div class="section-title-f202">DATA ORANG TUA</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202"><strong>Nama Ayah</strong></td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_a_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK Ayah</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_a_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Tempat Lahir Ayah</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_a_tmpt_lahir"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Tanggal Lahir Ayah</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <div class="date-grid-container">
+                            Tgl : <div class="char-grid" id="grid_a_tgl"></div>
+                            Bln : <div class="char-grid" id="grid_a_bln"></div>
+                            Thn : <div class="char-grid" id="grid_a_thn"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_a_wn"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202"><strong>Nama Ibu</strong></td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_i_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">NIK Ibu</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_i_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Tempat Lahir Ibu</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_i_tmpt_lahir"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Tanggal Lahir Ibu</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <div class="date-grid-container">
+                            Tgl : <div class="char-grid" id="grid_i_tgl"></div>
+                            Bln : <div class="char-grid" id="grid_i_bln"></div>
+                            Thn : <div class="char-grid" id="grid_i_thn"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">Kewarganegaraan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_i_wn"></div></td>
+                </tr>
+            </table>
+
+            <!-- DATA KEMATIAN -->
+            <div class="section-title-f202">DATA KEMATIAN</div>
+            <table class="form-table-f202">
+                <tr>
+                    <td class="label-col-f202">1. NIK</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_nik"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">2. Nama Lengkap</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_nama"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">3. Anak Ke</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_anakke"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">4. Tanggal Kematian</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <div class="date-grid-container">
+                            Tgl : <div class="char-grid" id="grid_j_tgl"></div>
+                            Bln : <div class="char-grid" id="grid_j_bln"></div>
+                            Thn : <div class="char-grid" id="grid_j_thn"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">5. Pukul</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_pukul"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">6. Sebab Kematian</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <table class="options-table">
+                            <tr>
+                                <td width="33%" id="sebab_opt_1">1. Sakit Biasa/Tua</td>
+                                <td width="33%" id="sebab_opt_2">2. Wabah/Penyakit</td>
+                                <td width="34%" id="sebab_opt_3">3. Kecelakaan</td>
+                            </tr>
+                            <tr>
+                                <td id="sebab_opt_4">4. Kriminal</td>
+                                <td id="sebab_opt_5">5. Bunuh Diri</td>
+                                <td id="sebab_opt_6">6. Lainnya</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">7. Tempat Kematian</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202"><div class="char-grid" id="grid_j_tmpt_mati"></div></td>
+                </tr>
+                <tr>
+                    <td class="label-col-f202">8. Yang Menerangkan</td>
+                    <td class="colon-col-f202">:</td>
+                    <td class="input-col-f202">
+                        <table class="options-table">
+                            <tr>
+                                <td width="25%" id="terang_opt_1">1. Dokter</td>
+                                <td width="25%" id="terang_opt_2">2. Tenaga Kesehatan</td>
+                                <td width="25%" id="terang_opt_3">3. Kepolisian</td>
+                                <td width="25%" id="terang_opt_4">4. Lainnya</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- SYARAT PEMBUATAN AKTA MENJADI BAGIAN ISI DOKUMEN -->
+        <div class="syarat-container">
+            <strong>Syarat Pembuatan Akta Kematian :</strong>
+            <ol>
+                <li>Surat Keterangan Kematian Asli dari (Rumah Sakit/Kelurahan Desa Kepolisian);</li>
+                <li>KK dan KTP Asli Yang Meninggal;</li>
+                <li>Foto Copy KK yang meninggal;</li>
+                <li>Foto Copy KTP Pelapor (Suami/Istri/Anak/Orang Tua/Kakak/Adik);</li>
+                <li>Foto Copy KTP 2 Orang Saksi;</li>
+                <li>Foto Copy Kutipan Akta Kelahiran Bagi Yang Memiliki</li>
+            </ol>
+        </div>
+
+        <!-- TANDA TANGAN BAGIAN ISI DOKUMEN (SEJAJAR KIRI-KANAN) -->
+        <table class="ttd-f202">
+            <tr>
+                <td>
+                    Mengetahui,<br>
+                    Kasi Perubahan Status Anak, Warga Negara<br>
+                    Dan Kematian
+                    <div class="ttd-space-f202"></div>
+                    ( ____________________________________ )
+                </td>
+                <td>
+                    <BR>Midai, <span id="out_f202_tgl_pelaporan">-</span><br>
+                    Pelapor,
+                    <div class="ttd-space-f202"></div>
+                    ( <span style="text-decoration: underline; font-weight: bold;" id="out_f202_pelapor_ttd">Nama Pelapor</span> )
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+
+<!-- SCRIPT LOGIKA PEMROSESAN -->
+<script>
+    const dataPejabat = {
+        "KATARINA, S.Kep": { jabatan: "Kepala UPTD Puskesmas Midai", gol: "Penata Tingkat I/ III.d", nip: "19780824 200804 2 001" },
+        "GITA SUNDARI, AMK": { jabatan: "Penanggung Jawab Mutu", gol: "Penata / III.c", nip: "19830806 200604 2 013" },
+        "MIDIAWATI, AMKG": { jabatan: "an. Kepala UPTD Puskesmas<br>Kepala Tata Usaha", gol: "Penata (III/c)", nip: "19800510 200604 2 017" },
+        "NINA AGUSTIKA, S.Farm., Apt.": { jabatan: "Penanggung Jawab Ukp, Kefarmasian Dan Laboratorium", gol: "Penata / III.c", nip: "19880829 201101 2 004" },
+        "RAHMI YUSNITA, Amd.Keb": { jabatan: "Penanggung Jawab Bangunan Prasarana Dan Peralatan", gol: "Penata / III.c", nip: "19880625 201101 2 008" },
+        "RETNO TRISUSANTI, S.S.T": { jabatan: "Penanggung Jawab Ukm Essensial Dan Keperawatan", gol: "Penata Tingkat I / III.d", nip: "19790326 200212 2 005" },
+        "Ns. ELVA RIZQI CHUSNIYAH, S.Kep": { jabatan: "Plt. Kepala UPTD Puskesmas Midai", gol: "Penata Muda Tk.I / III.b", nip: "19930103 201903 2 009" },
+        "dr. ANDIKA": { jabatan: "Dokter UPTD Puskesmas Midai", gol: "Penata / III.c", nip: "19900101 201801 1 001" },
+        "dr. MONIKA": { jabatan: "Dokter UPTD Puskesmas Midai", gol: "Penata / III.c", nip: "19920202 201902 2 002" },
+        "METI MAYA SARI, SKM": { jabatan: "Kasubag TU Puskesmas Midai", gol: "Penata / III.c", nip: "19850505 201001 2 015" },
+        "HENDRA WIGUNA, Amd.Kep": { jabatan: "Perawat Pelaksana", gol: "Pengatur Tk.I / II.d", nip: "19870707 201101 1 008" },
+        "YORA MIRANDA, A.Md.KL": { jabatan: "Sanitarian UPTD Puskesmas Midai", gol: "Pengatur Tk.I / II.d", nip: "19940404 201704 2 003" },
+        "OYO RANDA, A.MK": { jabatan: "Perawat UPTD Puskesmas Midai", gol: "Pengatur / II.c", nip: "19950505 201805 1 004" },
+        "RAHIMAH": { jabatan: "Staf Administrasi", gol: "-", nip: "-" }
+    };
+
+    function terbilangUrutan(n) {
+        const num = parseInt(n, 10);
+        if (isNaN(num) || num <= 0) return n || "-";
+        
+        const kata = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", 
+                      "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", 
+                      "Delapan Belas", "Sembilan Belas", "Dua Puluh"];
+        
+        let teks = "";
+        if (num <= 20) {
+            teks = kata[num];
+        } else if (num < 100) {
+            const puluhan = Math.floor(num / 10);
+            const satuan = num % 10;
+            teks = kata[puluhan] + " Puluh" + (satuan > 0 ? " " + kata[satuan] : "");
+        } else {
+            teks = num.toString();
+        }
+        
+        return `${num} (${teks})`;
+    }
+
+    function formatTanggalIndo(dateStr) {
+        if (!dateStr) return "";
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function getHariIndo(dateStr) {
+        if (!dateStr) return "";
+        const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "";
+        return days[d.getDay()];
+    }
+
+    function prosesTanggalSurat() {
+        const val = document.getElementById('in_tgl_surat_picker').value;
+        document.getElementById('in_tgl_surat').value = formatTanggalIndo(val);
+    }
+
+    function prosesTanggalLahirJenazah() {
+        const val = document.getElementById('in_j_tgl_lahir_picker').value;
+        document.getElementById('in_j_tgl_lahir').value = formatTanggalIndo(val);
+    }
+
+    function prosesTanggalKematian() {
+        const val = document.getElementById('in_j_tgl_mati_picker').value;
+        document.getElementById('in_j_hari_mati').value = getHariIndo(val);
+        document.getElementById('in_j_tgl_mati').value = formatTanggalIndo(val);
+    }
+
+    function updateDataPenandatangan() {
+        const nama = document.getElementById('in_ttd_nama').value;
+        if (dataPejabat[nama]) {
+            document.getElementById('in_ttd_jabatan').value = dataPejabat[nama].jabatan.replace(/<br>/g, ' ');
+            document.getElementById('in_ttd_gol').value = dataPejabat[nama].gol;
+            document.getElementById('in_ttd_nip').value = dataPejabat[nama].nip;
+        } else {
+            document.getElementById('in_ttd_jabatan').value = "";
+            document.getElementById('in_ttd_gol').value = "";
+            document.getElementById('in_ttd_nip').value = "";
+        }
+    }
+
+    function toggleLoginPassword() {
+        const input = document.getElementById('login-password-input');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function bukaAplikasiDenganPassword() {
+        const pass = document.getElementById('login-password-input').value;
+        if (pass === "admin") {
+            document.body.classList.remove('app-locked');
+            document.getElementById('login-overlay').classList.add('hidden');
+        } else {
+            document.getElementById('login-error').style.display = 'block';
+        }
+    }
+
+    function simpanKeDatabase(data) {
+        let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        db.push(data);
+        localStorage.setItem('db_kematian_midai', JSON.stringify(db));
+        tampilkanDatabase();
+    }
+
+    function tampilkanDatabase() {
+        let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        const tbody = document.getElementById('dbTableBody');
+        tbody.innerHTML = '';
+
+        db.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>400.12.3.1/${item.no_skm}/PKM-MD/${item.bln_romawi}/${item.thn_skm}</td>
+                <td>${item.j_nama}</td>
+                <td>${item.j_nik}</td>
+                <td>${item.j_tgl_mati}</td>
+                <td>${item.j_diagnosa}</td>
+                <td>${item.pel_nama}</td>
+                <td>
+                    <div class="btn-action-group">
+                        <button type="button" onclick="editDataSurat(${index})">Edit</button>
+                        <button type="button" onclick="cetakDataSurat(${index})">Cetak</button>
+                        <button type="button" class="btn-del" onclick="bukaModalHapus(${index})">Hapus</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    let editIndexTarget = null;
+
+    function editDataSurat(index) {
+        const db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        const data = db[index];
+        if (!data) return;
+        editIndexTarget = index;
+        Object.keys(data).forEach(key => {
+            const el = document.getElementById('in_' + key);
+            if (el) el.value = data[key] ?? '';
+        });
+        window.scrollTo({top:0, behavior:'smooth'});
+        alert('Data dimuat kembali ke form. Silakan periksa dan simpan ulang.');
+    }
+
+    function cetakDataSurat(index) {
+        const db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        const data = db[index];
+        if (!data) return;
+        Object.keys(data).forEach(key => {
+            const el = document.getElementById('in_' + key);
+            if (el) el.value = data[key] ?? '';
+        });
+        document.getElementById('mainForm').dispatchEvent(new Event('submit', {cancelable:true}));
+    }
+
+    let hapusIndexTarget = null;
+    function bukaModalHapus(index) {
+        hapusIndexTarget = index;
+        document.getElementById('delete-modal').classList.add('show');
+    }
+
+    function tutupModalHapus() {
+        document.getElementById('delete-modal').classList.remove('show');
+        document.getElementById('delete-password-input').value = '';
+        document.getElementById('delete-password-error').style.display = 'none';
+    }
+
+    function konfirmasiHapusData() {
+        const pass = document.getElementById('delete-password-input').value;
+        if (pass === "y") {
+            let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+            db.splice(hapusIndexTarget, 1);
+            localStorage.setItem('db_kematian_midai', JSON.stringify(db));
+            tampilkanDatabase();
+            tutupModalHapus();
+        } else {
+            document.getElementById('delete-password-error').style.display = 'block';
+        }
+    }
+
+    function exportKeExcel() {
+        let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+        if (db.length === 0) {
+            alert("Belum ada data untuk diekspor!");
+            return;
+        }
+        const worksheet = XLSX.utils.json_to_sheet(db);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Riwayat Kematian");
+        XLSX.writeFile(workbook, "Database_Kematian_Puskesmas_Midai.xlsx");
+    }
+
+    function resetFormulir() {
+        document.getElementById('mainForm').reset();
+    }
+
+    /* HELPER FUNGSI POPULATE GRID KARAKTER & TANGGAL F-2.02 */
+    function isiGridChar(containerId, textValue, totalBox = 23) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        const str = (textValue || '').toString().toUpperCase();
+        for (let i = 0; i < totalBox; i++) {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.innerText = str[i] || '';
+            container.appendChild(box);
+        }
+    }
+
+    function isiGridTanggal(pickerVal, gridTglId, gridBlnId, gridThnId) {
+        let dd = '', mm = '', yyyy = '';
+        if (pickerVal) {
+            const d = new Date(pickerVal);
+            if (!isNaN(d.getTime())) {
+                dd = String(d.getDate()).padStart(2, '0');
+                mm = String(d.getMonth() + 1).padStart(2, '0');
+                yyyy = String(d.getFullYear());
+            }
+        }
+        isiGridChar(gridTglId, dd, 2);
+        isiGridChar(gridBlnId, mm, 2);
+        isiGridChar(gridThnId, yyyy, 4);
+    }
+
+    function tandaiOpsi(prefix, selectedVal, totalOpt) {
+        for (let i = 1; i <= totalOpt; i++) {
+            const el = document.getElementById(`${prefix}_${i}`);
+            if (el) {
+                if (String(selectedVal) === String(i)) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            }
+        }
+    }
+
+    document.getElementById('mainForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const rawAnakKe = document.getElementById('in_j_anakke').value;
+        const selectedNamaPejabat = document.getElementById('in_ttd_nama').value;
+        const isMidiawati = selectedNamaPejabat.includes('MIDIAWATI');
+        
+        let jabatanHTML = dataPejabat[selectedNamaPejabat] ? dataPejabat[selectedNamaPejabat].jabatan : 'Kepala UPTD Puskesmas Midai';
+        if (isMidiawati) {
+            jabatanHTML = 'an. Kepala UPTD Puskesmas Midai<br><span style="margin-left: 21px; display: inline-block;">Kepala Tata Usaha</span>';
+        }
+
+        const formData = {
+            p_nama_admin: document.getElementById('in_p_nama_admin').value,
+            p_nik_admin: document.getElementById('in_p_nik_admin').value,
+            instansi: document.getElementById('in_instansi').value,
+            kontak: document.getElementById('in_kontak').value,
+            no_reg: document.getElementById('in_no_reg').value,
+            no_skm: document.getElementById('in_no_skm').value,
+            bln_romawi: document.getElementById('in_bln_romawi').value,
+            thn_skm: document.getElementById('in_thn_skm').value,
+            tgl_surat: document.getElementById('in_tgl_surat').value,
+            tgl_surat_raw: document.getElementById('in_tgl_surat_picker').value,
+            kode_wilayah: document.getElementById('in_kode_wilayah').value,
+            desa_kel: document.getElementById('in_desa_kel').value,
+            j_nik: document.getElementById('in_j_nik').value,
+            j_nama: document.getElementById('in_j_nama').value,
+            j_tmpt_lahir: document.getElementById('in_j_tmpt_lahir').value,
+            j_tgl_lahir: document.getElementById('in_j_tgl_lahir').value,
+            j_agama: document.getElementById('in_j_agama').value,
+            j_jk: document.getElementById('in_j_jk').value,
+            j_alamat: document.getElementById('in_j_alamat').value,
+            j_diagnosa: document.getElementById('in_j_diagnosa').value,
+            j_hari_mati: document.getElementById('in_j_hari_mati').value,
+            j_tgl_mati: document.getElementById('in_j_tgl_mati').value,
+            j_tgl_mati_raw: document.getElementById('in_j_tgl_mati_picker').value,
+            j_pukul: document.getElementById('in_j_pukul').value,
+            j_anakke: terbilangUrutan(rawAnakKe),
+            j_sebab: document.getElementById('in_j_sebab').value,
+            j_tmpt_mati: document.getElementById('in_j_tmpt_mati').value,
+            j_menerangkan: document.getElementById('in_j_menerangkan').value,
+            ttd_nama: document.getElementById('in_ttd_nama').value,
+            ttd_jabatan: jabatanHTML,
+            ttd_gol: document.getElementById('in_ttd_gol').value,
+            ttd_nip: document.getElementById('in_ttd_nip').value,
+            pel_nama: document.getElementById('in_pel_nama').value,
+            pel_nik: document.getElementById('in_pel_nik').value,
+            pel_paspor: document.getElementById('in_pel_paspor').value,
+            pel_kk: document.getElementById('in_pel_kk').value,
+            pel_wn: document.getElementById('in_pel_wn').value,
+            s1_nama: document.getElementById('in_s1_nama').value,
+            s1_nik: document.getElementById('in_s1_nik').value,
+            s1_kk: document.getElementById('in_s1_kk').value,
+            s1_wn: document.getElementById('in_s1_wn').value,
+            s2_nama: document.getElementById('in_s2_nama').value,
+            s2_nik: document.getElementById('in_s2_nik').value,
+            s2_kk: document.getElementById('in_s2_kk').value,
+            s2_wn: document.getElementById('in_s2_wn').value,
+            a_nama: document.getElementById('in_a_nama').value,
+            a_nik: document.getElementById('in_a_nik').value,
+            a_tmpt_lahir: document.getElementById('in_a_tmpt_lahir').value,
+            a_tgl_raw: document.getElementById('in_a_tgl_picker').value,
+            a_wn: document.getElementById('in_a_wn').value,
+            i_nama: document.getElementById('in_i_nama').value,
+            i_nik: document.getElementById('in_i_nik').value,
+            i_tmpt_lahir: document.getElementById('in_i_tmpt_lahir').value,
+            i_tgl_raw: document.getElementById('in_i_tgl_picker').value,
+            i_wn: document.getElementById('in_i_wn').value,
+            sub2_nama: document.getElementById('in_sub2_nama').value,
+            sub2_nik: document.getElementById('in_sub2_nik').value,
+            sub2_paspor: document.getElementById('in_sub2_paspor').value,
+            sub2_kk: document.getElementById('in_sub2_kk').value,
+            sub2_wn: document.getElementById('in_sub2_wn').value
+        };
+
+        // Populate Form Perjanjian Kerja Sama
+        document.getElementById('out_reg_box').innerText = formData.no_reg || '-';
+        document.getElementById('out_p_nama_admin').innerText = formData.p_nama_admin || '-';
+        document.getElementById('out_p_nik_admin').innerText = formData.p_nik_admin || '-';
+        document.getElementById('out_instansi').innerText = formData.instansi || '-';
+        document.getElementById('out_kontak').innerText = formData.kontak || '-';
+        document.getElementById('out_tgl_daftar').innerText = formData.tgl_surat || '-';
+        document.getElementById('out_p_nama_jenazah').innerText = formData.j_nama || '-';
+        document.getElementById('out_p_ttd_pelapor').innerText = formData.p_nama_admin || '....................................';
+
+        for (let i = 2; i <= 10; i++) {
+            const elNama = document.getElementById(`in_doc_nama_${i}`);
+            const elJenis = document.getElementById(`in_doc_jenis_${i}`);
+            const outNama = document.getElementById(`out_doc_nama_${i}`);
+            const outJenis = document.getElementById(`out_doc_jenis_${i}`);
+            if (outNama) outNama.innerText = elNama ? elNama.value : '';
+            if (outJenis) outJenis.innerText = elJenis ? elJenis.value : '';
+        }
+
+        // Populate Surat Keterangan Kematian (SKM)
+        document.getElementById('out_skm_nomor').innerText = formData.no_skm || '___';
+        document.getElementById('out_skm_bln').innerText = formData.bln_romawi || '___';
+        document.getElementById('out_skm_thn').innerText = formData.thn_skm || '2026';
+        document.getElementById('out_skm_hari').innerText = formData.j_hari_mati || '-';
+        document.getElementById('out_skm_tgl_mati').innerText = formData.j_tgl_mati || '-';
+        document.getElementById('out_skm_pukul').innerText = formData.j_pukul || '-';
+        document.getElementById('out_skm_tmpt_mati').innerText = formData.j_tmpt_mati || '-';
+        document.getElementById('out_skm_nama').innerText = formData.j_nama || '-';
+        document.getElementById('out_skm_nik').innerText = formData.j_nik || '-';
