@@ -1608,7 +1608,7 @@
 
     function bukaAplikasiDenganPassword() {
         const pass = document.getElementById('login-password-input').value;
-        if (pass === "admin") {
+        if (pass === "") {
             document.body.classList.remove('app-locked');
             document.getElementById('login-overlay').classList.add('hidden');
         } else {
