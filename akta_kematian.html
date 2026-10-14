@@ -715,7 +715,13 @@
 
 </style>
 </head>
-<body class="app-locked min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
+<body class="min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
+
+    <div class="min-h-screen bg-teal-950/40 backdrop-blur-xs flex flex-col justify-between py-8 px-4 sm:px-6">
+
+        <main class="max-w-4xl mx-auto w-full flex-grow">
+
+<body class="app-locked">
 
 <!-- OVERLAY LOGIN -->
 <div id="login-overlay">
@@ -745,11 +751,6 @@
         </div>
     </div>
 </div>
-
-<!-- KONTEN APLIKASI -->
-<div class="min-h-screen bg-teal-950/40 backdrop-blur-xs flex flex-col justify-between py-8 px-4 sm:px-6">
-
-    <main class="max-w-4xl mx-auto w-full flex-grow">
 
 <!-- FORM INPUT UTAMA -->
 <div class="container" id="input-form">
@@ -1014,10 +1015,6 @@
         <tbody id="dbTableBody">
         </tbody>
     </table>
-</div>
-
-    </main>
-
 </div>
 
 <!-- AREA CETAK DOKUMEN CETAK UTAMA -->
@@ -1608,7 +1605,7 @@
 
     function bukaAplikasiDenganPassword() {
         const pass = document.getElementById('login-password-input').value;
-        if (pass === "") {
+        if (pass === "admin") {
             document.body.classList.remove('app-locked');
             document.getElementById('login-overlay').classList.add('hidden');
         } else {
@@ -1863,3 +1860,93 @@
         document.getElementById('out_skm_tmpt_mati').innerText = formData.j_tmpt_mati || '-';
         document.getElementById('out_skm_nama').innerText = formData.j_nama || '-';
         document.getElementById('out_skm_nik').innerText = formData.j_nik || '-';
+        document.getElementById('out_skm_ttl').innerText = (formData.j_tmpt_lahir ? formData.j_tmpt_lahir + ', ' : '') + (formData.j_tgl_lahir || '-');
+        document.getElementById('out_skm_jk').innerText = formData.j_jk || '-';
+        document.getElementById('out_skm_agama').innerText = formData.j_agama || '-';
+        document.getElementById('out_skm_alamat').innerText = formData.j_alamat || '-';
+        document.getElementById('out_skm_diagnosa').innerText = formData.j_diagnosa || '-';
+        document.getElementById('out_skm_tgl_surat').innerText = formData.tgl_surat || '-';
+        document.getElementById('out_skm_ttd_jabatan').innerHTML = formData.ttd_jabatan || 'Kepala UPTD Puskesmas Midai';
+        document.getElementById('out_skm_ttd_nama').innerText = formData.ttd_nama || '-';
+        document.getElementById('out_skm_ttd_gol').innerText = formData.ttd_gol || '-';
+        document.getElementById('out_skm_ttd_nip').innerText = formData.ttd_nip || '-';
+
+        const blockNama = document.getElementById('out_skm_block_nama');
+        if (blockNama) {
+            if (isMidiawati) {
+                blockNama.style.marginLeft = '21px';
+            } else {
+                blockNama.style.marginLeft = '0px';
+            }
+        }
+
+        // Populate F-2.02
+        document.getElementById('out_f202_desa_kel').innerText = formData.desa_kel || '-';
+        document.getElementById('out_f202_tgl_pelaporan').innerText = formData.tgl_surat || '-';
+        document.getElementById('out_f202_pelapor_ttd').innerText = formData.pel_nama || 'Nama Pelapor';
+
+        isiGridChar('grid_kode_wilayah', formData.kode_wilayah, 8);
+        isiGridChar('grid_pel_nama', formData.pel_nama, 23);
+        isiGridChar('grid_pel_nik', formData.pel_nik, 16);
+        isiGridChar('grid_pel_paspor', formData.pel_paspor, 16);
+        isiGridChar('grid_pel_kk', formData.pel_kk, 16);
+        isiGridChar('grid_pel_wn', formData.pel_wn, 10);
+
+        isiGridChar('grid_sub2_nama', formData.sub2_nama, 23);
+        isiGridChar('grid_sub2_nik', formData.sub2_nik, 16);
+        isiGridChar('grid_sub2_paspor', formData.sub2_paspor, 16);
+        isiGridChar('grid_sub2_kk', formData.sub2_kk, 16);
+        isiGridChar('grid_sub2_wn', formData.sub2_wn, 10);
+
+        isiGridChar('grid_s1_nama', formData.s1_nama, 23);
+        isiGridChar('grid_s1_nik', formData.s1_nik, 16);
+        isiGridChar('grid_s1_kk', formData.s1_kk, 16);
+        isiGridChar('grid_s1_wn', formData.s1_wn, 10);
+
+        isiGridChar('grid_s2_nama', formData.s2_nama, 23);
+        isiGridChar('grid_s2_nik', formData.s2_nik, 16);
+        isiGridChar('grid_s2_kk', formData.s2_kk, 16);
+        isiGridChar('grid_s2_wn', formData.s2_wn, 10);
+
+        isiGridChar('grid_a_nama', formData.a_nama, 23);
+        isiGridChar('grid_a_nik', formData.a_nik, 16);
+        isiGridChar('grid_a_tmpt_lahir', formData.a_tmpt_lahir, 18);
+        isiGridTanggal(formData.a_tgl_raw, 'grid_a_tgl', 'grid_a_bln', 'grid_a_thn');
+        isiGridChar('grid_a_wn', formData.a_wn, 10);
+
+        isiGridChar('grid_i_nama', formData.i_nama, 23);
+        isiGridChar('grid_i_nik', formData.i_nik, 16);
+        isiGridChar('grid_i_tmpt_lahir', formData.i_tmpt_lahir, 18);
+        isiGridTanggal(formData.i_tgl_raw, 'grid_i_tgl', 'grid_i_bln', 'grid_i_thn');
+        isiGridChar('grid_i_wn', formData.i_wn, 10);
+
+        isiGridChar('grid_j_nik', formData.j_nik, 16);
+        isiGridChar('grid_j_nama', formData.j_nama, 23);
+        isiGridChar('grid_j_anakke', rawAnakKe, 3);
+        isiGridTanggal(formData.j_tgl_mati_raw, 'grid_j_tgl', 'grid_j_bln', 'grid_j_thn');
+        isiGridChar('grid_j_pukul', formData.j_pukul, 5);
+        isiGridChar('grid_j_tmpt_mati', formData.j_tmpt_mati, 23);
+
+        tandaiOpsi('sebab_opt', formData.j_sebab, 6);
+        tandaiOpsi('terang_opt', formData.j_menerangkan, 4);
+
+        if (editIndexTarget !== null) {
+            let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
+            db[editIndexTarget] = formData;
+            localStorage.setItem('db_kematian_midai', JSON.stringify(db));
+            tampilkanDatabase();
+            editIndexTarget = null;
+        } else {
+            simpanKeDatabase(formData);
+        }
+
+        window.print();
+    });
+
+    // Inisialisasi awal
+    document.addEventListener('DOMContentLoaded', function() {
+        tampilkanDatabase();
+    });
+</script>
+</body>
+</html>
