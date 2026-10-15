@@ -201,8 +201,8 @@
             font-size: 8pt;
         }
 
-        /* MODAL & LOGIN OVERLAY */
-        .delete-password-overlay, #login-overlay {
+        /* MODAL OVERLAY HAPUS */
+        .delete-password-overlay {
             position: fixed;
             inset: 0;
             z-index: 99999;
@@ -213,7 +213,7 @@
             padding: 20px;
         }
 
-        .delete-password-overlay:not(.show), #login-overlay.hidden {
+        .delete-password-overlay:not(.show) {
             display: none;
         }
 
@@ -225,10 +225,6 @@
             text-align: center;
         }
 
-        body.app-locked > *:not(#login-overlay) {
-            visibility: hidden !important;
-        }
-
         /* AREA CETAK DOKUMEN VIA @MEDIA PRINT */
         #print-area {
             display: none;
@@ -237,14 +233,14 @@
         @media print {
             @page {
                 size: 210mm 330mm; /* Ukuran F4 / Folio */
-               size: 210mm 330mm; /* Ukuran F4 / Folio */
-        margin: 0; /* Menghilangkan margin bawaan browser yang memicu header/footer */
-    }
+                margin-top: 10mm;
+                margin-right: 20mm;
+                margin-bottom: 10mm;
+                margin-left: 30mm;   /* kiri 3 cm, kanan 2 cm */
+            }
 
-                  
             body * {
                 visibility: hidden;
-                 padding: 10mm 20mm 10mm 30mm !important; /* Pindahkan margin ke body */
             }
 
             #print-area, #print-area * {
@@ -699,9 +695,8 @@
     border-radius: 18px !important; box-shadow: 0 20px 70px rgba(0,0,0,.55), 0 0 28px rgba(45, 220, 216, .12) !important;
   }
   .modal-box h2, .modal-box h3 { color: var(--ds-cyan) !important; }
-  #login-overlay, .delete-password-overlay { background: rgba(0, 7, 17, .82) !important; backdrop-filter: blur(9px); }
-  #login-overlay .modal-box > div:first-child { filter: drop-shadow(0 0 12px rgba(84,244,237,.5)); }
-  #login-error, #delete-password-error { color: #ff9fae !important; }
+  .delete-password-overlay { background: rgba(0, 7, 17, .82) !important; backdrop-filter: blur(9px); }
+  #delete-password-error { color: #ff9fae !important; }
   @media (max-width: 700px) {
     body { padding: 10px !important; }
     .container, .table-container { padding: 16px !important; border-radius: 13px !important; }
@@ -721,22 +716,7 @@
 
         <main class="max-w-4xl mx-auto w-full flex-grow">
 
-<body class="app-locked">
-
-<!-- OVERLAY LOGIN -->
-<div id="login-overlay">
-    <div class="modal-box">
-        <div style="font-size: 40px;">🔐</div>
-        <h2>Akses Sistem Kematian</h2>
-        <p>Masukkan password untuk membuka sistem Puskesmas Midai.</p>
-        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-            <input type="password" id="login-password-input" placeholder="Masukkan password" style="flex:1; padding: 8px;">
-            <button type="button" onclick="toggleLoginPassword()">Lihat</button>
-        </div>
-        <div id="login-error" style="color: red; display: none; font-size: 12px; margin-bottom: 10px;">Password salah!</div>
-        <button type="button" onclick="bukaAplikasiDenganPassword()" style="width:100%;">Masuk</button>
-    </div>
-</div>
+<body>
 
 <!-- OVERLAY HAPUS -->
 <div class="delete-password-overlay" id="delete-modal">
@@ -1154,7 +1134,7 @@
         <div class="doc-no">Nomor: 400.12.3.1/<span id="out_skm_nomor">___</span>/PKM-MD/<span id="out_skm_bln">___</span>/<span id="out_skm_thn">2026</span></div>
 
         <p style="text-indent: 30px; line-height: 2; font-size: 12pt;">
-            Yang bertanda tangan di bawah ini, menerangkan bahwa pada hari <strong id="out_skm_hari">-</strong> tanggal <strong id="out_skm_tgl_mati">-</strong> pukul <strong id="out_skm_pukul">-</strong> WIB, telah meninggal dunia di <strong id="out_skm_tmpt_mati">-</strong>:
+            Yang bertanda tangan di bawah ini, menerangkan bahwa pada hari <strong id="out_skm_hari">-</strong> tanggal <strong id="out_skm_tgl_mati">-</strong> pukul <strong id="out_skm_pukul">-</strong>, telah meninggal dunia di <strong id="out_skm_tmpt_mati">-</strong>:
         </p>
 
         <table class="form-table-skm" style="margin-left: 20px; width: 95%;">
@@ -1598,21 +1578,6 @@
         }
     }
 
-    function toggleLoginPassword() {
-        const input = document.getElementById('login-password-input');
-        input.type = input.type === 'password' ? 'text' : 'password';
-    }
-
-    function bukaAplikasiDenganPassword() {
-        const pass = document.getElementById('login-password-input').value;
-        if (pass === "admin") {
-            document.body.classList.remove('app-locked');
-            document.getElementById('login-overlay').classList.add('hidden');
-        } else {
-            document.getElementById('login-error').style.display = 'block';
-        }
-    }
-
     function simpanKeDatabase(data) {
         let db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
         db.push(data);
@@ -1654,11 +1619,36 @@
         const data = db[index];
         if (!data) return;
         editIndexTarget = index;
+
         Object.keys(data).forEach(key => {
             const el = document.getElementById('in_' + key);
             if (el) el.value = data[key] ?? '';
         });
-        window.scrollTo({top:0, behavior:'smooth'});
+
+        // Memuat ulang elemen picker tanggal kematian & input angka anak ke-
+        if (data.j_tgl_mati_raw) {
+            document.getElementById('in_j_tgl_mati_picker').value = data.j_tgl_mati_raw;
+            prosesTanggalKematian();
+        }
+        if (data.tgl_surat_raw) {
+            document.getElementById('in_tgl_surat_picker').value = data.tgl_surat_raw;
+            prosesTanggalSurat();
+        }
+        if (data.j_tgl_lahir_raw) {
+            document.getElementById('in_j_tgl_lahir_picker').value = data.j_tgl_lahir_raw;
+            prosesTanggalLahirJenazah();
+        }
+        if (data.a_tgl_raw) {
+            document.getElementById('in_a_tgl_picker').value = data.a_tgl_raw;
+        }
+        if (data.i_tgl_raw) {
+            document.getElementById('in_i_tgl_picker').value = data.i_tgl_raw;
+        }
+        if (data.j_anakke_raw !== undefined) {
+            document.getElementById('in_j_anakke').value = data.j_anakke_raw;
+        }
+
+        window.scrollTo({top: 0, behavior: 'smooth'});
         alert('Data dimuat kembali ke form. Silakan periksa dan simpan ulang.');
     }
 
@@ -1666,10 +1656,8 @@
         const db = JSON.parse(localStorage.getItem('db_kematian_midai') || '[]');
         const data = db[index];
         if (!data) return;
-        Object.keys(data).forEach(key => {
-            const el = document.getElementById('in_' + key);
-            if (el) el.value = data[key] ?? '';
-        });
+        
+        editDataSurat(index);
         document.getElementById('mainForm').dispatchEvent(new Event('submit', {cancelable:true}));
     }
 
@@ -1712,6 +1700,7 @@
 
     function resetFormulir() {
         document.getElementById('mainForm').reset();
+        editIndexTarget = null;
     }
 
     /* HELPER FUNGSI POPULATE GRID KARAKTER & TANGGAL F-2.02 */
@@ -1768,6 +1757,13 @@
             jabatanHTML = 'an. Kepala UPTD Puskesmas Midai<br><span style="margin-left: 21px; display: inline-block;">Kepala Tata Usaha</span>';
         }
 
+        // Penanganan Pukul + "WIB"
+        let rawPukul = document.getElementById('in_j_pukul').value.trim();
+        let formattedPukul = rawPukul;
+        if (rawPukul && !rawPukul.toUpperCase().includes('WIB')) {
+            formattedPukul = rawPukul + ' WIB';
+        }
+
         const formData = {
             p_nama_admin: document.getElementById('in_p_nama_admin').value,
             p_nik_admin: document.getElementById('in_p_nik_admin').value,
@@ -1785,6 +1781,7 @@
             j_nama: document.getElementById('in_j_nama').value,
             j_tmpt_lahir: document.getElementById('in_j_tmpt_lahir').value,
             j_tgl_lahir: document.getElementById('in_j_tgl_lahir').value,
+            j_tgl_lahir_raw: document.getElementById('in_j_tgl_lahir_picker').value,
             j_agama: document.getElementById('in_j_agama').value,
             j_jk: document.getElementById('in_j_jk').value,
             j_alamat: document.getElementById('in_j_alamat').value,
@@ -1792,7 +1789,8 @@
             j_hari_mati: document.getElementById('in_j_hari_mati').value,
             j_tgl_mati: document.getElementById('in_j_tgl_mati').value,
             j_tgl_mati_raw: document.getElementById('in_j_tgl_mati_picker').value,
-            j_pukul: document.getElementById('in_j_pukul').value,
+            j_pukul: formattedPukul,
+            j_anakke_raw: rawAnakKe,
             j_anakke: terbilangUrutan(rawAnakKe),
             j_sebab: document.getElementById('in_j_sebab').value,
             j_tmpt_mati: document.getElementById('in_j_tmpt_mati').value,
@@ -1922,9 +1920,12 @@
 
         isiGridChar('grid_j_nik', formData.j_nik, 16);
         isiGridChar('grid_j_nama', formData.j_nama, 23);
-        isiGridChar('grid_j_anakke', rawAnakKe, 3);
+        
+        // Mengisi kotak-kotak Anak Ke dengan format "1 (SATU)"
+        isiGridChar('grid_j_anakke', formData.j_anakke, 23);
+        
         isiGridTanggal(formData.j_tgl_mati_raw, 'grid_j_tgl', 'grid_j_bln', 'grid_j_thn');
-        isiGridChar('grid_j_pukul', formData.j_pukul, 5);
+        isiGridChar('grid_j_pukul', formData.j_pukul, 10);
         isiGridChar('grid_j_tmpt_mati', formData.j_tmpt_mati, 23);
 
         tandaiOpsi('sebab_opt', formData.j_sebab, 6);
