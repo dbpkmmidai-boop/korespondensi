@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Rujukan Ambulan Laut - UPTD Puskesmas Midai (F4 Size)</title>
-  <!-- Pustaka SheetJS untuk export ke format .xlsx asli -->
+  <title>Sistem Rujukan Ambulan Laut & Klaim - UPTD Puskesmas Midai (F4 Size)</title>
+  <!-- Pustaka SheetJS untuk export ke format .xlsx -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     /* RESET & TAMPILAN DASHBOARD FORM */
@@ -19,12 +19,13 @@
     .form-section h4 { margin-bottom: 12px; color: #00695c; border-bottom: 2px solid #00695c; display: inline-block; padding-bottom: 3px; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
     .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
     .form-group label { font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; color: #37474f; }
     .form-group input, .form-group select, .form-group textarea { padding: 8px 10px; border: 1px solid #b0bec5; border-radius: 4px; font-size: 0.9rem; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #00897b; box-shadow: 0 0 5px rgba(0,137,123,0.3); }
     
-    /* GAYA KHUSUS FIELD READONLY (TERISI OTOMATIS) */
+    /* GAYA KHUSUS FIELD READONLY */
     .form-group input[readonly], input[readonly] {
       background-color: #0d3852 !important;
       color: #54f4ed !important;
@@ -47,30 +48,17 @@
     .btn-print { background: #0288d1; color: white; }
     .btn-delete { background: #d32f2f; color: white; }
 
-    /* TOMBOL MELAYANG (FLOATING BUTTON) KEMBALI KE KORESPONDENSI TERPADU */
+    /* FLOATING BUTTONS */
     .floating-back-btn {
-      position: fixed;
-      bottom: 25px;
-      right: 25px;
-      background-color: #00695c;
-      color: #ffffff;
-      padding: 12px 20px;
-      border-radius: 30px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      font-size: 0.95rem;
-      font-weight: bold;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      z-index: 9999;
-      transition: all 0.3s ease;
+      position: fixed; bottom: 25px; left: 25px; background-color: #00695c; color: #ffffff; padding: 12px 20px; border-radius: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); font-size: 0.95rem; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; z-index: 9999; transition: all 0.3s ease;
     }
-    .floating-back-btn:hover {
-      background-color: #004d40;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-      transform: translateY(-2px);
+    .floating-back-btn:hover { background-color: #004d40; transform: translateY(-2px); }
+
+    /* TOMBOL MELAYANG SIMPAN & CETAK */
+    .floating-print-btn {
+      position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, #0288d1, #004d40); color: #ffffff; padding: 14px 24px; border-radius: 30px; box-shadow: 0 6px 16px rgba(0,0,0,0.35); font-size: 1rem; font-weight: bold; border: 2px solid #42e8f5; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; z-index: 9999; transition: all 0.3s ease;
     }
+    .floating-print-btn:hover { background: linear-gradient(135deg, #004d40, #0288d1); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(66,232,245,0.4); }
 
     /* TABEL RIWAYAT DATA */
     .history-section { margin-top: 30px; border-top: 2px dashed #b0bec5; padding-top: 20px; }
@@ -84,15 +72,15 @@
 
     @media print {
       @page { size: 215mm 330mm; margin: 12mm 15mm 12mm 15mm; }
-      body { background: #fff; padding: 0; color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 12pt; }
+      body { background: #fff; padding: 0; color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; }
       .no-print { display: none !important; }
       #print-area { display: block !important; }
       
-      .page-f4 { page-break-after: always; page-break-inside: avoid; width: 100%; min-height: 295mm; box-sizing: border-box; position: relative; font-family: Arial, Helvetica, sans-serif; font-size: 12pt; }
+      .page-f4 { page-break-after: always; page-break-inside: avoid; width: 100%; min-height: 295mm; box-sizing: border-box; position: relative; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; }
       .page-f4:last-child { page-break-after: auto; }
 
       .kop-surat { display: flex; align-items: center; border-bottom: 3px double #000; padding-bottom: 5px; margin-bottom: 15px; }
-      .kop-logo { width: 80px; height: auto; }
+      .kop-logo { width: 75px; height: auto; }
       .kop-teks { flex-grow: 1; text-align: center; padding: 0 10px; }
       .kop-teks h4 { font-size: 10pt; font-weight: normal; margin: 0; text-transform: uppercase; }
       .kop-teks h3 { font-size: 12pt; font-weight: bold; margin: 2px 0; text-transform: uppercase; }
@@ -101,146 +89,89 @@
 
       .doc-title { text-align: center; font-weight: bold; font-size: 12pt; text-decoration: underline; margin: 15px 0; text-transform: uppercase; }
       
-      table.layout-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12pt; }
-      table.layout-table td { padding: 1px 2px; vertical-align: top; }
+      table.layout-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11pt; }
+      table.layout-table td { padding: 3px 2px; vertical-align: top; }
       table.layout-table td.label { width: 32%; }
       table.layout-table td.colon { width: 2%; }
 
       table.data-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-      table.data-table th, table.data-table td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 12pt; }
+      table.data-table th, table.data-table td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 10.5pt; }
       table.data-table th { background-color: #f2f2f2; }
 
-      .ttd-grid { display: flex; justify-content: space-between; margin-top: 30px; text-align: center; font-size: 12pt; }
+      .ttd-grid { display: flex; justify-content: space-between; margin-top: 30px; text-align: center; font-size: 11pt; }
       .ttd-box { width: 32%; display: inline-block; vertical-align: top; }
       .ttd-space { height: 60px; }
       .ttd-name { font-weight: bold; text-decoration: underline; }
     }
 
-    /* TEMA DEEP SEA FUTURISM — hanya untuk layar; tata letak cetak F4 tetap dipertahankan */
+    /* TEMA DEEP SEA FUTURISM */
     @media screen {
       :root {
         color-scheme: dark;
         --sea-bg: #04121f;
         --sea-panel: rgba(8, 34, 53, .88);
-        --sea-panel-2: rgba(9, 48, 68, .78);
         --sea-cyan: #42e8f5;
         --sea-blue: #1688c9;
         --sea-teal: #27d8c5;
         --sea-text: #e4f8ff;
-        --sea-muted: #9fc6d6;
         --sea-border: rgba(66, 232, 245, .3);
       }
       html { min-height: 100%; background: var(--sea-bg); }
-      body {
-        min-height: 100vh;
-        color: var(--sea-text);
-        background-color: var(--sea-bg);
-        background-image:
-          radial-gradient(ellipse at 12% 0%, rgba(0, 164, 208, .2), transparent 38%),
-          radial-gradient(ellipse at 90% 18%, rgba(16, 91, 173, .22), transparent 34%),
-          linear-gradient(rgba(42, 184, 216, .045) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(42, 184, 216, .045) 1px, transparent 1px),
-          linear-gradient(180deg, #04121f 0%, #061c2b 55%, #03101b 100%);
-        background-size: auto, auto, 34px 34px, 34px 34px, auto;
-        padding: 24px;
-      }
-      .container-form {
-        color: var(--sea-text);
-        background: linear-gradient(145deg, rgba(9, 37, 57, .96), rgba(4, 23, 39, .97));
-        border: 1px solid var(--sea-border);
-        border-radius: 16px;
-        box-shadow: 0 0 0 1px rgba(66,232,245,.05), 0 18px 55px rgba(0,0,0,.4), 0 0 32px rgba(0,174,214,.08);
-      }
+      body { min-height: 100vh; color: var(--sea-text); background-color: var(--sea-bg); padding: 24px; }
+      .container-form { color: var(--sea-text); background: linear-gradient(145deg, rgba(9, 37, 57, .96), rgba(4, 23, 39, .97)); border: 1px solid var(--sea-border); border-radius: 16px; box-shadow: 0 18px 55px rgba(0,0,0,.4); }
       .header-form { border-bottom: 1px solid rgba(66,232,245,.5); }
-      .header-form h2 { color: var(--sea-cyan); text-shadow: 0 0 18px rgba(66,232,245,.2); }
+      .header-form h2 { color: var(--sea-cyan); }
       .header-form h3 { color: #d2f2fb; }
-      .form-section {
-        color: var(--sea-text);
-        background: linear-gradient(135deg, rgba(9, 47, 68, .76), rgba(5, 29, 47, .84));
-        border: 1px solid var(--sea-border);
-        border-radius: 12px;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
-      }
+      .form-section { background: linear-gradient(135deg, rgba(9, 47, 68, .76), rgba(5, 29, 47, .84)); border: 1px solid var(--sea-border); border-radius: 12px; }
       .form-section h4 { color: var(--sea-cyan); border-bottom-color: var(--sea-teal); }
       .form-group label { color: #b9e6f2; }
-      .form-group input, .form-group select, .form-group textarea {
-        color: #e9fbff;
-        background: rgba(2, 17, 29, .88);
-        border: 1px solid rgba(111, 190, 211, .38);
-        border-radius: 7px;
-        transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
-      }
-      .form-group input::placeholder, .form-group textarea::placeholder { color: #7298a9; }
-      .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-        border-color: var(--sea-cyan);
-        box-shadow: 0 0 0 3px rgba(66,232,245,.12), 0 0 16px rgba(66,232,245,.08);
-        background: rgba(3, 25, 40, .98);
-      }
+      .form-group input, .form-group select, .form-group textarea { color: #e9fbff; background: rgba(2, 17, 29, .88); border: 1px solid rgba(111, 190, 211, .38); border-radius: 7px; }
       .form-group select option { color: #e9fbff; background: #082237; }
-      .btn {
-        border: 1px solid rgba(255,255,255,.12);
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,.18);
-        transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
-      }
-      .btn:hover { transform: translateY(-2px); filter: brightness(1.12); box-shadow: 0 8px 22px rgba(0,0,0,.25); }
       .btn-submit { background: linear-gradient(135deg, #087e9d, #0aaea7); color: #fff; }
-      .btn-submit:hover { background: linear-gradient(135deg, #099bbd, #12cbb8); }
       .btn-excel { background: linear-gradient(135deg, #087f75, #16a58d); color: #fff; }
       .btn-reset, .btn-delete { background: linear-gradient(135deg, #9f354b, #d84a62); color: #fff; }
       .btn-edit { background: linear-gradient(135deg, #9b6416, #d99a27); color: #fff; }
       .btn-print { background: linear-gradient(135deg, #1264a3, #168fd0); color: #fff; }
-      .floating-back-btn {
-        color: #eaffff;
-        background: linear-gradient(135deg, #087f9f, #0caaa7);
-        border: 1px solid rgba(114, 246, 255, .55);
-        box-shadow: 0 8px 28px rgba(0,0,0,.35), 0 0 22px rgba(40,213,231,.2);
-      }
-      .floating-back-btn:hover { background: linear-gradient(135deg, #099ec1, #12cbb8); }
-      .history-section { border-top: 1px dashed rgba(66,232,245,.45); }
-      .history-table { color: #dff7ff; }
-      .history-table th, .history-table td { border-color: rgba(95, 183, 207, .28); }
       .history-table th { color: var(--sea-cyan); background: rgba(10, 67, 91, .95); }
       .history-table tr { background: rgba(3, 25, 42, .65); }
       .history-table tr:nth-child(even) { background: rgba(10, 48, 68, .72); }
-      .history-table tr:hover { background: rgba(15, 89, 111, .65); }
-      @media (max-width: 720px) {
-        body { padding: 10px; }
-        .container-form { padding: 18px 14px; border-radius: 12px; }
-        .grid-2, .grid-3 { grid-template-columns: 1fr; }
-        .floating-back-btn { right: 12px; bottom: 12px; padding: 10px 14px; }
-        .history-section { overflow-x: auto; }
-        .history-table { min-width: 680px; }
-      }
     }
-
   </style>
 </head>
 <body>
 
-  <!-- TOMBOL MELAYANG KEMBALI KE KORESPONDENSI TERPADU -->
   <a href="korespondensi_terpadu.html" class="floating-back-btn no-print" title="Kembali ke Korespondensi Terpadu">
     <span>← Kembali ke Dashboard</span>
   </a>
+
+  <!-- TOMBOL MELAYANG SIMPAN & CETAK SEMUA BERKAS (F4) -->
+  <button type="button" class="floating-print-btn no-print" onclick="simpanDanCetak(event)" title="Simpan Data & Cetak Berkas F4">
+    <span style="font-size: 1.2rem;">🖨️</span>
+    <span>SIMPAN & CETAK SEMUA BERKAS (F4)</span>
+  </button>
 
   <!-- INPUT DASHBOARD -->
   <div class="container-form no-print">
     <div class="header-form">
       <h2>UPTD PUSKESMAS MIDAI</h2>
-      <h3>Formulir Tunggal Rujukan & Ambulan Laut</h3>
-      <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">Dapat dicetak kapan saja meskipun form belum terisi penuh.</p>
+      <h3>Formulir Tunggal Rujukan Ambulan Laut & Kelengkapan Klaim</h3>
+      <p style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">Mencetak Otomatis Seluruh Berkas Rujukan & Berkas Klaim BPJS</p>
     </div>
 
     <form id="mainForm" onsubmit="simpanDanCetak(event)">
       <input type="hidden" id="edit_index" value="-1">
 
-      <!-- 1. TANGGAL & JAM -->
+      <!-- 1. TANGGAL, NOMOR SURAT & PERIODE PELAYANAN -->
       <div class="form-section">
-        <h4>1. Informasi Tanggal & Jam (Format 24 Jam)</h4>
-        <div class="grid-3">
+        <h4>1. Informasi Tanggal, Nomor Surat & Pelayanan Klaim</h4>
+        <div class="grid-4">
           <div class="form-group">
-            <label>Tanggal Rujukan / Surat:</label>
+            <label>Tanggal Surat Rujukan:</label>
             <input type="date" id="input_tanggal">
+          </div>
+          <div class="form-group">
+            <label>Tanggal Surat Pengantar / Klaim:</label>
+            <input type="date" id="input_tgl_pengantar">
           </div>
           <div class="form-group">
             <label>Tanggal Masuk Puskesmas:</label>
@@ -253,9 +184,32 @@
         </div>
         <div class="grid-3">
           <div class="form-group">
-            <label>Nomor Surat:</label>
-            <input type="text" id="input_nomor_surat" placeholder="Contoh: 001/Ambulance Laut/445">
+            <label>Bulan Pelayanan:</label>
+            <select id="input_bulan_pelayanan">
+              <option value="Januari">Januari</option>
+              <option value="Februari">Februari</option>
+              <option value="Maret">Maret</option>
+              <option value="April">April</option>
+              <option value="Mei">Mei</option>
+              <option value="Juni">Juni</option>
+              <option value="Juli" selected>Juli</option>
+              <option value="Agustus">Agustus</option>
+              <option value="September">September</option>
+              <option value="Oktober">Oktober</option>
+              <option value="November">November</option>
+              <option value="Desember">Desember</option>
+            </select>
           </div>
+          <div class="form-group">
+            <label>Tahun Pelayanan (Misal: 2026):</label>
+            <input type="text" id="input_tahun_pelayanan" placeholder="2026" value="2026">
+          </div>
+          <div class="form-group">
+            <label>Tujuan Rumah Sakit:</label>
+            <input type="text" id="input_rs_tujuan" value="RSUD Natuna">
+          </div>
+        </div>
+        <div class="grid-3">
           <div class="form-group">
             <label>Jam Berangkat (24 Jam):</label>
             <input type="time" id="input_jam_berangkat">
@@ -264,12 +218,44 @@
             <label>Jam Tiba RS (24 Jam):</label>
             <input type="time" id="input_jam_tiba">
           </div>
+          <div class="form-group">
+            <label>No. Urut Surat Rujukan Ambulan:</label>
+            <input type="text" id="input_nomor_surat" placeholder="Contoh: 001">
+          </div>
+        </div>
+
+        <!-- NOMOR SURAT TAMBAHAN (KLAIM) -->
+        <div class="grid-3" style="margin-top: 10px; border-top: 1px dashed rgba(66,232,245,0.3); padding-top: 10px;">
+          <div class="form-group">
+            <label>No. Urut Surat Pengantar (Format 800.1.12.2/...):</label>
+            <input type="text" id="input_no_pengantar" placeholder="Contoh: 01" value="01">
+          </div>
+          <div class="form-group">
+            <label>No. Urut SPTJM (Format .../SPTJM/445):</label>
+            <input type="text" id="input_no_sptjm" placeholder="Contoh: 01" value="01">
+          </div>
+          <div class="form-group">
+            <label>No. Urut BASTK (Format .../BASTK/445):</label>
+            <input type="text" id="input_no_bastk" placeholder="Contoh: 01" value="01">
+          </div>
         </div>
         <div class="grid-3">
           <div class="form-group">
-            <label>Tujuan Rumah Sakit:</label>
-            <input type="text" id="input_rs_tujuan" value="RSUD Natuna">
+            <label>No. Urut Surat Pernyataan (Format .../000/Thn):</label>
+            <input type="text" id="input_no_pernyataan_klaim" placeholder="Contoh: 01" value="01">
           </div>
+          <div class="form-group">
+            <label>Jenis Pelayanan Non Kapitasi:</label>
+            <input type="text" id="input_jenis_pelayanan" value="Pelayanan Ambulan Air Rujukan Pasien BPJS Kesehatan">
+          </div>
+          <div class="form-group">
+            <label>Jumlah Uang Klaim Kwitansi (Rp):</label>
+            <input type="number" id="input_jumlah_uang" placeholder="Contoh: 1500000" oninput="updateTerbilang()">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Terbilang (Otomatis):</label>
+          <input type="text" id="input_terbilang" readonly placeholder="Terbilang otomatis...">
         </div>
       </div>
 
@@ -328,7 +314,7 @@
             </select>
           </div>
         </div>
-        <div class="grid-3">
+        <div class="grid-2">
           <div class="form-group">
             <label>Pekerjaan Pasien:</label>
             <input type="text" id="input_pasien_pekerjaan">
@@ -398,9 +384,9 @@
         </div>
       </div>
 
-      <!-- 5. DOKTER & PETUGAS -->
+      <!-- 5. DOKTER, PETUGAS & VERIFIKATOR -->
       <div class="form-section">
-        <h4>5. Dokter & Petugas Pendamping</h4>
+        <h4>5. Dokter, Petugas & Staf Verifikator Klaim</h4>
         <div class="grid-3">
           <div class="form-group">
             <label>Dokter yang Merujuk:</label>
@@ -412,7 +398,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label>NIP Dokter Merujuk (Otomatis):</label>
+            <label>NIP Dokter Merujuk:</label>
             <input type="text" id="input_dokter_nip" placeholder="Otomatis..." readonly>
           </div>
           <div class="form-group">
@@ -441,7 +427,7 @@
         </div>
         <div class="grid-3">
           <div class="form-group">
-            <label>NIP Perawat/Bidan (Otomatis):</label>
+            <label>NIP Perawat/Bidan:</label>
             <input type="text" id="input_perawat_nip" placeholder="Otomatis..." readonly>
           </div>
           <div class="form-group">
@@ -452,7 +438,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label>NIP Penandatangan (Otomatis):</label>
+            <label>NIP Penandatangan:</label>
             <input type="text" id="input_kapus_nip" value="19790724 200212 2 005" readonly>
           </div>
         </div>
@@ -462,8 +448,12 @@
             <input type="text" id="input_nahkoda" value="DAHARANI">
           </div>
           <div class="form-group">
-            <label for="waktu">Pilih Jam Pendampingan:</label>
-            <input type="time" id="waktu">
+            <label>Staf Penerima Klaim (Pihak Kedua BASTK):</label>
+            <input type="text" id="input_pihak2_nama" value="DINI WURI PUJI PURYATI">
+          </div>
+          <div class="form-group">
+            <label>Jabatan Staf Penerima Klaim:</label>
+            <input type="text" id="input_pihak2_jabatan" value="Staf Administrasi Klaim">
           </div>
         </div>
       </div>
@@ -478,18 +468,17 @@
 
     <!-- TABEL RIWAYAT RUJUKAN -->
     <div class="history-section">
-      <h3>Riwayat Data Rujukan Pasien</h3>
+      <h3>Riwayat Data Rujukan & Klaim Pasien</h3>
       <div style="overflow-x: auto;">
         <table class="history-table">
           <thead>
             <tr>
               <th>No</th>
-              <th>Tgl Rujukan & Waktu</th>
+              <th>Tgl & Periode</th>
               <th>Nama Pasien</th>
-              <th>Kesadaran</th>
+              <th>No BPJS</th>
               <th>Diagnosa</th>
-              <th>Dokter Merujuk</th>
-              <th>Tujuan RS</th>
+              <th>Nominal Klaim</th>
               <th>Aksi</th>
             </tr>
           </thead>
@@ -509,7 +498,7 @@
         <img src="logo_natuna.png" class="kop-logo" alt="Logo Pemkab Natuna">
         <div class="kop-teks">
           <h4>PEMERINTAH KABUPATEN NATUNA</h4>
-          <h3>DINAS KESEHATAN</h3>
+          3>DINAS KESEHATAN</h3>
           <h2>UPTD PUSKESMAS MIDAI</h2>
           <p>Jalan Tanjung Selamat Midai, Natuna, Kepulauan Riau 29784,<br>Pos-el: puskesmasmidai@gmail.com</p>
         </div>
@@ -517,7 +506,7 @@
       </div>
     </template>
 
-    <!-- DOKUMEN 1 -->
+    <!-- DOKUMEN 1: SURAT KETERANGAN PENGGUNAAN AMBULANCE LAUT -->
     <div class="page-f4" id="doc1">
       <div class="kop-placeholder"></div>
       <div class="doc-title"><br>SURAT KETERANGAN PENGGUNAAN AMBULANCE LAUT</div>
@@ -554,7 +543,7 @@
       </div>
     </div>
 
-    <!-- DOKUMEN 2 -->
+    <!-- DOKUMEN 2: SURAT BUKTI PENERIMAAN PELAYANAN AMBULANCE LAUT -->
     <div class="page-f4" id="doc2">
       <div class="kop-placeholder"></div>
       <div class="doc-title"><br>SURAT BUKTI PENERIMAAN PELAYANAN AMBULANCE LAUT</div>
@@ -582,7 +571,7 @@
         <div class="ttd-box" style="width: 42%;">
           <p>Mengetahui,</p>
           <p>Juru Mudi / Nahkoda Ambulance Laut</p>
-          <div class="ttd-space" style="height: 100px;"></div>
+          <div class="ttd-space" style="height: 80px;"></div>
           <p class="ttd-name" id="d2_ttd_nahkoda">DAHARANI</p>
         </div>
 
@@ -591,19 +580,19 @@
         <div class="ttd-box" style="width: 42%;">
           <p>Yang Membuat Pernyataan</p>
           <p>Pasien / Keluarga</p>
-          <div class="ttd-space" style="height: 100px;"></div>
+          <div class="ttd-space" style="height: 80px;"></div>
           <p class="ttd-name" id="d2_ttd_pernyataan">( .................................... )</p>
         </div>
       </div>
-      <div style="margin-top: 50px; text-align: center;">
+      <div style="margin-top: 30px; text-align: center;">
         <p>Mengetahui,</p><p id="d2_kapus_jabatan">Kepala Puskesmas</p>
-        <div class="ttd-space" style="height: 100px;"></div>
+        <div class="ttd-space" style="height: 80px;"></div>
         <p class="ttd-name" id="d2_ttd_kapus">KATARINA, S.Kep</p>
         <p>NIP. <span id="d2_ttd_kapus_nip">19790724 200212 2 005</span></p>
       </div>
     </div>
 
-    <!-- DOKUMEN 3 -->
+    <!-- DOKUMEN 3: BUKTI PELAYANAN AMBULANCE RUJUKAN PASIEN BPJS -->
     <div class="page-f4" id="doc3">
       <div class="kop-placeholder"></div>
       <div class="doc-title"><br>BUKTI PELAYANAN AMBULANCE RUJUKAN PASIEN BPJS KESEHATAN</div>
@@ -619,9 +608,8 @@
         <tr><td class="label">Jam Tiba di RS Tujuan</td><td class="colon">:</td><td><span id="d3_jam_tiba"></span> WIB</td></tr>
       </table>
       <p style="margin-top: 25px;">Demikian untuk dimaklumi atas kerjasamanya diucapkan terima kasih.</p>
-      <div style="margin-top: 120px;">
-
-        <div style="display: flex; align-items: flex-start; margin-bottom: 120px;">
+      <div style="margin-top: 80px;">
+        <div style="display: flex; align-items: flex-start; margin-bottom: 80px;">
           <div style="width: 30px;">1.</div>
           <div style="width: 200px;">Puskesmas Yang Merujuk</div>
           <div style="flex: 1; text-align: center;">
@@ -633,21 +621,17 @@
             <p style="font-size: 10pt; font-style: italic; margin: 5px 0 0 0;">Nama, Tanda Tangan Petugas dan Cap</p>
           </div>
         </div>
-
-        <div style="display: flex; align-items: flex-start; margin-bottom: 120px;">
+        <div style="display: flex; align-items: flex-start; margin-bottom: 80px;">
           <div style="width: 30px;">2.</div>
           <div style="width: 200px;">RS Penerima Rujukan</div>
           <div style="flex: 1; text-align: center;">
             <div style="display: flex; align-items: flex-end; width: 100%;">
-              <span>(</span>
-              <span style="flex: 1; border-bottom: 1px dotted #000; min-height: 18px; margin: 0 5px;"></span>
-              <span>)</span>
+              <span>(</span><span style="flex: 1; border-bottom: 1px dotted #000; min-height: 18px; margin: 0 5px;"></span><span>)</span>
             </div>
             <p style="font-size: 10pt; font-style: italic; margin: 5px 0 0 0;">Nama, Tanda Tangan Petugas dan Cap</p>
           </div>
         </div>
-
-        <div style="display: flex; align-items: flex-start; margin-bottom: 120px;">
+        <div style="display: flex; align-items: flex-start; margin-bottom: 80px;">
           <div style="width: 30px;">3.</div>
           <div style="width: 200px;">Pasien / Keluarga Pasien</div>
           <div style="flex: 1; text-align: center;">
@@ -659,21 +643,16 @@
             <p style="font-size: 10pt; font-style: italic; margin: 5px 0 0 0;">Nama, Tanda Tangan Pasien / Keluarga</p>
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- DOKUMEN 4 -->
+    <!-- DOKUMEN 4: SURAT BUKTI PELAYANAN PENGGUNAAN AMBULANCE LAUT -->
     <div class="page-f4" id="doc4">
       <div class="kop-placeholder"></div>
       <div class="doc-title"><br>SURAT BUKTI PELAYANAN PENGGUNAAN AMBULANCE LAUT</div>
       <table class="layout-table" style="margin-bottom: 15px;">
-        <tr>
-          <td style="width: 15%;">Nomor</td><td style="width: 2%;">:</td><td style="width: 83%;" colspan="4"><span id="d4_nomor_surat">.../Ambulance Laut/445</span></td>
-        </tr>
-        <tr>
-          <td>Tanggal</td><td>:</td><td colspan="4" id="d4_tanggal"></td>
-        </tr>
+        <tr><td style="width: 15%;">Nomor</td><td style="width: 2%;">:</td><td style="width: 83%;" colspan="4"><span id="d4_nomor_surat">.../Ambulance Laut/445</span></td></tr>
+        <tr><td>Tanggal</td><td>:</td><td colspan="4" id="d4_tanggal"></td></tr>
         <tr><td>Nama Faskes</td><td>:</td><td colspan="4">Puskesmas Midai</td></tr>
       </table>
       <p style="margin-bottom: 10px;">Saya yang bertanda tangan dibawah ini :</p>
@@ -699,30 +678,26 @@
       <div style="text-align: right; margin-top: 15px;">Midai, <span id="d4_tgl_ttd"></span></div>
       <div class="ttd-grid" style="margin-top: 15px;">
         <div class="ttd-box"><p>Dokter Penerima Rujukan<br><br><br></p><div class="ttd-space"></div><p class="ttd-name">( .................................... )</p></div>
-        <div class="ttd-box"><p>Dokter yang Merujuk</p><div class="ttd-space" style="height: 100px;"></div>
-        <p class="ttd-name" id="d4_ttd_dokter"><br><br>....................................</p><p>NIP. <span id="d4_ttd_dokter_nip">....................</span></p></div>
-        <div class="ttd-box"><p>Yang membuat pernyataan</p><p>Pasien / Keluarga</p><div class="ttd-space" style="height: 75px;"></div><p class="ttd-name" id="d4_ttd_pernyataan">( .................................... )</p></div>
+        <div class="ttd-box"><p>Dokter yang Merujuk</p><div class="ttd-space" style="height: 80px;"></div><p class="ttd-name" id="d4_ttd_dokter">....................................</p><p>NIP. <span id="d4_ttd_dokter_nip">....................</span></p></div>
+        <div class="ttd-box"><p>Yang membuat pernyataan</p><p>Pasien / Keluarga</p><div class="ttd-space" style="height: 60px;"></div><p class="ttd-name" id="d4_ttd_pernyataan">( .................................... )</p></div>
       </div>
       <div class="ttd-grid" style="margin-top: 20px;">
         <div class="ttd-box" style="width: 45%;">
-          <p><br><br><br>Juru Mudi / Nakhoda Ambulance Laut</p>
-          <div class="ttd-space" style="height: 100px;"></div>
+          <p><br><br>Juru Mudi / Nakhoda Ambulance Laut</p>
+          <div class="ttd-space" style="height: 80px;"></div>
           <p class="ttd-name" id="d4_ttd_nahkoda">DAHARANI</p>
         </div>
-
         <div class="ttd-box" style="width: 10%;"></div>
-
         <div class="ttd-box" style="width: 45%;">
-          <p><br><br>Mengetahui,</p>
-          <p id="d4_kapus_jabatan">Kepala Puskesmas</p>
-          <div class="ttd-space" style="height: 100px;"></div>
+          <p><br>Mengetahui,</p><p id="d4_kapus_jabatan">Kepala Puskesmas</p>
+          <div class="ttd-space" style="height: 80px;"></div>
           <p class="ttd-name" id="d4_ttd_kapus">KATARINA, S.Kep</p>
           <p>NIP. <span id="d4_ttd_kapus_nip">19790724 200212 2 005</span></p>
         </div>
       </div>
     </div>
 
-    <!-- DOKUMEN 5 -->
+    <!-- DOKUMEN 5: SURAT KETERANGAN MEDIS PASIEN DIRUJUK -->
     <div class="page-f4" id="doc5">
       <div class="kop-placeholder"></div>
       <div class="doc-title"><br>SURAT KETERANGAN MEDIS PASIEN DIRUJUK</div>
@@ -732,42 +707,38 @@
         <tr><td class="label">NO NIK</td><td class="colon">:</td><td id="d5_pasien_nik"></td></tr>
         <tr><td class="label">TANGGAL MASUK</td><td class="colon">:</td><td id="d5_tgl_masuk"></td></tr>
         <tr><td class="label">TANGGAL KELUAR / RUJUK</td><td class="colon">:</td><td id="d5_tgl_rujuk"></td></tr>
-        <tr><td colspan="3" style="height: 1.2em;"></td></tr>
+        <tr><td colspan="3" style="height: 1em;"></td></tr>
         <tr><td class="label">ANAMNESA</td><td class="colon">:</td><td id="d5_medis_anamnesa"></td></tr>
-        <tr><td colspan="3" style="height: 1.2em;"></td></tr>
+        <tr><td colspan="3" style="height: 1em;"></td></tr>
         <tr><td class="label">DIAGNOSA</td><td class="colon">:</td><td id="d5_medis_diagnosa"></td></tr>
-        <tr><td colspan="3" style="height: 1.2em;"></td></tr>
+        <tr><td colspan="3" style="height: 1em;"></td></tr>
         <tr><td class="label">THERAPY</td><td class="colon">:</td><td id="d5_medis_therapy"></td></tr>
-        <tr><td colspan="3" style="height: 1.2em;"></td></tr>
+        <tr><td colspan="3" style="height: 1em;"></td></tr>
         <tr><td class="label">SARAN</td><td class="colon">:</td><td id="d5_medis_saran"></td></tr>
       </table>
       <p style="margin-top: 30px;">Demikian Surat Keterangan medis ini dibuat untuk dapat dipergunakan seperlunya.</p>
       <div class="ttd-grid" style="margin-top: 50px;">
         <div class="ttd-box">
-          <p>Mengetahui,</p>
-          <p>Dokter Penerima Rujukan</p>
-          <div class="ttd-space" style="height: 100px;"></div>
+          <p>Mengetahui,</p><p>Dokter Penerima Rujukan</p>
+          <div class="ttd-space" style="height: 80px;"></div>
           <p class="ttd-name">( .................................... )</p>
           <p>NIP. ....................................</p>
         </div>
         <div class="ttd-box"></div>
         <div class="ttd-box">
-          <p>Midai, <span id="d5_tanggal"></span></p>
-          <p>Dokter Yang Merujuk</p>
-          <div class="ttd-space" style="height: 100px;"></div>
+          <p>Midai, <span id="d5_tanggal"></span></p><p>Dokter Yang Merujuk</p>
+          <div class="ttd-space" style="height: 80px;"></div>
           <p class="ttd-name" id="d5_ttd_dokter">....................................</p>
           <p>NIP. <span id="d5_ttd_dokter_nip">....................</span></p>
         </div>
       </div>
     </div>
 
-    <!-- DOKUMEN 6 -->
+    <!-- DOKUMEN 6: MONITORING PASIEN SELAMA RUJUKAN -->
     <div class="page-f4" id="doc6">
       <div class="kop-placeholder"></div>
       <div class="doc-title">MONITORING PASIEN SELAMA RUJUKAN</div>
-      
-      <!-- Kotak Informasi Pasien (Sangat Rapat) -->
-      <div style="border: 1px solid #000; border-radius: 6px; padding: 8px 15px; margin-bottom: 20px;">
+      <div style="border: 1px solid #000; border-radius: 6px; padding: 8px 15px; margin-bottom: 15px;">
         <table class="layout-table" style="margin-bottom: 0;">
           <tr><td class="label" style="width: 25%; padding: 1px 0;">Hari / Tanggal</td><td class="colon" style="width: 2%; padding: 1px 0;">:</td><td style="padding: 1px 0;"><span id="d6_hari"></span> / <span id="d6_tanggal"></span></td></tr>
           <tr><td class="label" style="padding: 1px 0;">Nama Pasien</td><td class="colon" style="padding: 1px 0;">:</td><td style="padding: 1px 0;" id="d6_pasien_nama"></td></tr>
@@ -778,20 +749,17 @@
           <tr><td class="label" style="padding: 1px 0;">Jam Tiba di RS</td><td class="colon" style="padding: 1px 0;">:</td><td style="padding: 1px 0;"><span id="d6_jam_tiba"></span> WIB</td></tr>
         </table>
       </div>
-
-      <!-- Bagian Petugas Kesehatan Puskesmas -->
-      <div style="margin-bottom: 30px;">
-        <p style="font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">PETUGAS KESEHATAN PUSKESMAS</p>
-        
-        <table style="width: 100%; border-collapse: collapse; font-size: 12pt;">
-          <tr style="height: 75px;">
+      <div style="margin-bottom: 20px;">
+        <p style="font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">PETUGAS KESEHATAN PUSKESMAS</p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 11pt;">
+          <tr style="height: 60px;">
             <td style="width: 35px; vertical-align: top;">1.</td>
             <td style="width: 180px; vertical-align: top;">DOKTER</td>
             <td style="width: 20px; vertical-align: top;">:</td>
             <td style="vertical-align: top; font-weight: bold;" id="d6_dokter_nama"></td>
             <td style="width: 220px; text-align: right; vertical-align: top;">(<span style="display: inline-block; width: 190px;"></span>)</td>
           </tr>
-          <tr style="height: 75px;">
+          <tr style="height: 60px;">
             <td style="vertical-align: top;">2.</td>
             <td style="vertical-align: top;">PERAWAT / BIDAN</td>
             <td style="vertical-align: top;">:</td>
@@ -807,9 +775,7 @@
           </tr>
         </table>
       </div>
-
-      <!-- Tabel Monitoring -->
-      <table class="data-table" style="margin-top: 15px;">
+      <table class="data-table" style="margin-top: 10px;">
         <thead>
           <tr>
             <th rowspan="2" style="width: 5%;">NO</th>
@@ -832,30 +798,339 @@
           <tr><td>5</td><td style="text-align: left;">Nadi</td><td></td><td></td><td></td><td></td></tr>
           <tr><td>6</td><td style="text-align: left;">Suhu</td><td></td><td></td><td></td><td></td></tr>
           <tr><td>7</td><td style="text-align: left;">RR</td><td></td><td></td><td></td><td></td></tr>
-          <tr style="height: 7em; vertical-align: top;">
-            <td>8</td>
-            <td style="text-align: left;">Tindakan / Obat</td>
-            <td></td><td></td><td></td><td></td>
+          <tr style="height: 5em; vertical-align: top;"><td>8</td><td style="text-align: left;">Tindakan / Obat</td><td></td><td></td><td></td><td></td></tr>
+          <tr style="height: 5em; vertical-align: top;"><td>9</td><td style="text-align: left;">Pemeriksaan Penunjang</td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+      <table style="width: 100%; margin-top: 50px; border-collapse: collapse; font-size: 11pt;">
+        <tr>
+          <td style="text-align: right; vertical-align: middle; padding-right: 20px;">Nama / Tanda Tangan Petugas Rumah Sakit :</td>
+          <td style="width: 250px; text-align: center; vertical-align: middle;">( ................................................ )</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- DOKUMEN 7: SURAT PENGANTAR KLAIM (HALAMAN TERSENDIRI) -->
+    <div class="page-f4" id="doc7">
+      <div class="kop-placeholder"></div>
+
+      <!-- Tanggal Surat di Sebelah Kanan -->
+      <div style="text-align: right; margin-top: 20px; margin-bottom: 20px;">
+        Midai, <span id="d7_tgl_surat">Agustus 2026</span>
+      </div>
+
+      <!-- Tujuan Surat Rata Kiri -->
+      <div style="text-align: left; margin-bottom: 30px;">
+        <p style="margin: 4px 0;">Yth.&nbsp;&nbsp;&nbsp;Kepala BPJS Kesehatan Natuna</p>
+        <p style="margin: 4px 0;">di-</p>
+        <p style="margin: 4px 0; padding-left: 6ch;">Ranai.</p>
+      </div>
+      
+      <!-- Judul dan Nomor Surat -->
+      <div class="doc-title" style="text-align: center; margin: 20px 0 5px 0; font-weight: bold;">
+        SURAT PENGANTAR
+      </div>
+      <p style="text-align: center; margin-bottom: 25px; font-weight: bold;">
+        NOMOR : <span id="d7_nomor_pengantar">800.1.12.2/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/PKM-MIDAI/VII/2026</span>
+      </p>
+      
+      <!-- Tabel Pengantar -->
+      <table class="data-table" style="width: 100%; border-collapse: collapse; margin-bottom: 40px;" border="1">
+        <thead>
+          <tr>
+            <th style="width: 8%; text-align: center; padding: 8px;">No.</th>
+            <th style="width: 50%; text-align: center; padding: 8px;">Naskah Dinas / Barang Yang Dikirim</th>
+            <th style="width: 17%; text-align: center; padding: 8px;">Banyaknya</th>
+            <th style="width: 25%; text-align: center; padding: 8px;">Keterangan</th>
           </tr>
-          <tr style="height: 7em; vertical-align: top;">
-            <td>9</td>
-            <td style="text-align: left;">Pemeriksaan Penunjang</td>
-            <td></td><td></td><td></td><td></td>
+        </thead>
+        <tbody>
+          <tr style="height: 140px; vertical-align: middle;">
+            <td style="text-align: center; vertical-align: Top;"><br>1.</td>
+            <td style="text-align: left; padding: 15px; vertical-align: Top;">
+              Laporan Pengiriman Berkas Klaim Non Kapitasi Pelayanan Ambulan Air Rujukan Pasien BPJS Kesehatan UPTD Puskesmas Midai Bulan <span id="d7_bulan_tahun_1">Juli 2026</span>.
+            </td>
+            <td style="text-align: center; vertical-align: top; padding: 10px;">1 Berkas</td>
+            <td style="text-align: left; padding: 15px; vertical-align: Top;">
+              Demikian disampaikan agar dapat ditindaklanjuti sebagaimana mestinya, terima kasih.
+            </td>
           </tr>
         </tbody>
       </table>
-    
-      <table style="width: 100%; margin-top: 80px; border-collapse: collapse; font-size: 12pt;">
-        <tr>
-          <td style="text-align: right; vertical-align: middle; padding-right: 20px;">
-            Nama / Tanda Tangan Petugas Rumah Sakit :
-          </td>
-          <td style="width: 250px; text-align: center; vertical-align: middle;">
-            ( ................................................ )
-          </td>
-        </tr>
+
+      <!-- Tanda Tangan Penandatangan (Kanan) -->
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px; margin-bottom: 60px;">
+        <div style="width: 45%; text-align: left;">
+          <p style="margin: 2px 0;" id="d7_jabatan_sign">Kepala UPTD Puskesmas Midai</p>
+          <div style="height: 70px;"></div>
+          <p style="margin: 2px 0; font-weight: bold; text-decoration: underline;" id="d7_ttd_kapus">KATARINA, S.Kep</p>
+          <p style="margin: 2px 0;">Penata Tingkat I (III/d)</p>
+          <p style="margin: 2px 0;">NIP. <span id="d7_ttd_kapus_nip">19790724 200212 2 005</span></p>
+        </div>
+      </div>
+
+      <!-- Format Yang Menerima (Kiri Bawah) -->
+      <div style="width: 50%; text-align: left; margin-top: 80px;">
+        <table style="border: none; width: 100%; line-height: 2;">
+          <tr>
+            <td style="width: 120px; font-weight: bold;"><BR><BR><br>Yang Menerima</td>
+            <td style="width: 20px;"><BR><BR><br>:</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Nama</td>
+            <td>:</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">NIP</td>
+            <td>:</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Jabatan</td>
+            <td>:</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Tanda Tangan</td>
+            <td>:</td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- DOKUMEN 8: CHECKLIST KELENGKAPAN BERKAS (HALAMAN TERSENDIRI) -->
+    <div class="page-f4" id="doc8">
+      <div style="font-size: 11pt; padding-top: 10px;">
+        <p style="margin-bottom: 4px;"><b>NAMA FKTP:</b> UPTD PUSKESMAS MIDAI</p>
+        <p style="margin-bottom: 15px;"><b>BULAN PELAYANAN:</b> <span id="d8_bulan_tahun_2">Juli 2026</span></p>
+        
+        <p style="text-align: center; font-weight: bold; font-size: 12pt; margin: 15px 0;">KELENGKAPAN BERKAS PENGAJUAN KLAIM FKTP</p>
+        
+        <table class="data-table" style="font-size: 10.5pt; width: 100%; margin-bottom: 25px;">
+          <thead>
+            <tr><th style="width: 8%;">NO</th><th>PERSYARATAN PENGAJUAN KLAIM</th><th style="width: 15%;">Checklist</th></tr>
+          </thead>
+          <tbody>
+            <tr style="height: 28px;"><td>1</td><td style="text-align: left; padding-left: 8px;">Surat Pernyataan Pelayanan</td><td></td></tr>
+            <tr style="height: 28px;"><td>2</td><td style="text-align: left; padding-left: 8px;">Formulir Klaim Pelayanan Peserta</td><td></td></tr>
+            <tr style="height: 28px;"><td>3</td><td style="text-align: left; padding-left: 8px;">Surat bukti pelayanan yang di tanda tangani oleh peserta</td><td></td></tr>
+            <tr style="height: 28px;"><td>4</td><td style="text-align: left; padding-left: 8px;">Surat Rujukan Peserta</td><td></td></tr>
+            <tr style="height: 28px;"><td>5</td><td style="text-align: left; padding-left: 8px;">Surat keterangan medis pasien dan fasilitas kesehatan perujuk dan penerima rujukan</td><td></td></tr>
+            <tr style="height: 28px;"><td>6</td><td style="text-align: left; padding-left: 8px;">Bukti pelayanan ambulan rujukan pasien dari fasilitas kesehatan perujuk dan penerima rujukan</td><td></td></tr>
+            <tr style="height: 28px;"><td>7</td><td style="text-align: left; padding-left: 8px;">Surat Keterangan penggunaan ambulan</td><td></td></tr>
+            <tr style="height: 28px;"><td>8</td><td style="text-align: left; padding-left: 8px;">Formulir Pengajuan Klaim dari Aplikasi Pcare</td><td></td></tr>
+            <tr style="height: 28px;"><td>9</td><td style="text-align: left; padding-left: 8px;">Surat Pengantar yang ditanda tangani oleh Pimpinan FKTP</td><td></td></tr>
+            <tr style="height: 28px;"><td>10</td><td style="text-align: left; padding-left: 8px;">Surat Pertanggungjawaban mutlak bermaterai 10.000</td><td></td></tr>
+            <tr style="height: 28px;"><td>11</td><td style="text-align: left; padding-left: 8px;">Kwitansi bermatrai 10.000</td><td></td></tr>
+            <tr style="height: 28px;"><td>12</td><td style="text-align: left; padding-left: 8px;">Rekapitulasi klaim peserta</td><td></td></tr>
+            <tr style="height: 28px;"><td>13</td><td style="text-align: left; padding-left: 8px;">Berita acara serah terima klaim</td><td></td></tr>
+          </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 30px; font-size: 10.5pt;">
+          <div style="line-height: 1.8;">
+            BERKAS DITERIMA LENGKAP TANGGAL: .............................<br>
+            OLEH: .........................................................................
+          </div>
+          <div style="text-align: center; padding-right: 20px;">
+            Pengaju Klaim<br><br><br><br><br><br>
+            <b><br><br>UPTD Puskesmas Midai</b>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOKUMEN 9: SPTJM -->
+    <div class="page-f4" id="doc9">
+      <div class="kop-placeholder"></div>
+      <div class="doc-title" style="margin-bottom: 5px;"><br>SURAT PERNYATAAN TANGGUNG JAWAB MUTLAK</div>
+      <p style="text-align: center; font-weight: bold; font-size: 10.5pt; margin-bottom: 15px;">PENGAJUAN KLAIM BIAYA PELAYANAN AMBULANCE<br>RUJUKAN PASIEN BPJS KESEHATAN</p>
+      <p style="text-align: center; font-weight: bold; margin-bottom: 20px;">Nomor: <span id="d9_nomor_sptjm">01/SPTJM/445</span></p>
+
+      <p style="margin-bottom: 10px;">Yang bertanda tangan di bawah ini:</p>
+      <table class="layout-table" style="margin-left: 20px; margin-bottom: 20px;">
+        <tr><td class="label">Nama</td><td class="colon">:</td><td id="d9_kapus_nama">KATARINA, S.Kep</td></tr>
+        <tr><td class="label">NIP</td><td class="colon">:</td><td id="d9_kapus_nip">19790724 200212 2 005</td></tr>
+        <tr><td class="label">Jabatan</td><td class="colon">:</td><td id="d9_kapus_jabatan">Kepala UPTD Puskesmas Midai</td></tr>
       </table>
 
+      <p style="margin-bottom: 15px;">Dengan ini menyatakan dan bertanggung jawab secara penuh atas hal hal sebagai berikut:</p>
+      <ol style="margin-left: 35px; line-height: 1.6; text-align: justify;">
+        <li style="margin-bottom: 10px;">Dokumen-dokumen yang dipersyaratkan dalam rangka pengajuan klaim pelayanan ambulance rujukan pasien BPJS Kesehatan dengan lengkap dan benar, dan siap diaudit sewaktu-waktu.</li>
+        <li>Apabila dikemudian hari terbukti pernyataan ini tidak benar dan menimbulkan kerugian Negara, kami bersedia mengembalikan kerugian tersebut dan dilakukan proses sesuai ketentuan hukum yang berlaku.</li>
+      </ol>
+
+      <p style="margin-top: 25px;">Demikian surat pernyataan ini dibuat dengan sebenarnya.</p>
+
+      <div class="ttd-grid" style="margin-top: 60px;">
+        <div class="ttd-box"></div>
+        <div class="ttd-box"></div>
+        <div class="ttd-box">
+          <p>Midai, <span id="d9_tgl_surat"></span></p>
+          <p>Yang Bertanda Tangan</p>
+          <p>Kepala Puskesmas</p>
+          <div class="ttd-space" style="height: 80px;"></div>
+          <p class="ttd-name" id="d9_ttd_kapus">KATARINA, S.Kep</p>
+          <p>Penata Tingkat I (III/d)</p>
+          <p>NIP. <span id="d9_ttd_kapus_nip">19790724 200212 2 005</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOKUMEN 10: KWITANSI -->
+    <div class="page-f4" id="doc10">
+      <div class="kop-placeholder"></div>
+
+      <!-- Nomor Bukti & Kode Akun (Kanan Atas) -->
+      <div style="display: flex; justify-content: flex-end; margin-right: 3cm; margin-top: 20px; margin-bottom: 25px;">
+        <table style="border: none; width: auto; font-size: 11pt; line-height: 1.6;">
+          <tr>
+            <td style="padding-right: 10px;">Nomor Bukti</td>
+            <td style="padding-right: 10px;">:</td>
+            <td><span id="d10_nomor_bukti"></span></td>
+          </tr>
+          <tr>
+            <td style="padding-right: 10px;">Kode Akun</td>
+            <td style="padding-right: 10px;">:</td>
+            <td><span id="d10_kode_akun"></span></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Judul Kwitansi -->
+      <div class="doc-title" style="text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 25px;">
+        KWITANSI
+      </div>
+
+      <!-- Kotak Bingkai Utama Kwitansi -->
+      <div style="border: 2px solid #000; padding: 30px 25px; position: relative;">
+        
+        <!-- Detail Transaksi -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 11pt; line-height: 1.8;">
+          <tr>
+            <td style="width: 25%; vertical-align: top;">Sudah Terima Dari</td>
+            <td style="width: 3%; vertical-align: top;">:</td>
+            <td style="width: 72%; vertical-align: top;">BPJS Kesehatan</td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">Banyak Uang</td>
+            <td style="vertical-align: top;">:</td>
+            <td style="vertical-align: top;" id="d10_terbilang">( dalam bentuk terbilang)</td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">Untuk Pembayaran</td>
+            <td style="vertical-align: top;">:</td>
+            <td style="vertical-align: top;">
+              Biaya Klaim non kapitasi Pelayanan Ambulance Air<br>
+              Rujukan Pasien ke BPJS Kesehatan Puskesmas midai<br>
+              Bulan <span id="d10_bulan_tahun">(Bulan dan tahun pelayanan)</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">Jumlah</td>
+            <td style="vertical-align: top;">:</td>
+            <td style="vertical-align: top;">
+              Rp. <span id="d10_jumlah_angka">(dalam angka)</span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Area Tanda Tangan (Di Dalam Kotak Sebelah Kanan) -->
+        <div style="display: flex; justify-content: flex-end; margin-top: 80px; text-align: left;">
+          <div style="width: 40%;">
+            <p style="margin: 2px 0;">Midai, <span id="d10_tgl_surat">(Tanggal Kwitansi)</span></p>
+            <p style="margin: 2px 0; padding-left: 30px;">Penerima,</p>
+            <p style="margin: 2px 0;">Kepala Puskesmas</p>
+            
+            <div style="height: 90px;"></div>
+            
+            <p style="margin: 2px 0;" id="d10_ttd_kapus">KATARINA, S.Kep</p>
+            <p style="margin: 2px 0;">Penata Tingkat I (III/d)</p>
+            <p style="margin: 2px 0;">NIP. <span id="d10_ttd_kapus_nip">19790724 200212 2 005</span></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DOKUMEN 11: BERITA ACARA SERAH TERIMA KLAIM (BASTK) -->
+    <div class="page-f4" id="doc11">
+      <div class="doc-title" style="margin-bottom: 5px; text-decoration: none;"><br>BERITA ACARA SERAH TERIMA KLAIM</div>
+      <p style="text-align: center; font-weight: bold; margin-bottom: 25px;">Nomor : <span id="d11_nomor_bastk">01/BASTK/445</span></p>
+
+      <p style="margin-bottom: 10px;">Yang bertanda tangan dibawah ini :</p>
+      <table class="layout-table" style="margin-left: 20px; margin-bottom: 15px;">
+        <tr><td class="label" style="width: 20%;">Nama</td><td class="colon">:</td><td id="d11_pihak1_nama" style="font-weight: bold;">KATARINA, S.Kep</td></tr>
+        <tr><td class="label">Jabatan</td><td class="colon">:</td><td>Kepala UPTD Puskesmas Midai</td></tr>
+        <tr><td colspan="3" style="font-style: italic; padding-top: 5px;">Selanjutnya disebut sebagai <b>PIHAK PERTAMA</b></td></tr>
+      </table>
+
+      <table class="layout-table" style="margin-left: 20px; margin-bottom: 20px;">
+        <tr><td class="label" style="width: 20%;">Nama</td><td class="colon">:</td><td id="d11_pihak2_nama" style="font-weight: bold;">DINI WURI PUJI PURYATI</td></tr>
+        <tr><td class="label">Jabatan</td><td class="colon">:</td><td id="d11_pihak2_jabatan">Staf Administrasi Klaim</td></tr>
+        <tr><td colspan="3" style="font-style: italic; padding-top: 5px;">Selanjutnya disebut sebagai <b>PIHAK KEDUA</b></td></tr>
+      </table>
+
+      <p style="line-height: 1.6; text-align: justify; margin-bottom: 20px;">
+        Menyatakan bahwa <b>PIHAK KEDUA</b> telah menerima dari <b>PIHAK PERTAMA</b> berupa Rekapitulasi Pengajuan &nbsp;Klaim  &nbsp;Non &nbsp;Kapitasi &nbsp;Bulan  &nbsp;Pelayanan &nbsp; Ambulance &nbsp; Rujukan  &nbsp;Pasien  &nbsp;BPJS  &nbsp;Kesehatan &nbsp;&nbsp;<span id="d11_bulan_tahun">Juli 2026</span> &nbsp;sebesar <b>&nbsp;&nbsp;Rp. <span id="d11_jumlah_angka">0</span></b>. <br>Untuk selanjutnya akan dilakukan proses verifikasi oleh BPJS Kesehatan Natuna sesuai dengan ketentuan yang berlaku.
+      </p>
+
+      <p style="margin-bottom: 30px;">Demikian berita acara ini di buat untuk dipergunakan sebagaimana mestinya.</p>
+
+      <div class="ttd-grid" style="margin-top: 50px;">
+        <div class="ttd-box" style="width: 45%;">
+          <p><b>PIHAK PERTAMA</b></p>
+          <div class="ttd-space" style="height: 80px;"></div>
+          <p class="ttd-name" id="d11_ttd_kapus">KATARINA, S.Kep</p>
+          <p>Penata Tingkat I (III/d)</p>
+          <p>NIP. <span id="d11_ttd_kapus_nip">19790724 200212 2 005</span></p>
+        </div>
+        <div class="ttd-box" style="width: 10%;"></div>
+        <div class="ttd-box" style="width: 45%;">
+          <p><b>PIHAK KEDUA</b></p>
+          <div class="ttd-space" style="height: 80px;"></div>
+          <p class="ttd-name" id="d11_ttd_pihak2">DINI WURI PUJI PURYATI</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOKUMEN 12: SURAT PERNYATAAN TIDAK ADA KLAIM SUSULAN -->
+    <div class="page-f4" id="doc12">
+      <div class="doc-title" style="margin-bottom: 5px; text-decoration: none;"><br>SURAT PERNYATAAN</div>
+      <p style="text-align: center; font-weight: bold; font-size: 11pt; margin-bottom: 5px;">TIDAK ADA KLAIM NON KAPITASI SUSULAN</p>
+      <p style="text-align: center; font-weight: bold; margin-bottom: 25px;">Nomor: <span id="d12_nomor_pernyataan">01/000/2026</span></p>
+
+      <p style="margin-bottom: 10px;">Yang bertanda tangan dibawah ini:</p>
+      <table class="layout-table" style="margin-left: 20px; margin-bottom: 20px;">
+        <tr><td class="label">Nama</td><td class="colon">:</td><td id="d12_kapus_nama" style="font-weight: bold;">KATARINA, S.Kep</td></tr>
+        <tr><td class="label">NIP</td><td class="colon">:</td><td id="d12_kapus_nip">19790724 200212 2 005</td></tr>
+        <tr><td class="label">Jabatan</td><td class="colon">:</td><td id="d12_kapus_jabatan">Kepala UPTD Puskesmas Midai</td></tr>
+      </table>
+
+      <p style="margin-bottom: 15px;">Menyatakan tidak adanya Klaim Non Kapitasi susulan dari :</p>
+      <table class="layout-table" style="margin-left: 20px; margin-bottom: 25px;">
+        <tr><td class="label">Nama FKTP</td><td class="colon">:</td><td>Puskesmas Midai</td></tr>
+        <tr><td class="label">Bulan Pelayanan</td><td class="colon">:</td><td id="d12_bulan_tahun" style="font-weight: bold;">Juli 2026</td></tr>
+        <tr><td class="label">Jenis Pelayanan</td><td class="colon">:</td><td id="d12_jenis_pelayanan" style="font-weight: bold;">Pelayanan Ambulan Air Rujukan Pasien BPJS Kesehatan</td></tr>
+      </table>
+
+      <p style="margin-bottom: 30px;">Demikian berita acara ini di buat untuk dipergunakan sebagaimana mestinya.</p>
+
+      <div class="ttd-grid" style="margin-top: 60px;">
+        <div class="ttd-box"></div>
+        <div class="ttd-box"></div>
+        <div class="ttd-box">
+          <p>Midai, <span id="d12_tgl_surat"></span></p>
+          <p>Kepala Puskesmas</p>
+          <div class="ttd-space" style="height: 80px;"></div>
+          <p class="ttd-name" id="d12_ttd_kapus">KATARINA, S.Kep</p>
+          <p>Penata Tingkat I (III/d)</p>
+          <p>NIP. <span id="d12_ttd_kapus_nip">19790724 200212 2 005</span></p>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -869,11 +1144,12 @@
     window.onload = function() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('input_tanggal').value = today;
+      document.getElementById('input_tgl_pengantar').value = today;
       document.getElementById('input_tgl_masuk').value = today;
       updateHariOtomatis();
       updateKapusInfo();
 
-      const stored = localStorage.getItem('riwayat_rujukan_ambulan');
+      const stored = localStorage.getItem('riwayat_rujukan_ambulan_klaim');
       if (stored) {
         riwayatData = JSON.parse(stored);
         renderHistoryTable();
@@ -906,9 +1182,7 @@
       const today = new Date();
       let age = today.getFullYear() - birth.getFullYear();
       const m = today.getMonth() - birth.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-        age--;
-      }
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) { age--; }
       document.getElementById('input_pasien_umur').value = age + " Tahun";
     }
 
@@ -926,6 +1200,42 @@
       document.getElementById('input_perawat_nip').value = nip;
     }
 
+    // FUNGSI KONVERSI ANGKA KE TERBILANG RUPIAH
+    function terbilangRupiah(nilai) {
+      const bilangan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+      let temp = "";
+      if (nilai < 12) {
+        temp = " " + bilangan[Math.floor(nilai)];
+      } else if (nilai < 20) {
+        temp = terbilangRupiah(nilai - 10) + " Belas";
+      } else if (nilai < 100) {
+        temp = terbilangRupiah(Math.floor(nilai / 10)) + " Puluh" + terbilangRupiah(nilai % 10);
+      } else if (nilai < 200) {
+        temp = " Seratus" + terbilangRupiah(nilai - 100);
+      } else if (nilai < 1000) {
+        temp = terbilangRupiah(Math.floor(nilai / 100)) + " Ratus" + terbilangRupiah(nilai % 100);
+      } else if (nilai < 2000) {
+        temp = " Seribu" + terbilangRupiah(nilai - 1000);
+      } else if (nilai < 1000000) {
+        temp = terbilangRupiah(Math.floor(nilai / 1000)) + " Ribu" + terbilangRupiah(nilai % 1000);
+      } else if (nilai < 1000000000) {
+        temp = terbilangRupiah(Math.floor(nilai / 1000000)) + " Juta" + terbilangRupiah(nilai % 1000000);
+      } else if (nilai < 1000000000000) {
+        temp = terbilangRupiah(Math.floor(nilai / 1000000000)) + " Milyar" + terbilangRupiah(nilai % 1000000000);
+      }
+      return temp;
+    }
+
+    function updateTerbilang() {
+      const num = parseFloat(document.getElementById('input_jumlah_uang').value);
+      if (!isNaN(num) && num > 0) {
+        const text = terbilangRupiah(num).trim() + " Rupiah";
+        document.getElementById('input_terbilang').value = text;
+      } else {
+        document.getElementById('input_terbilang').value = "-";
+      }
+    }
+
     function formatTanggalIndo(dateStr) {
       if (!dateStr) return '-';
       const d = new Date(dateStr);
@@ -938,8 +1248,14 @@
       return elem && elem.value.trim() !== '' ? elem.value : fallback;
     }
 
+    function formatRupiah(angka) {
+      if (!angka || isNaN(angka)) return '0';
+      return new Intl.NumberFormat('id-ID').format(angka);
+    }
+
     function getFormData() {
       const tglRaw = document.getElementById('input_tanggal').value;
+      const tglPengantarRaw = document.getElementById('input_tgl_pengantar').value;
       const tglMasukRaw = document.getElementById('input_tgl_masuk').value;
       const tglLahirRaw = document.getElementById('input_pasien_tgl_lahir').value;
       const tmptLahir = val('input_pasien_tempat_lahir', '');
@@ -950,8 +1266,28 @@
         ttlCombo = `${tmptLahir ? tmptLahir : '-'}${tglLahirRaw ? ', ' + tglLahirFormatted : ''}`;
       }
 
-      const jamVal = document.getElementById('waktu').value;
-      const jamFormatted = jamVal ? `Jam ${jamVal} WIB` : '-';
+      const bulanPel = val('input_bulan_pelayanan', 'Juli');
+      const tahunPel = val('input_tahun_pelayanan', '2026');
+      
+      let bulanRomawi = 'VII';
+      if (tglPengantarRaw) {
+        const dPengantar = new Date(tglPengantarRaw);
+        const listRomawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        bulanRomawi = listRomawi[dPengantar.getMonth()];
+      }
+
+      const noPengantarUrut = val('input_no_pengantar', '01');
+      const noSptjmUrut = val('input_no_sptjm', '01');
+      const noBastkUrut = val('input_no_bastk', '01');
+      const noPernyataanUrut = val('input_no_pernyataan_klaim', '01');
+
+      const fullNoPengantar = `800.1.12.2/${noPengantarUrut}/PKM-MIDAI/${bulanRomawi}/${tahunPel}`;
+      const fullNoSptjm = `${noSptjmUrut}/SPTJM/445`;
+      const fullNoBastk = `${noBastkUrut}/BASTK/445`;
+      const fullNoPernyataan = `${noPernyataanUrut}/000/${tahunPel}`;
+
+      const jumlahUangVal = parseFloat(val('input_jumlah_uang', '0'));
+      const terbilangVal = val('input_terbilang', '-');
 
       const selectKapus = document.getElementById('input_kapus_nama');
       const selectedKapusOpt = selectKapus ? selectKapus.options[selectKapus.selectedIndex] : null;
@@ -959,23 +1295,55 @@
       
       let kapusJabatanText = 'Kepala UPTD Puskesmas Midai';
       let kapusJabatanSign = 'Kepala Puskesmas';
+      let doc7JabatanSign = 'Kepala UPTD Puskesmas Midai';
+
       if (kapusNamaVal.includes('MIDIAWATI')) {
         kapusJabatanText = 'Kepala Tata Usaha UPTD Puskesmas Midai';
         kapusJabatanSign = 'An. Kepala Puskesmas<br>Kepala Tata Usaha';
+        doc7JabatanSign = 'an. Kepala Puskesmas Midai<br>Kepala Tata Usaha';
       }
+
+      // DATA TETAP KHUSUS KATARINA, S.Kep UNTUK DOKUMEN 9, 10, 11, 12
+      const kapusTetapKatarina = {
+        nama: 'KATARINA, S.Kep',
+        nip: '19790724 200212 2 005',
+        jabatanText: 'Kepala UPTD Puskesmas Midai',
+        jabatanSign: 'Kepala Puskesmas'
+      };
 
       return {
         tanggalRaw: tglRaw,
         tanggal: formatTanggalIndo(tglRaw),
+        tglPengantarRaw: tglPengantarRaw,
+        tglPengantar: formatTanggalIndo(tglPengantarRaw),
         tglMasukRaw: tglMasukRaw,
         tglMasuk: formatTanggalIndo(tglMasukRaw),
         hari: val('input_hari'),
+        bulanPelayanan: bulanPel,
+        tahunPelayanan: tahunPel,
+        bulanTahunPelayanan: `${bulanPel} ${tahunPel}`,
+        
         nomorSurat: (function() {
           const rawNomor = val('input_nomor_surat', '');
           if (!rawNomor || rawNomor === '-') return '.../Ambulance Laut/445';
           if (rawNomor.includes('Ambulance Laut')) return rawNomor;
           return rawNomor + '/Ambulance Laut/445';
         })(),
+
+        noPengantar: fullNoPengantar,
+        noSptjm: fullNoSptjm,
+        noBastk: fullNoBastk,
+        noPernyataanKlaim: fullNoPernyataan,
+        noPengantarUrut: noPengantarUrut,
+        noSptjmUrut: noSptjmUrut,
+        noBastkUrut: noBastkUrut,
+        noPernyataanUrut: noPernyataanUrut,
+
+        jenisPelayanan: val('input_jenis_pelayanan', 'Pelayanan Ambulan Air Rujukan Pasien BPJS Kesehatan'),
+        jumlahUang: jumlahUangVal,
+        jumlahUangFormatted: formatRupiah(jumlahUangVal),
+        terbilang: terbilangVal,
+
         jamBerangkat: val('input_jam_berangkat'),
         jamTiba: val('input_jam_tiba'),
         rsTujuan: val('input_rs_tujuan', 'RSUD Natuna'),
@@ -1013,9 +1381,12 @@
         kapusNip: val('input_kapus_nip', '19790724 200212 2 005'),
         kapusJabatan: kapusJabatanSign,
         kapusJabatanText: kapusJabatanText,
+        doc7JabatanSign: doc7JabatanSign,
+        kapusTetapKatarina: kapusTetapKatarina,
         nahkoda: val('input_nahkoda', 'DAHARANI'),
-        jamPendampinganRaw: jamVal,
-        jamPendampingan: jamFormatted
+
+        pihak2Nama: val('input_pihak2_nama', 'DINI WURI PUJI PURYATI'),
+        pihak2Jabatan: val('input_pihak2_jabatan', 'Staf Administrasi Klaim')
       };
     }
 
@@ -1032,7 +1403,7 @@
           riwayatData.unshift(data);
         }
 
-        localStorage.setItem('riwayat_rujukan_ambulan', JSON.stringify(riwayatData));
+        localStorage.setItem('riwayat_rujukan_ambulan_klaim', JSON.stringify(riwayatData));
         renderHistoryTable();
         cetakDokumen(data);
       } catch (err) {
@@ -1046,8 +1417,6 @@
         el.innerHTML = '';
         el.appendChild(kopTemplate.cloneNode(true));
       });
-
-      const isMidiawati = data.kapusNama.includes("MIDIAWATI");
 
       // Doc 1
       document.getElementById('d1_pasien_nama').innerText = data.pasienNama;
@@ -1064,7 +1433,6 @@
       document.getElementById('d1_ttd_kapus').innerText = data.kapusNama;
       document.getElementById('d1_ttd_kapus_nip').innerText = data.kapusNip;
       document.getElementById('d1_ttd_nahkoda').innerText = data.nahkoda;
-      document.getElementById('d1_ttd_nahkoda').style.marginTop = isMidiawati ? '18px' : '0px';
 
       // Doc 2
       document.getElementById('d2_penanggung_nama').innerText = data.keluargaNama;
@@ -1121,7 +1489,6 @@
       document.getElementById('d4_ttd_dokter_nip').innerText = data.dokterNip;
       document.getElementById('d4_ttd_pernyataan').innerText = data.keluargaNama;
       document.getElementById('d4_ttd_nahkoda').innerText = data.nahkoda;
-      document.getElementById('d4_ttd_nahkoda').style.marginTop = isMidiawati ? '18px' : '0px';
       if (document.getElementById('d4_kapus_jabatan')) document.getElementById('d4_kapus_jabatan').innerHTML = data.kapusJabatan;
       document.getElementById('d4_ttd_kapus').innerText = data.kapusNama;
       document.getElementById('d4_ttd_kapus_nip').innerText = data.kapusNip;
@@ -1154,6 +1521,61 @@
       document.getElementById('d6_pasien_bpjs').innerText = data.pasienBpjs;
       document.getElementById('d6_pasien_kategori').innerText = data.pasienKategori;
 
+      // Doc 7: Surat Pengantar
+      document.getElementById('d7_tgl_surat').innerText = data.tglPengantar;
+      document.getElementById('d7_nomor_pengantar').innerText = data.noPengantar;
+      document.getElementById('d7_bulan_tahun_1').innerText = data.bulanTahunPelayanan;
+      
+      // Update Jabatan DOKUMEN 7 Sesuai Pilihan (Dua Baris)
+      if (document.getElementById('d7_jabatan_sign')) {
+        document.getElementById('d7_jabatan_sign').innerHTML = data.doc7JabatanSign;
+      }
+      document.getElementById('d7_ttd_kapus').innerText = data.kapusNama;
+      document.getElementById('d7_ttd_kapus_nip').innerText = data.kapusNip;
+
+      // Doc 8: Checklist Kelengkapan Berkas
+      document.getElementById('d8_bulan_tahun_2').innerText = data.bulanTahunPelayanan;
+
+      // Doc 9: SPTJM (Tetap KATARINA, S.Kep)
+      const katarina = data.kapusTetapKatarina;
+      document.getElementById('d9_nomor_sptjm').innerText = data.noSptjm;
+      document.getElementById('d9_kapus_nama').innerText = katarina.nama;
+      document.getElementById('d9_kapus_nip').innerText = katarina.nip;
+      document.getElementById('d9_kapus_jabatan').innerText = katarina.jabatanText;
+      document.getElementById('d9_tgl_surat').innerText = data.tglPengantar;
+      document.getElementById('d9_ttd_kapus').innerText = katarina.nama;
+      document.getElementById('d9_ttd_kapus_nip').innerText = katarina.nip;
+
+      // Doc 10: Kwitansi (Tetap KATARINA, S.Kep)
+      document.getElementById('d10_terbilang').innerText = data.terbilang;
+      document.getElementById('d10_bulan_tahun').innerText = data.bulanTahunPelayanan;
+      document.getElementById('d10_jumlah_angka').innerText = data.jumlahUangFormatted;
+      document.getElementById('d10_tgl_surat').innerText = data.tglPengantar;
+      document.getElementById('d10_ttd_kapus').innerText = katarina.nama;
+      document.getElementById('d10_ttd_kapus_nip').innerText = katarina.nip;
+
+      // Doc 11: BASTK (Tetap KATARINA, S.Kep)
+      document.getElementById('d11_nomor_bastk').innerText = data.noBastk;
+      document.getElementById('d11_pihak1_nama').innerText = katarina.nama;
+      document.getElementById('d11_pihak2_nama').innerText = data.pihak2Nama;
+      document.getElementById('d11_pihak2_jabatan').innerText = data.pihak2Jabatan;
+      document.getElementById('d11_bulan_tahun').innerText = data.bulanTahunPelayanan;
+      document.getElementById('d11_jumlah_angka').innerText = data.jumlahUangFormatted;
+      document.getElementById('d11_ttd_kapus').innerText = katarina.nama;
+      document.getElementById('d11_ttd_kapus_nip').innerText = katarina.nip;
+      document.getElementById('d11_ttd_pihak2').innerText = data.pihak2Nama;
+
+      // Doc 12: Surat Pernyataan Non Kapitasi Susulan (Tetap KATARINA, S.Kep)
+      document.getElementById('d12_nomor_pernyataan').innerText = data.noPernyataanKlaim;
+      document.getElementById('d12_kapus_nama').innerText = katarina.nama;
+      document.getElementById('d12_kapus_nip').innerText = katarina.nip;
+      document.getElementById('d12_kapus_jabatan').innerText = katarina.jabatanText;
+      document.getElementById('d12_bulan_tahun').innerText = data.bulanTahunPelayanan;
+      document.getElementById('d12_jenis_pelayanan').innerText = data.jenisPelayanan;
+      document.getElementById('d12_tgl_surat').innerText = data.tglPengantar;
+      document.getElementById('d12_ttd_kapus').innerText = katarina.nama;
+      document.getElementById('d12_ttd_kapus_nip').innerText = katarina.nip;
+
       setTimeout(function() {
         window.print();
       }, 300);
@@ -1164,22 +1586,20 @@
       tbody.innerHTML = '';
 
       if (riwayatData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888;">Belum ada riwayat data rujukan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#888;">Belum ada riwayat data rujukan & klaim.</td></tr>`;
         return;
       }
 
       riwayatData.forEach((item, idx) => {
         const tr = document.createElement('tr');
-        const infoWaktu = item.jamBerangkat && item.jamBerangkat !== '-' ? `<br><small>Jam: ${item.jamBerangkat} WIB</small>` : '';
         
         tr.innerHTML = `
           <td>${idx + 1}</td>
-          <td>${item.tanggal} ${infoWaktu}</td>
+          <td>${item.tanggal}<br><small>Bulan Pelayanan: ${item.bulanTahunPelayanan}</small></td>
           <td><b>${item.pasienNama}</b><br><small>NIK: ${item.pasienNik}</small></td>
-          <td><span style="padding: 2px 6px; border-radius: 3px; font-weight: bold; background: ${item.pasienKesadaran === 'Sadar' ? '#c8e6c9' : '#ffcdd2'}; color: ${item.pasienKesadaran === 'Sadar' ? '#2e7d32' : '#c62828'};">${item.pasienKesadaran || 'Sadar'}</span></td>
+          <td>${item.pasienBpjs}</td>
           <td>${item.medisDiagnosa}</td>
-          <td>${item.dokterNama}</td>
-          <td>${item.rsTujuan}</td>
+          <td><b>Rp. ${item.jumlahUangFormatted}</b></td>
           <td>
             <button class="btn btn-sm btn-print" type="button" onclick="cetakDariRiwayat(${idx})">Cetak</button>
             <button class="btn btn-sm btn-edit" type="button" onclick="editRiwayat(${idx})">Edit</button>
@@ -1199,9 +1619,22 @@
       document.getElementById('edit_index').value = idx;
 
       document.getElementById('input_tanggal').value = data.tanggalRaw || '';
+      document.getElementById('input_tgl_pengantar').value = data.tglPengantarRaw || data.tanggalRaw || '';
       document.getElementById('input_tgl_masuk').value = data.tglMasukRaw || '';
       document.getElementById('input_hari').value = data.hari || '';
+      document.getElementById('input_bulan_pelayanan').value = data.bulanPelayanan || 'Juli';
+      document.getElementById('input_tahun_pelayanan').value = data.tahunPelayanan || '2026';
+
       document.getElementById('input_nomor_surat').value = data.nomorSurat !== '.../Ambulance Laut/445' ? data.nomorSurat : '';
+      document.getElementById('input_no_pengantar').value = data.noPengantarUrut || '01';
+      document.getElementById('input_no_sptjm').value = data.noSptjmUrut || '01';
+      document.getElementById('input_no_bastk').value = data.noBastkUrut || '01';
+      document.getElementById('input_no_pernyataan_klaim').value = data.noPernyataanUrut || '01';
+
+      document.getElementById('input_jenis_pelayanan').value = data.jenisPelayanan || '';
+      document.getElementById('input_jumlah_uang').value = data.jumlahUang || '';
+      updateTerbilang();
+
       document.getElementById('input_jam_berangkat').value = data.jamBerangkat !== '-' ? data.jamBerangkat : '';
       document.getElementById('input_jam_tiba').value = data.jamTiba !== '-' ? data.jamTiba : '';
       document.getElementById('input_rs_tujuan').value = data.rsTujuan || '';
@@ -1240,22 +1673,20 @@
       updateKapusInfo();
 
       document.getElementById('input_nahkoda').value = data.nahkoda || '';
-      
-      if (data.jamPendampinganRaw) {
-        document.getElementById('waktu').value = data.jamPendampinganRaw;
-      }
+      document.getElementById('input_pihak2_nama').value = data.pihak2Nama || '';
+      document.getElementById('input_pihak2_jabatan').value = data.pihak2Jabatan || '';
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function hapusRiwayat(idx) {
-      const pass = prompt("Masukkan Password untuk menghapus data rujukan ini:");
+      const pass = prompt("Masukkan Password untuk menghapus data rujukan & klaim ini:");
       if (pass === null) return;
       
       if (pass === PASSWORD_HAPUS) {
         if (confirm(`Yakin ingin menghapus data rujukan pasien "${riwayatData[idx].pasienNama}"?`)) {
           riwayatData.splice(idx, 1);
-          localStorage.setItem('riwayat_rujukan_ambulan', JSON.stringify(riwayatData));
+          localStorage.setItem('riwayat_rujukan_ambulan_klaim', JSON.stringify(riwayatData));
           renderHistoryTable();
           alert("Data berhasil dihapus.");
         }
@@ -1270,11 +1701,13 @@
         document.getElementById('edit_index').value = "-1";
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('input_tanggal').value = today;
+        document.getElementById('input_tgl_pengantar').value = today;
         document.getElementById('input_tgl_masuk').value = today;
         updateHariOtomatis();
         updateNipDokter();
         updateNipPerawat();
         updateKapusInfo();
+        document.getElementById('input_terbilang').value = "-";
       }
     }
 
@@ -1285,57 +1718,39 @@
       }
 
       let excelData = [];
-      
-      // Baris Header
       excelData.push([
-        "No", "Tanggal Rujukan", "Tanggal Masuk", "Hari", "Nomor Surat", 
-        "Nama Pasien", "NIK Pasien", "No BPJS Pasien", "Kategori", "Kesadaran", 
-        "TTL", "Umur", "JK", "Pekerjaan Pasien", "Alamat Pasien", 
-        "Nama PJ", "NIK PJ", "Hubungan PJ", "HP PJ", "Diagnosa", 
-        "Dokter Merujuk", "Perawat Pendamping", "NIP Perawat", 
-        "Penandatangan Instansi", "NIP Penandatangan", "Jabatan Penandatangan", "Jam Pendampingan"
+        "No", "Tanggal Surat Rujukan", "Tanggal Surat Pengantar", "Bulan Pelayanan", "Nama Pasien", "NIK Pasien", "No BPJS", 
+        "Diagnosa", "No Pengantar", "No SPTJM", "No BASTK", "No Surat Pernyataan", 
+        "Jumlah Uang (Rp)", "Terbilang", "Dokter Merujuk", "Perawat Pendamping", "Kepala Puskesmas"
       ]);
 
-      // Baris Data Riwayat
       riwayatData.forEach((d, index) => {
-        const tanggalDanWaktu = `${d.tanggal || ''} ${d.jamBerangkat && d.jamBerangkat !== '-' ? '(Jam ' + d.jamBerangkat + ' WIB)' : ''}`;
-
         excelData.push([
           index + 1,
-          tanggalDanWaktu,
-          d.tglMasuk || '',
-          d.hari || '',
-          d.nomorSurat || '',
+          d.tanggal || '',
+          d.tglPengantar || '',
+          d.bulanTahunPelayanan || '',
           d.pasienNama || '',
           d.pasienNik || '',
           d.pasienBpjs || '',
-          d.pasienKategori || '',
-          d.pasienKesadaran || '',
-          d.pasienTtl || '',
-          d.pasienUmur || '',
-          d.pasienJk || '',
-          d.pasienPekerjaan || '',
-          d.pasienAlamat || '',
-          d.keluargaNama || '',
-          d.keluargaNik || '',
-          d.keluargaHubungan || '',
-          d.keluargaHp || '',
           (d.medisDiagnosa || '').replace(/\n/g, ' '),
+          d.noPengantar || '',
+          d.noSptjm || '',
+          d.noBastk || '',
+          d.noPernyataanKlaim || '',
+          d.jumlahUang || 0,
+          d.terbilang || '',
           d.dokterNama || '',
           d.perawatNama || '',
-          d.perawatNip || '',
-          d.kapusNama || '',
-          d.kapusNip || '',
-          d.kapusJabatanText || '',
-          d.jamPendampingan || ''
+          d.kapusNama || ''
         ]);
       });
 
       const worksheet = XLSX.utils.aoa_to_sheet(excelData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Riwayat Rujukan");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Riwayat Klaim");
 
-      const fileName = `Riwayat_Rujukan_Ambulan_Laut_F4_${new Date().toISOString().split('T')[0]}.xlsx`;
+      const fileName = `Riwayat_Rujukan_Klaim_Ambulan_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(workbook, fileName);
     }
   </script>
