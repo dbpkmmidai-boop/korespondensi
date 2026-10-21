@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Korespondensi - UPTD Puskesmas Midai</title>
+    <!-- Google Identity Services Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- CDN Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * { box-sizing: border-box; }
 
@@ -97,8 +100,6 @@
             contain: paint;
         }
 
-        /* Saat menggulir, kotak sambutan tetap di atas tetapi mengecil sedikit
-           agar 11 submenu PENCETAKAN FORMULIR tetap terlihat dan tidak terasa terlipat. */
         .welcome-sticky.scrolled {
             padding-top: 6px;
             padding-bottom: 8px;
@@ -124,52 +125,9 @@
         .welcome-sticky.scrolled h2 { font-size: 1rem !important; }
         .welcome-sticky.scrolled p { display: none; }
 
-        /* Jangan pernah memotong isi accordion karena melewati area header sticky. */
         .category {
             overflow: visible;
-        }
-
-        .category-header {
-            border-radius: 16px 16px 0 0;
-        }
-
-        .menu-content {
-            border-radius: 0 0 16px 16px;
-        }
-
-        /* Ketika kategori dibuka, browser memberi ruang untuk header sticky. */
-        .category {
             scroll-margin-top: 145px;
-        }
-
-        .welcome-sticky .glass-panel {
-            position: relative;
-            transform: perspective(1100px) rotateX(0deg);
-            box-shadow:
-                0 26px 70px rgba(0,0,0,.48),
-                0 0 45px rgba(34,211,238,.16),
-                inset 0 2px 0 rgba(255,255,255,.16),
-                inset 0 -24px 42px rgba(0,0,0,.18);
-        }
-
-        .welcome-sticky .glass-panel::before {
-            content: "";
-            position: absolute;
-            inset: 1px;
-            border-radius: 15px;
-            pointer-events: none;
-            background: linear-gradient(110deg, transparent 15%, rgba(255,255,255,.12) 48%, transparent 68%);
-            transform: translateX(-120%);
-            animation: panelShine 6s ease-in-out infinite;
-        }
-
-        @keyframes panelShine {
-            0%,55% { transform: translateX(-120%); }
-            80%,100% { transform: translateX(120%); }
-        }
-
-        .category {
-            overflow: visible;
             position: relative;
             z-index: 1;
             border-radius: 16px;
@@ -179,6 +137,7 @@
         }
 
         .category-header {
+            border-radius: 16px 16px 0 0;
             position: relative;
             width: 100%;
             border: 0;
@@ -219,6 +178,7 @@
         }
 
         .menu-content {
+            border-radius: 0 0 16px 16px;
             display: grid;
             grid-template-rows: 0fr;
             opacity: 0;
@@ -236,8 +196,6 @@
             overflow: visible;
         }
 
-        /* Saat salah satu kategori sudah dibuka, statusnya tetap terbuka
-           walaupun halaman digulir melewati panel Selamat Datang. */
         .category:has(.menu-content.open) {
             scroll-margin-top: 170px;
         }
@@ -263,31 +221,11 @@
             background: linear-gradient(90deg, transparent, rgba(76, 232, 224, .65), transparent);
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 999px;
-            background: #55f5df;
-            box-shadow: 0 0 12px rgba(85,245,223,.9);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%,100% { opacity: .55; transform: scale(.9); }
-            50% { opacity: 1; transform: scale(1.15); }
-        }
-
         @media (max-width: 640px) {
             .category-header { padding: 14px 16px; }
             .btn-row { padding-top: 12px; padding-bottom: 12px; }
         }
-    
 
-        /* =========================================================
-           TEMA DEEP SEA FUTURISM
-           Lapisan visual tambahan; struktur HTML dan fungsi menu
-           accordion tetap dipertahankan.
-           ========================================================= */
         :root {
             color-scheme: dark;
             --deep-bg: #03121f;
@@ -393,25 +331,91 @@
             color: rgba(198, 250, 255, .72) !important;
             border-color: rgba(103,243,245,.22) !important;
         }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: .01ms !important;
-                animation-iteration-count: 1 !important;
-                scroll-behavior: auto !important;
-                transition-duration: .01ms !important;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .glass-panel { border-radius: 16px !important; }
-            .category-header { letter-spacing: .04em; }
-            .btn-row:hover { transform: translateY(-1px); }
-        }
-
     </style>
+
+    <!-- Script Google Login & Whitelist Email + Auto Session Instan -->
+    <script>
+      // Daftar email resmi yang diizinkan mengakses dashboard
+      const ALLOWED_EMAILS = [
+        "dbpkmmidai@gmail.com",
+        "natunassl@gmail.com",
+        "witapebrianti33@gmail.com",
+        "cyyessi25@gmail.com",
+        "midiawati.midai@gmail.com",
+        "wandisusanto21@gmail.com"
+      ];
+
+      // Fungsi membaca payload JWT Token dari Google
+      function parseJwt (token) {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      }
+
+      // Fungsi menampilkan Dashboard dan menyembunyikan Login
+      function showDashboard() {
+        const authContainer = document.getElementById("auth-container");
+        const mainDashboard = document.getElementById("main-dashboard");
+        if (authContainer) authContainer.style.display = "none";
+        if (mainDashboard) mainDashboard.style.display = "block";
+      }
+
+      // 1. CEK SESI SECARA INSTAN SAAT SKRIP DIBACA BROWSER
+      (function checkSessionImmediately() {
+        const savedUser = sessionStorage.getItem('authorized_user');
+        if (savedUser && ALLOWED_EMAILS.includes(savedUser)) {
+          // Suntikkan CSS langsung agar layar login tidak sempat berkedip
+          document.write('<style>#auth-container{display:none !important;} #main-dashboard{display:block !important;}</style>');
+        }
+      })();
+
+      // Callback setelah pengguna berhasil login Google pertama kali
+      function handleCredentialResponse(response) {
+        try {
+          const responsePayload = parseJwt(response.credential);
+          const userEmail = responsePayload.email.toLowerCase().trim();
+
+          if (ALLOWED_EMAILS.includes(userEmail)) {
+            sessionStorage.setItem('authorized_user', userEmail);
+            showDashboard();
+          } else {
+            const errorMsg = document.getElementById("auth-error");
+            if (errorMsg) {
+              errorMsg.innerText = `Akses Ditolak! Email (${userEmail}) tidak memiliki izin untuk melihat dokumen ini.`;
+              errorMsg.classList.remove("hidden");
+            }
+          }
+        } catch (e) {
+          console.error("Gagal verifikasi token:", e);
+        }
+      }
+
+      // 2. INISIALISASI TOMBOL GOOGLE JIKA BELUM LOGIN
+      window.addEventListener('DOMContentLoaded', function () {
+        const savedUser = sessionStorage.getItem('authorized_user');
+        if (savedUser && ALLOWED_EMAILS.includes(savedUser)) {
+          showDashboard();
+          return;
+        }
+
+        if (window.google && google.accounts) {
+          google.accounts.id.initialize({
+            client_id: "248765631152-7khfc6g0r5lk7rlqbdm47vm2pn8o2d9h.apps.googleusercontent.com",
+            callback: handleCredentialResponse
+          });
+
+          google.accounts.id.renderButton(
+            document.getElementById("googleBtnContainer"),
+            { theme: "filled_blue", size: "large", shape: "pill", width: 280 }
+          );
+        }
+      });
+    </script>
 </head>
-<!-- Menggunakan Background Image dari folder yang sama -->
+
 <body class="min-h-screen text-white font-sans bg-teal-900 bg-cover bg-center bg-fixed" style="background-image: url('./latar1.png');">
 
     <!-- Efek cahaya 3D latar -->
@@ -419,8 +423,27 @@
     <div class="page-glow two"></div>
     <div class="page-glow three"></div>
 
-    <!-- Container Utama -->
-    <div class="min-h-screen bg-slate-950/0 flex flex-col justify-between py-4 sm:py-6 px-4 sm:px-6">
+    <!-- LAYAR AUTHENTICATION (Ditampilkan Default) -->
+    <div id="auth-container" class="min-h-screen flex items-center justify-center px-4">
+        <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center space-y-6">
+            <div class="flex justify-center gap-4 mb-2">
+                <img src="./logo_puskesmas.png" alt="Logo Puskesmas Midai" class="h-16 w-16 rounded-full object-cover">
+                <img src="./logo_natuna.png" alt="Logo Natuna" class="h-16 w-auto object-contain">
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-wide">Area Terbatas & Keamanan</h1>
+                <h2 class="text-sm font-semibold text-cyan-300 mt-1">UPTD PUSKESMAS MIDAI</h2>
+                <p class="text-xs text-cyan-100/70 mt-3">Silakan gunakan akun Google terdaftar untuk membuka Panel Surat Korespondensi.</p>
+            </div>
+            
+            <div id="googleBtnContainer" class="flex justify-center pt-2"></div>
+
+            <p id="auth-error" class="text-red-400 text-xs font-semibold hidden bg-red-950/60 p-3 rounded-lg border border-red-500/30"></p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD UTAMA (Disembunyikan Bawaan Sampai Login Diterima) -->
+    <div id="main-dashboard" style="display: none;" class="min-h-screen bg-slate-950/0 flex flex-col justify-between py-4 sm:py-6 px-4 sm:px-6">
 
         <!-- Main Content Centered -->
         <main class="max-w-4xl mx-auto w-full flex-grow">
@@ -428,247 +451,162 @@
             
             <!-- Welcome Banner tetap di atas saat scrolling -->
             <div class="welcome-sticky">
-            <div class="glass-panel rounded-2xl shadow-2xl p-5 sm:p-6 relative overflow-hidden">
-                
-                <div class="flex items-center justify-between gap-4">
-                    <!-- Logo Puskesmas Midai (Kiri) - Di-crop Lingkaran Tanpa Background Putih Luar -->
-                    <div class="flex-shrink-0">
-                        <img src="./logo_puskesmas.png" alt="Logo Puskesmas Midai" class="h-14 sm:h-20 w-14 sm:w-20 rounded-full object-cover drop-shadow-md">
-                    </div>
-
-                    <!-- Teks Judul Banner (Tengah) -->
-                    <div class="text-center text-white flex-grow">
-                        <h1 class="text-xl sm:text-3xl font-extrabold tracking-wide drop-shadow-md">
-                            Selamat Datang di Panel Surat
-                        </h1>
-                        <h2 class="text-lg sm:text-2xl font-bold text-cyan-200 mt-1 tracking-wider drop-shadow-sm">
-                            UPTD PUSKESMAS MIDAI
-                        </h2>
-                        <p class="text-cyan-100 text-xs sm:text-sm mt-2 font-medium opacity-90">
-                            Pilih Kategori atau jenis surat yang ingin dibuat.
-                        </p>
-                    </div>
-
-                    <!-- Logo Natuna (Kanan) -->
-                    <div class="flex-shrink-0">
-                        <img src="./logo_natuna.png" alt="Logo Kab. Natuna" class="h-14 sm:h-20 w-auto drop-shadow-md object-contain">
+                <div class="glass-panel rounded-2xl shadow-2xl p-5 sm:p-6 relative overflow-hidden">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex-shrink-0">
+                            <img src="./logo_puskesmas.png" alt="Logo Puskesmas Midai" class="h-14 sm:h-20 w-14 sm:w-20 rounded-full object-cover drop-shadow-md">
+                        </div>
+                        <div class="text-center text-white flex-grow">
+                            <h1 class="text-xl sm:text-3xl font-extrabold tracking-wide drop-shadow-md">
+                                Selamat Datang di Panel Surat
+                            </h1>
+                            <h2 class="text-lg sm:text-2xl font-bold text-cyan-200 mt-1 tracking-wider drop-shadow-sm">
+                                UPTD PUSKESMAS MIDAI
+                            </h2>
+                            <p class="text-cyan-100 text-xs sm:text-sm mt-2 font-medium opacity-90">
+                                Pilih Kategori atau jenis surat yang ingin dibuat.
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <img src="./logo_natuna.png" alt="Logo Kab. Natuna" class="h-14 sm:h-20 w-auto drop-shadow-md object-contain">
+                        </div>
                     </div>
                 </div>
-
-            </div>
             </div>
 
             <!-- SECTION 1: SURAT PELAYANAN PASIEN & PENDUDUK -->
             <section class="category mb-5 sm:mb-6">
-                <!-- Header Kategori -->
                 <div class="category-header bg-gradient-to-r from-cyan-700/90 via-blue-700/90 to-indigo-800/90 text-white font-bold py-3.5 px-5 flex items-center gap-3 text-sm sm:text-base uppercase tracking-wider" data-accordion-button aria-expanded="false" aria-controls="menu-pelayanan">
                     <i class="fa-solid fa-folder-closed folder-icon text-lg text-cyan-200"></i>
                     <span class="relative z-10 flex-grow">SURAT PELAYANAN PASIEN & PENDUDUK</span>
                     <i class="fa-solid fa-chevron-down chevron text-sm opacity-80 relative z-10"></i>
                 </div>
 
-                <!-- Daftar Baris Menu -->
                 <div class="menu-content" id="menu-pelayanan"><div class="space-y-2.5 p-3 sm:p-4">
-                    <!-- 1. Akta / Keterangan Kelahiran -->
                     <a href="./akta_kelahiran.html" class="btn-row flex items-center bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-blue-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">1.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Surat Keterangan / Akta Kelahiran</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 2. Akta / Keterangan Kematian -->
                     <a href="./akta_kematian.html" class="btn-row flex items-center bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-blue-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">2.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Surat Keterangan / Akta Kematian</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
- <!-- 3. Rujukan -->
                     <a href="./rujukan_kapus.html" class="btn-row flex items-center bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-blue-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">3.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Administrasi Rujukan Puskel</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
-                </div>
+                </div></div>
             </section>
 
-           
             <!-- SECTION 2: TEMPLATE PRESENSI -->
             <section class="category mb-5 sm:mb-6">
-                <!-- Header Kategori -->
                 <div class="category-header bg-gradient-to-r from-violet-700/90 via-purple-700/90 to-indigo-800/90 text-white font-bold py-3.5 px-5 flex items-center gap-3 text-sm sm:text-base uppercase tracking-wider" data-accordion-button aria-expanded="false" aria-controls="menu-presensi">
                     <i class="fa-solid fa-folder-closed folder-icon text-lg text-violet-200"></i>
                     <span class="relative z-10 flex-grow">TEMPLATE PRESENSI</span>
                     <i class="fa-solid fa-chevron-down chevron text-sm opacity-80 relative z-10"></i>
                 </div>
 
-                <!-- Daftar Baris Menu -->
                 <div class="menu-content" id="menu-presensi"><div class="space-y-2.5 p-3 sm:p-4">
-                    <!-- 1. Presensi Kosong -->
                     <a href="./daftar_hadir.html" class="btn-row flex items-center bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 hover:from-purple-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-purple-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">1.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Presensi/Daftar Hadir Kosong</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 2. Presensi Lokmin Bulanan -->
                     <a href="./presensi_lokakarya_mini_bulanan.html" class="btn-row flex items-center bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 hover:from-purple-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-purple-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">2.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Presensi/Daftar Hadir Lokakarya Mini Bulanan</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 3. Presensi Lokmin Linsek -->
                     <a href="./presensi_lokakarya_mini_linsek.html" class="btn-row flex items-center bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 hover:from-purple-400 hover:to-indigo-600 text-white rounded-lg px-4 py-3 border border-purple-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">3.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Presensi/Daftar Hadir Lokakarya Mini Lintas Sektor</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
-                </div>
+                </div></div>
             </section>
 
             <!-- SECTION 3: PENCETAKAN FORMULIR -->
             <section class="category mb-5 sm:mb-6">
-                <!-- Header Kategori -->
                 <div class="category-header bg-gradient-to-r from-rose-700/90 via-fuchsia-700/90 to-purple-800/90 text-white font-bold py-3.5 px-5 flex items-center gap-3 text-sm sm:text-base uppercase tracking-wider" data-accordion-button aria-expanded="false" aria-controls="menu-formulir">
                     <i class="fa-solid fa-folder-closed folder-icon text-lg text-rose-200"></i>
                     <span class="relative z-10 flex-grow">PENCETAKAN FORMULIR</span>
                     <i class="fa-solid fa-chevron-down chevron text-sm opacity-80 relative z-10"></i>
                 </div>
 
-                <!-- Daftar Baris Menu -->
                 <div class="menu-content" id="menu-formulir"><div class="space-y-2.5 p-3 sm:p-4">
-                    <!-- 1. Status Rawat Jalan Poli Umum -->
                     <a href="./status_poli_umum.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">1.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Status Rawat Jalan Poli Umum</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 2. Status Rawat Jalan Poli Gigi -->
                     <a href="./status_poli_gigi.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">2.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Status Rawat Jalan Poli Gigi</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 3. Status Rawat Inap -->
                     <a href="./status_rawat_inap.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">3.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Status Rawat Inap</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 4. Status Rawat Inap Kebidanan -->
                     <a href="./status_rawat_inap_kebidanan.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">4.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Status Rawat Inap Kebidanan</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 5. Permintaan Pemeriksaan Laboratorium -->
                     <a href="./permintaan_pemeriksaan_laboratorium.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">5.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Permintaan Pemeriksaan Laboratorium</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 6. Hasil Pemeriksaan Laboratorium -->
                     <a href="./hasil_pemeriksaan_laboratorium.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">6.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Hasil Pemeriksaan Laboratorium</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 7. Surat Pernyataan Penolakan Rujukan Kebidanan -->
                     <a href="./surat_pernyataan_penolakan_rujukan_kebidanan.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">7.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Surat Pernyataan Penolakan Rujukan Kebidanan</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-  <!-- 8. Surat Pernyataan Penolakan Rujukan Umum -->
                     <a href="./surat_pernyataan_penolakan_rujukan_umum.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">8.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Surat Pernyataan Penolakan Rujukan Umum</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-               
-
-                    <!-- 9. Surat Pernyataan Penolakan Rawat Inap -->
                     <a href="./surat_pernyataan_penolakan_rawat_inap.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">9.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Surat Pernyataan Penolakan Rawat Inap</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- 10. Surat Pernyataan Pulang Atas Permintaan Sendiri -->
                     <a href="./surat_pernyataan_pulang_atas_permintaan_sendiri.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">10.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Surat Pernyataan Pulang Atas Permintaan Sendiri</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
- <!-- 11. Resep -->
                     <a href="./resep.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
                         <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">11.</span>
                         <span class="font-semibold text-sm sm:text-base flex-grow">Resep</span>
                         <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
                     </a>
-
- <!-- 12. Cetak Kop -->
-                    <a href="./cetak_kop_surat.html" class="btn-row flex items-center bg-gradient-to-r from-red-500 via-rose-600 to-red-700 hover:from-red-400 hover:to-rose-600 text-white rounded-lg px-4 py-3 border border-red-400/40 group">
-                        <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">12.</span>
-                        <span class="font-semibold text-sm sm:text-base flex-grow">Kop Surat</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-
                 </div></div>
-            </section>
-
-<!-- SECTION 4: TOOLS -->
-            <section class="category mb-5 sm:mb-6">
-                <!-- Header Kategori -->
-                <div class="category-header bg-gradient-to-r from-emerald-700/90 via-teal-700/90 to-cyan-800/90 text-white font-bold py-3.5 px-5 flex items-center gap-3 text-sm sm:text-base uppercase tracking-wider" data-accordion-button aria-expanded="false" aria-controls="menu-tools">
-                    <i class="fa-solid fa-folder-closed folder-icon text-lg text-emerald-200"></i>
-                    <span class="relative z-10 flex-grow">PERALATAN</span>
-                    <i class="fa-solid fa-chevron-down chevron text-sm opacity-80 relative z-10"></i>
-                </div>
-
-                <!-- Daftar Baris Menu -->
-                <div class="menu-content" id="menu-tools">
-                    <div class="space-y-2.5 p-3 sm:p-4">
-                        <!-- 1. Kunjungan -->
-                        <a href="./data_kunjungan_pasien.html" class="btn-row flex items-center bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white rounded-lg px-4 py-3 border border-emerald-400/40 group">
-                            <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">1.</span>
-                            <span class="font-semibold text-sm sm:text-base flex-grow">Kunjungan</span>
-                            <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                        </a>
-
-                        <!-- 2. Data Penduduk -->
-                        <a href="./data_penduduk.html" class="btn-row flex items-center bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white rounded-lg px-4 py-3 border border-emerald-400/40 group">
-                            <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">2.</span>
-                            <span class="font-semibold text-sm sm:text-base flex-grow">Data Penduduk</span>
-                            <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                        </a>
-
-                        <!-- 3. Data Siswa -->
-                        <a href="./data_siswa.html" class="btn-row flex items-center bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white rounded-lg px-4 py-3 border border-emerald-400/40 group">
-                            <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">3.</span>
-                            <span class="font-semibold text-sm sm:text-base flex-grow">Data Siswa</span>
-                            <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                        </a>
-
-                        <!-- 4. Lainnya -->
-                        <a href="./lainnya.html" class="btn-row flex items-center bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white rounded-lg px-4 py-3 border border-emerald-400/40 group">
-                            <span class="font-bold text-sm sm:text-base mr-3 min-w-[20px]">4.</span>
-                            <span class="font-semibold text-sm sm:text-base flex-grow">Lainnya</span>
-                            <i class="fa-solid fa-chevron-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                        </a>
-                    </div>
-                </div>
             </section>
 
         </main>
@@ -680,6 +618,7 @@
 
     </div>
 
+    <!-- Script Accordion & Header Scroll -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const buttons = document.querySelectorAll('[data-accordion-button]');
@@ -711,24 +650,18 @@
                         folder.classList.toggle('fa-folder-closed', !willOpen);
                     }
 
-                    // Semua kategori menggunakan perilaku yang sama.
-                    // Membuka satu kategori tidak membuatnya tertutup saat scroll.
                     if (willOpen) {
                         requestAnimationFrame(() => keepHeaderBelowWelcome(button));
                     }
                 });
             });
 
-            // Panel Selamat Datang tetap sticky. Ketika menggulir, panel mengecil
-            // sehingga submenu panjang (termasuk 11 submenu formulir) tidak tertutup.
             const updateSticky = () => {
                 if (welcome) welcome.classList.toggle('scrolled', window.scrollY > 40);
             };
             updateSticky();
             window.addEventListener('scroll', updateSticky, { passive: true });
 
-            // Jika ukuran jendela berubah, posisi kategori terbuka tetap aman
-            // dari tertutup panel sticky.
             window.addEventListener('resize', () => {
                 const openButton = document.querySelector('[data-accordion-button][aria-expanded="true"]');
                 if (openButton && window.scrollY > 0) {
