@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pelacakan Data Siswa Multi-Sekolah - Deep Sea Futurism</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (XLSX) CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <style id="print-paper-style">
+        /* CSS Ukuran Kertas Dinamis Default A4 Landscape */
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+    </style>
+
+    <style>
+        /* =========================================================
+           TEMA DEEP SEA FUTURISM
+           ========================================================= */
+        :root {
+            color-scheme: dark;
+            --deep-bg: #03121f;
+            --deep-panel: rgba(4, 30, 46, .88);
+            --deep-cyan: #67f3f5;
+            --deep-teal: #21d4c2;
+            --deep-border: rgba(103, 243, 245, .34);
+        }
+
+        body {
+            background-color: #03121f !important;
+            color: #e7fbff !important;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -3;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 12% 15%, rgba(0, 211, 230, .20), transparent 34%),
+                radial-gradient(ellipse at 88% 30%, rgba(0, 125, 164, .22), transparent 36%),
+                radial-gradient(ellipse at 48% 100%, rgba(13, 148, 136, .18), transparent 38%),
+                linear-gradient(135deg, rgba(2, 15, 28, .94), rgba(3, 35, 51, .82)),
+                url('./latar1.png') center / cover fixed;
+            filter: saturate(1.12) contrast(1.04);
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            opacity: .22;
+            background-image:
+                linear-gradient(rgba(103, 243, 245, .15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(103, 243, 245, .15) 1px, transparent 1px);
+            background-size: 36px 36px;
+            mask-image: linear-gradient(to bottom, #000 0%, transparent 94%);
+        }
+
+        .page-glow {
+            position: fixed;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            filter: blur(45px);
+            pointer-events: none;
+            z-index: -1;
+            opacity: .42;
+            animation: floatGlow 9s ease-in-out infinite;
+        }
+
+        .page-glow.one { top: 8%; left: -90px; background: rgba(0, 214, 230, .32) !important; }
+        .page-glow.two { top: 42%; right: -100px; background: rgba(0, 132, 170, .30) !important; animation-delay: -3s; }
+        .page-glow.three { bottom: -100px; left: 35%; background: rgba(20, 184, 166, .24) !important; animation-delay: -6s; }
+
+        @keyframes floatGlow {
+            0%,100% { transform: translate3d(0,0,0) scale(1); }
+            50% { transform: translate3d(0,-28px,0) scale(1.08); }
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(3, 28, 44, .94), rgba(5, 69, 82, .78)) !important;
+            border: 1px solid rgba(103, 243, 245, .34) !important;
+            box-shadow: 0 22px 60px rgba(0,0,0,.46), 0 0 28px rgba(34,211,238,.13), inset 0 1px 0 rgba(255,255,255,.12) !important;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .glass-header {
+            background: linear-gradient(to bottom, rgba(2, 15, 28, .97), rgba(2, 21, 35, .86)) !important;
+            border-bottom: 1px solid rgba(103, 243, 245, .28) !important;
+            backdrop-filter: blur(12px);
+        }
+
+        /* Floating Back Button */
+        .floating-back-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 99;
+            background: linear-gradient(100deg, rgba(5, 100, 122, .95), rgba(7, 71, 99, .98));
+            border: 1px solid rgba(103, 243, 245, .5);
+            color: #67f3f5;
+            padding: 12px 20px;
+            border-radius: 9999px;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 15px rgba(103,243,245,0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .floating-back-btn:hover {
+            background: linear-gradient(100deg, rgba(8, 133, 151, .98), rgba(7, 91, 119, .98));
+            border-color: rgba(103, 243, 245, .8);
+            box-shadow: 0 0 20px rgba(34,211,238,.4);
+            transform: translateY(-3px);
+            color: #ffffff;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            background-color: rgba(2, 19, 31, .8) !important;
+            border-color: rgba(103, 243, 245, .3) !important;
+            color: #e7fbff !important;
+        }
+
+        select option {
+            background-color: #03121f !important;
+            color: #e7fbff !important;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(103, 243, 245, 0.3); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(103, 243, 245, 0.6); }
+
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                font-size: 9pt;
+            }
+            body::before, body::after, .page-glow, .floating-back-btn {
+                display: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            th, td {
+                border: 1px solid #cbd5e1 !important;
+                padding: 4px 6px !important;
+                font-size: 8pt !important;
+                color: black !important;
+            }
+            th {
+                background-color: #f1f5f9 !important;
+                color: #0f172a !important;
+            }
+        }
+
+        .print-only {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative">
+
+    <div class="page-glow one"></div>
+    <div class="page-glow two"></div>
+    <div class="page-glow three"></div>
+
+    <a href="korespondensi_terpadu.html" class="floating-back-btn no-print" title="Kembali ke Dashboard Korespondensi">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Kembali ke Dashboard</span>
+    </a>
+
+    <!-- Header Laporan Print Only -->
+    <div class="print-only mb-4 border-b-2 border-slate-800 pb-3">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold uppercase tracking-wider text-slate-900">Laporan Pelacakan Data Siswa Terintegrasi</h1>
+                <p class="text-xs text-slate-600">Sistem Informasi Identitas Siswa Multi-Sekolah</p>
+            </div>
+            <div class="text-right text-xs text-slate-500">
+                <p>Tanggal Cetak: <span id="print-date"></span></p>
+                <p>Ukuran Kertas: <span id="print-paper-label" class="font-bold text-slate-800">A4 Landscape</span></p>
+                <p>Total Siswa: <span id="print-total" class="font-bold text-slate-800">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="glass-header text-white shadow-lg sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-cyan-950/80 border border-cyan-400/40 rounded-lg shadow-inner">
+                    <i class="fa-solid me-1 fa-graduation-cap text-2xl text-cyan-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-cyan-100">Dashboard Pelacakan Data Siswa</h1>
+                    <p class="text-xs text-cyan-200/70">Sistem Informasi Identitas Siswa Multi-Sekolah</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <label for="excel-file" class="cursor-pointer bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-medium text-sm px-4 py-2.5 rounded-lg transition-all shadow flex items-center justify-center gap-2 w-full sm:w-auto border border-cyan-400/40">
+                    <i class="fa-solid fa-file-excel text-lg"></i>
+                    <span id="upload-label">Unggah File Excel</span>
+                    <input type="file" id="excel-file" accept=".xlsx, .xls" class="hidden">
+                </label>
+                <button type="button" id="reset-btn" onclick="resetFilters()" class="bg-slate-800/80 hover:bg-slate-700/80 text-cyan-200 p-2.5 rounded-lg border border-cyan-400/30 transition shadow" title="Reset Semua Filter">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+        <div id="file-info-bar" class="no-print glass-panel p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+            <div class="flex items-center gap-2 text-cyan-200/80">
+                <i class="fa-solid fa-circle-info text-cyan-300"></i>
+                <span>Status Data: <strong id="status-text" class="text-cyan-100">Menampilkan Data Contoh Bawaan</strong></span>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-cyan-200/60">
+                <span><i class="fa-solid fa-layer-group text-cyan-400 me-1"></i> <span id="sheet-count">0</span> Sheet Sekolah</span>
+                <span><i class="fa-solid fa-users text-cyan-400 me-1"></i> <span id="total-raw-count">0</span> Data Terintegrasi</span>
+            </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="no-print grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel p-5 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-cyan-200/60 uppercase tracking-wider">Total Siswa Terfilter</p>
+                    <h3 id="stat-total" class="text-2xl font-extrabold text-cyan-100 mt-1">0</h3>
+                    <p id="stat-total-sub" class="text-xs text-cyan-200/50 mt-1">Dari total 0 siswa</p>
+                </div>
+                <div class="w-12 h-12 bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-cyan-200/60 uppercase tracking-wider">Siswa Laki-Laki (L)</p>
+                    <h3 id="stat-male" class="text-2xl font-extrabold text-blue-400 mt-1">0</h3>
+                    <p id="stat-male-pct" class="text-xs text-cyan-200/50 mt-1">0% dari total</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-500/10 border border-blue-400/30 text-blue-400 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-mars"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-cyan-200/60 uppercase tracking-wider">Siswa Perempuan (P)</p>
+                    <h3 id="stat-female" class="text-2xl font-extrabold text-pink-400 mt-1">0</h3>
+                    <p id="stat-female-pct" class="text-xs text-cyan-200/50 mt-1">0% dari total</p>
+                </div>
+                <div class="w-12 h-12 bg-pink-500/10 border border-pink-400/30 text-pink-400 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-venus"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-cyan-200/60 uppercase tracking-wider">Rata-rata Usia</p>
+                    <h3 id="stat-avg-age" class="text-2xl font-extrabold text-emerald-400 mt-1">0</h3>
+                    <p class="text-xs text-cyan-200/50 mt-1">Tahun</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-500/10 border border-emerald-400/30 text-emerald-400 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-cake-candles"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <div class="no-print glass-panel p-5 rounded-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-cyan-400/20 pb-3">
+                <h2 class="font-bold text-cyan-200 flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-cyan-400"></i> Panel Filter & Pelacakan Siswa
+                </h2>
+                <span class="text-xs text-cyan-200/50">Filter otomatis memperbarui data & grafik</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-semibold text-cyan-200/70 mb-1">Cari Identitas (Nama, NIK, Orang Tua, Tempat Lahir)</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-cyan-400/60 text-sm"></i>
+                        <input type="text" id="filter-search" oninput="applyFilters()" placeholder="Ketik kata kunci pencarian..." class="w-full pl-9 pr-3 py-2 text-sm rounded-lg focus:ring-1 focus:ring-cyan-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-cyan-200/70 mb-1">Sekolah / Sheet</label>
+                    <select id="filter-school" onchange="applyFilters()" class="w-full py-2 px-3 text-sm rounded-lg focus:ring-1 focus:ring-cyan-400 focus:outline-none">
+                        <option value="">-- Semua Sekolah --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-cyan-200/70 mb-1">Jenis Kelamin</label>
+                    <select id="filter-jk" onchange="applyFilters()" class="w-full py-2 px-3 text-sm rounded-lg focus:ring-1 focus:ring-cyan-400 focus:outline-none">
+                        <option value="">-- Semua --</option>
+                        <option value="L">Laki-Laki (L)</option>
+                        <option value="P">Perempuan (P)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-cyan-200/70 mb-1">Kelas / Tingkat</label>
+                    <select id="filter-kelas" onchange="applyFilters()" class="w-full py-2 px-3 text-sm rounded-lg focus:ring-1 focus:ring-cyan-400 focus:outline-none">
+                        <option value="">-- Semua Kelas --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-cyan-200/70 mb-1">Alamat / Wilayah</label>
+                    <select id="filter-alamat" onchange="applyFilters()" class="w-full py-2 px-3 text-sm rounded-lg focus:ring-1 focus:ring-cyan-400 focus:outline-none">
+                        <option value="">-- Semua Alamat --</option>
+                    </select>
+                </div>
+
+                <div class="lg:col-span-2 flex gap-2 items-center">
+                    <div class="w-1/2">
+                        <label class="block text-xs font-semibold text-cyan-200/70 mb-1">Usia Min (Thn)</label>
+                        <input type="number" id="filter-min-age" min="0" max="30" placeholder="0" oninput="applyFilters()" class="w-full py-2 px-3 text-sm rounded-lg focus:ring-1 focus:ring-cyan-400 focus:outline-none">
+                    </div>
+                    <span class="pt-5 text-cyan-200/50">-</span>
+                    <div class="w-1/2">
+                        <label class="block text-xs font-semibold text-cyan-200/70 mb-1">Usia Max (Thn)</label>
+                        <input type="number" id="filter-max-age" min="0" max="30" placeholder="20" oninput="applyFilters()" class="w-full py-2 px-3 text-sm rounded-lg focus:ring-1 focus:ring-cyan-400 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="no-print grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 glass-panel p-5 rounded-xl">
+                <h3 class="text-sm font-bold text-cyan-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-column text-cyan-400"></i> Distribusi Siswa Per Sekolah (L vs P)
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="chart-school"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-xl flex flex-col justify-between space-y-4">
+                <div>
+                    <h3 class="text-sm font-bold text-cyan-200 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-cyan-400"></i> Kelompok Usia Siswa
+                    </h3>
+                    <div class="h-48 relative">
+                        <canvas id="chart-age"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table Section -->
+        <div class="glass-panel rounded-xl overflow-hidden space-y-4 p-5">
+            <div class="no-print flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <h2 class="font-bold text-cyan-100"><i class="fa-solid fa-table text-cyan-400 me-2"></i>Daftar Identitas Siswa</h2>
+                    <span id="table-count-badge" class="bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-xs font-semibold px-2.5 py-0.5 rounded-full">0 Siswa</span>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <select id="paper-size-select" class="bg-cyan-950 border border-cyan-400/40 text-cyan-200 text-xs rounded-lg px-2 py-2 focus:outline-none">
+                        <option value="A4">Kertas A4</option>
+                        <option value="F4" selected>Kertas F4 / Folio</option>
+                    </select>
+
+                    <button type="button" onclick="printFilteredData()" class="bg-slate-800/80 hover:bg-slate-700/80 border border-cyan-400/30 text-cyan-100 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-print"></i> Cetak Laporan
+                    </button>
+
+                    <button type="button" onclick="exportToExcel()" class="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-export"></i> Ekspor Excel
+                    </button>
+
+                    <select id="rows-per-page" onchange="changeRowsPerPage()" class="py-1.5 px-2 text-xs rounded-lg focus:outline-none">
+                        <option value="10">10 / Hal</option>
+                        <option value="25" selected>25 / Hal</option>
+                        <option value="50">50 / Hal</option>
+                        <option value="100">100 / Hal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar border border-cyan-400/20 rounded-lg">
+                <table class="w-full text-left text-xs text-cyan-100/90">
+                    <thead class="bg-cyan-950/60 text-cyan-200 uppercase text-[11px] font-bold tracking-wider border-b border-cyan-400/20">
+                        <tr>
+                            <th class="p-3 text-center">No</th>
+                            <th class="p-3 cursor-pointer hover:bg-cyan-900/50" onclick="sortTable('Nama')">Nama Siswa <i class="fa-solid fa-sort text-cyan-400/50"></i></th>
+                            <th class="p-3">NIK</th>
+                            <th class="p-3 text-center cursor-pointer hover:bg-cyan-900/50" onclick="sortTable('JK')">JK <i class="fa-solid fa-sort text-cyan-400/50"></i></th>
+                            <th class="p-3 cursor-pointer hover:bg-cyan-900/50" onclick="sortTable('Sekolah')">Sekolah <i class="fa-solid fa-sort text-cyan-400/50"></i></th>
+                            <th class="p-3 text-center">Kelas</th>
+                            <th class="p-3">Tempat / Tgl Lahir</th>
+                            <th class="p-3 text-center cursor-pointer hover:bg-cyan-900/50" onclick="sortTable('UsiaNum')">Usia <i class="fa-solid fa-sort text-cyan-400/50"></i></th>
+                            <th class="p-3">Alamat</th>
+                            <th class="p-3">Nama Orang Tua (A / I)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-table-body" class="divide-y divide-cyan-400/10">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="no-print flex flex-col sm:flex-row justify-between items-center gap-3 pt-2 text-xs text-cyan-200/60">
+                <div id="pagination-info">Menampilkan 0 - 0 dari 0 siswa</div>
+                <div class="flex items-center gap-1" id="pagination-controls">
+                    <!-- Dynamic Buttons -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="no-print border-t border-cyan-400/20 text-cyan-100/60 text-xs py-4 text-center mt-8">
+        <p>Dashboard Pelacakan Data Siswa &copy; 2026 — Dibuat untuk pemrosesan file Excel Multi-Sheet</p>
+    </footer>
+
+    <script>
+        let rawData = [];
+        let filteredData = [];
+        let schools = [];
+        let currentPage = 1;
+        let rowsPerPage = 25;
+        let sortColumn = '';
+        let sortDirection = 'asc';
+
+        let schoolChart = null;
+        let ageChart = null;
+
+        const sampleData = [
+            { No: 1, Nama: "SHAKIEL ALFARIZQI", NIK: "2103041309240002", JK: "L", TempatLahir: "NATUNA", TglLahir: "2024-09-13", NamaAyah: "SAPRIADI", NamaIbu: "EMI", Kelas: "A", Alamat: "GUNUNG SEBELAT", USIA1: "02 Thn 01 Bln", USIA2: "2.1", UsiaNum: 2.1, Sekolah: "PAUD_AISYIYAH" },
+            { No: 2, Nama: "ALINKA SAPITRI", NIK: "2103044405220001", JK: "P", TempatLahir: "NATUNA", TglLahir: "2022-05-04", NamaAyah: "AGUS SUHENDRI", NamaIbu: "YANTI ALFINA", Kelas: "Kelompok A", Alamat: "GUNUNG SABANG BARAT", USIA1: "04 Thn 05 Bln", USIA2: "4.4", UsiaNum: 4.4, Sekolah: "PAUD_NURUDINIYAH" },
+            { No: 3, Nama: "ANNISA AZKIYA SYAFITRI", NIK: "2103224000000000", JK: "P", TempatLahir: "NATUNA", TglLahir: "2022-05-02", NamaAyah: "ANDOYO", NamaIbu: "DHEA DIVADILLA", Kelas: "A", Alamat: "GN. AIR BUNGA", USIA1: "04 Thn 05 Bln", USIA2: "4.5", UsiaNum: 4.5, Sekolah: "TKN" },
+            { No: 4, Nama: "MUHAMMAD ZAKI", NIK: "2103222506180000", JK: "L", TempatLahir: "MIDAI", TglLahir: "2020-09-30", NamaAyah: "SUPRIANTO", NamaIbu: "MAYASARI", Kelas: "1", Alamat: "AIR KUMPAI", USIA1: "06 Thn 00 Bln", USIA2: "6.0", UsiaNum: 6.0, Sekolah: "SDN_001" },
+            { No: 5, Nama: "ZIKHRA SYAFARI", NIK: "2103042802200001", JK: "L", TempatLahir: "NATUNA", TglLahir: "2020-02-28", NamaAyah: "SAPARUDDIN", NamaIbu: "SUDARMI", Kelas: "1", Alamat: "AIR PUTIH", USIA1: "06 Thn 07 Bln", USIA2: "6.6", UsiaNum: 6.6, Sekolah: "SDN_002" },
+            { No: 6, Nama: "ABID PRANAJA", NIK: "2103042000000000", JK: "L", TempatLahir: "NATUNA", TglLahir: "2019-11-21", NamaAyah: "MAZLAN.S", NamaIbu: "RIZA SASMITA", Kelas: "1", Alamat: "GN. AIR PANCUR", USIA1: "06 Thn 10 Bln", USIA2: "6.9", UsiaNum: 6.9, Sekolah: "SDN_003" },
+            { No: 7, Nama: "AFIZAH SEPRIANI", NIK: "2171035000000000", JK: "P", TempatLahir: "BATAM", TglLahir: "2020-09-12", NamaAyah: "SYAIFUL ANAS", NamaIbu: "WISRI GUSNITA", Kelas: "1", Alamat: "SABANG BARAT", USIA1: "06 Thn 01 Bln", USIA2: "6.1", UsiaNum: 6.1, Sekolah: "MIBU" },
+            { No: 8, Nama: "ADINDA PUTRI RIANI", NIK: "2103040000000001", JK: "P", TempatLahir: "TANJUNG PINANG", TglLahir: "2014-01-21", NamaAyah: "RAJALI", NamaIbu: "ENI LIZA", Kelas: "7", Alamat: "GN SEBELAT", USIA1: "12 Thn 08 Bln", USIA2: "12.7", UsiaNum: 12.7, Sekolah: "SMPN1" },
+            { No: 9, Nama: "AHMAD RAPIANDRA", NIK: "2103040000000002", JK: "L", TempatLahir: "ANAMBAS", TglLahir: "2012-04-21", NamaAyah: "MARYANI", NamaIbu: "SUZANA", Kelas: "7", Alamat: "AIR PANCUR", USIA1: "14 Thn 05 Bln", USIA2: "14.5", UsiaNum: 14.5, Sekolah: "MTSN3" },
+            { No: 10, Nama: "ADAM RAMDANI", NIK: "3204150000000000", JK: "L", TempatLahir: "BANDUNG", TglLahir: "2010-01-01", NamaAyah: "DIDIN WARDIANA", NamaIbu: "RENI", Kelas: "10", Alamat: "GN. SEBELAT", USIA1: "16 Thn 09 Bln", USIA2: "16.8", UsiaNum: 16.8, Sekolah: "MABU" }
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initSampleData();
+            setupFileUploader();
+        });
+
+        function initSampleData() {
+            rawData = [...sampleData];
+            document.getElementById('status-text').innerText = "Menampilkan Data Contoh Bawaan (10 Siswa)";
+            processLoadedData();
+        }
+
+        function setupFileUploader() {
+            const fileInput = document.getElementById('excel-file');
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                document.getElementById('upload-label').innerText = "Memproses...";
+                const reader = new FileReader();
+
+                reader.onload = function(evt) {
+                    try {
+                        const data = new Uint8Array(evt.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        let parsedData = [];
+                        schools = workbook.SheetNames;
+
+                        workbook.SheetNames.forEach(sheetName => {
+                            const worksheet = workbook.Sheets[sheetName];
+                            const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                            jsonRows.forEach((row, idx) => {
+                                const nama = String(row['Nama'] || row['NAMA'] || '').trim();
+                                if (!nama) return;
+
+                                const jk = String(row['JK'] || row['Jk'] || row['Jenis Kelamin'] || '').trim().toUpperCase();
+                                const nik = String(row['NIK'] || row['Nik'] || '-').trim();
+                                const tempatLahir = String(row['Tempat Lahir'] || row['TEMPAT LAHIR'] || '-').trim();
+                                const tglLahir = parseDateVal(row['Tanggal Lahir'] || row['TANGGAL LAHIR']);
+                                const namaAyah = String(row['Nama Ayah'] || row['NAMA AYAH'] || '-').trim();
+                                const namaIbu = String(row['Nama Ibu'] || row['NAMA IBU'] || '-').trim();
+                                const kelas = String(row['Kelas'] || row['KELAS'] || '-').trim();
+                                const alamat = String(row['Alamat'] || row['ALAMAT'] || '-').trim();
+                                
+                                const usia1 = String(row['USIA1'] || row['USIA'] || '-').trim();
+                                let usia2Val = row['USIA2'] || row['Unnamed: 11'] || 0;
+                                let usiaNum = parseFloat(String(usia2Val).replace(',', '.')) || calculateAgeFromDate(tglLahir);
+
+                                parsedData.push({
+                                    No: idx + 1,
+                                    Nama: nama,
+                                    NIK: nik,
+                                    JK: jk === 'L' || jk === 'LAKI-LAKI' ? 'L' : (jk === 'P' || jk === 'PEREMPUAN' ? 'P' : 'L'),
+                                    TempatLahir: tempatLahir,
+                                    TglLahir: tglLahir,
+                                    NamaAyah: namaAyah,
+                                    NamaIbu: namaIbu,
+                                    Kelas: kelas,
+                                    Alamat: alamat,
+                                    USIA1: usia1,
+                                    USIA2: usiaNum ? usiaNum.toFixed(1) : '-',
+                                    UsiaNum: usiaNum || 0,
+                                    Sekolah: sheetName
+                                });
+                            });
+                        });
+
+                        if (parsedData.length === 0) {
+                            alert("File Excel tidak berisi data siswa yang valid.");
+                            document.getElementById('upload-label').innerText = "Unggah File Excel";
+                            return;
+                        }
+
+                        rawData = parsedData;
+                        document.getElementById('status-text').innerText = `File "${file.name}" Berhasil Diunggah`;
+                        document.getElementById('upload-label').innerText = "Ganti File Excel";
+                        processLoadedData();
+
+                    } catch (err) {
+                        alert("Gagal membaca file Excel: " + err.message);
+                        document.getElementById('upload-label').innerText = "Unggah File Excel";
+                    }
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function processLoadedData() {
+            document.getElementById('total-raw-count').innerText = rawData.length.toLocaleString('id-ID');
+            
+            const schoolSet = new Set(rawData.map(d => d.Sekolah));
+            const kelasSet = new Set(rawData.map(d => d.Kelas).filter(k => k && k !== '-'));
+            const alamatSet = new Set(rawData.map(d => d.Alamat).filter(a => a && a !== '-'));
+
+            document.getElementById('sheet-count').innerText = schoolSet.size;
+
+            const schoolSel = document.getElementById('filter-school');
+            schoolSel.innerHTML = '<option value="">-- Semua Sekolah --</option>';
+            Array.from(schoolSet).sort().forEach(s => {
+                schoolSel.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+
+            const kelasSel = document.getElementById('filter-kelas');
+            kelasSel.innerHTML = '<option value="">-- Semua Kelas --</option>';
+            Array.from(kelasSet).sort().forEach(k => {
+                kelasSel.innerHTML += `<option value="${k}">${k}</option>`;
+            });
+
+            const alamatSel = document.getElementById('filter-alamat');
+            alamatSel.innerHTML = '<option value="">-- Semua Alamat --</option>';
+            Array.from(alamatSet).sort().forEach(a => {
+                alamatSel.innerHTML += `<option value="${a}">${a}</option>`;
+            });
+
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchKw = document.getElementById('filter-search').value.toLowerCase().trim();
+            const schoolVal = document.getElementById('filter-school').value;
+            const jkVal = document.getElementById('filter-jk').value;
+            const kelasVal = document.getElementById('filter-kelas').value;
+            const alamatVal = document.getElementById('filter-alamat').value;
+            const minAge = parseFloat(document.getElementById('filter-min-age').value) || 0;
+            const maxAge = parseFloat(document.getElementById('filter-max-age').value) || 99;
+
+            filteredData = rawData.filter(item => {
+                const matchSearch = !searchKw || 
+                    item.Nama.toLowerCase().includes(searchKw) ||
+                    item.NIK.toLowerCase().includes(searchKw) ||
+                    item.TempatLahir.toLowerCase().includes(searchKw) ||
+                    item.NamaAyah.toLowerCase().includes(searchKw) ||
+                    item.NamaIbu.toLowerCase().includes(searchKw);
+
+                const matchSchool = !schoolVal || item.Sekolah === schoolVal;
+                const matchJK = !jkVal || item.JK === jkVal;
+                const matchKelas = !kelasVal || item.Kelas === kelasVal;
+                const matchAlamat = !alamatVal || item.Alamat === alamatVal;
+                const matchAge = item.UsiaNum >= minAge && item.UsiaNum <= maxAge;
+
+                return matchSearch && matchSchool && matchJK && matchKelas && matchAlamat && matchAge;
+            });
+
+            currentPage = 1;
+            updateKPIs();
+            renderCharts();
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-search').value = '';
+            document.getElementById('filter-school').value = '';
+            document.getElementById('filter-jk').value = '';
+            document.getElementById('filter-kelas').value = '';
+            document.getElementById('filter-alamat').value = '';
+            document.getElementById('filter-min-age').value = '';
+            document.getElementById('filter-max-age').value = '';
+            applyFilters();
+        }
+
+        function updateKPIs() {
+            const total = filteredData.length;
+            const males = filteredData.filter(d => d.JK === 'L').length;
+            const females = filteredData.filter(d => d.JK === 'P').length;
+            
+            const totalAge = filteredData.reduce((acc, curr) => acc + (curr.UsiaNum || 0), 0);
+            const avgAge = total > 0 ? (totalAge / total).toFixed(1) : '0';
+
+            document.getElementById('stat-total').innerText = total.toLocaleString('id-ID');
+            document.getElementById('stat-total-sub').innerText = `Dari total ${rawData.length.toLocaleString('id-ID')} siswa`;
+
+            document.getElementById('stat-male').innerText = males.toLocaleString('id-ID');
+            document.getElementById('stat-male-pct').innerText = total > 0 ? `${((males/total)*100).toFixed(1)}% dari total` : '0%';
+
+            document.getElementById('stat-female').innerText = females.toLocaleString('id-ID');
+            document.getElementById('stat-female-pct').innerText = total > 0 ? `${((females/total)*100).toFixed(1)}% dari total` : '0%';
+
+            document.getElementById('stat-avg-age').innerText = avgAge;
+        }
+
+        function renderCharts() {
+            const schoolGroup = {};
+            filteredData.forEach(d => {
+                if (!schoolGroup[d.Sekolah]) schoolGroup[d.Sekolah] = { L: 0, P: 0 };
+                if (d.JK === 'L') schoolGroup[d.Sekolah].L++;
+                else schoolGroup[d.Sekolah].P++;
+            });
+
+            const schoolLabels = Object.keys(schoolGroup);
+            const maleCounts = schoolLabels.map(s => schoolGroup[s].L);
+            const femaleCounts = schoolLabels.map(s => schoolGroup[s].P);
+
+            if (schoolChart) schoolChart.destroy();
+            const ctxSchool = document.getElementById('chart-school').getContext('2d');
+            schoolChart = new Chart(ctxSchool, {
+                type: 'bar',
+                data: {
+                    labels: schoolLabels,
+                    datasets: [
+                        { label: 'Laki-Laki (L)', data: maleCounts, backgroundColor: '#38bdf8', borderRadius: 4 },
+                        { label: 'Perempuan (P)', data: femaleCounts, backgroundColor: '#f472b6', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { color: '#e7fbff' } } },
+                    scales: { 
+                        y: { beginAtZero: true, ticks: { precision: 0, color: '#e7fbff' }, grid: { color: 'rgba(103,243,245,0.1)' } },
+                        x: { ticks: { color: '#e7fbff' }, grid: { display: false } }
+                    }
+                }
+            });
+
+            const ageGroups = { '< 6 Thn': 0, '6 - 12 Thn': 0, '13 - 15 Thn': 0, '16 - 18 Thn': 0, '> 18 Thn': 0 };
+            filteredData.forEach(d => {
+                const u = d.UsiaNum;
+                if (u < 6) ageGroups['< 6 Thn']++;
+                else if (u <= 12) ageGroups['6 - 12 Thn']++;
+                else if (u <= 15) ageGroups['13 - 15 Thn']++;
+                else if (u <= 18) ageGroups['16 - 18 Thn']++;
+                else ageGroups['> 18 Thn']++;
+            });
+
+            if (ageChart) ageChart.destroy();
+            const ctxAge = document.getElementById('chart-age').getContext('2d');
+            ageChart = new Chart(ctxAge, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(ageGroups),
+                    datasets: [{
+                        label: 'Jumlah Siswa',
+                        data: Object.values(ageGroups),
+                        backgroundColor: ['#34d399', '#38bdf8', '#fbbf24', '#a855f7', '#f43f5e'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, ticks: { precision: 0, color: '#e7fbff' }, grid: { color: 'rgba(103,243,245,0.1)' } },
+                        x: { ticks: { color: '#e7fbff' }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('student-table-body');
+            tbody.innerHTML = '';
+
+            document.getElementById('table-count-badge').innerText = `${filteredData.length.toLocaleString('id-ID')} Siswa`;
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-cyan-200/50">Tidak ada data siswa yang cocok dengan filter.</td></tr>`;
+                document.getElementById('pagination-info').innerText = "Menampilkan 0 - 0 dari 0 siswa";
+                document.getElementById('pagination-controls').innerHTML = '';
+                return;
+            }
+
+            const total = filteredData.length;
+            const totalPages = Math.ceil(total / rowsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIdx = (currentPage - 1) * rowsPerPage;
+            const endIdx = Math.min(startIdx + rowsPerPage, total);
+            const pageData = filteredData.slice(startIdx, endIdx);
+
+            pageData.forEach((item, index) => {
+                const rowNo = startIdx + index + 1;
+                const jkBadge = item.JK === 'L' 
+                    ? '<span class="bg-blue-500/20 text-blue-300 border border-blue-400/30 font-bold px-2 py-0.5 rounded text-[10px]">L</span>'
+                    : '<span class="bg-pink-500/20 text-pink-300 border border-pink-400/30 font-bold px-2 py-0.5 rounded text-[10px]">P</span>';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-cyan-900/30 transition border-b border-cyan-400/10">
+                        <td class="p-3 text-center text-cyan-200/50 font-medium">${rowNo}</td>
+                        <td class="p-3 font-semibold text-white">${escapeHtml(item.Nama)}</td>
+                        <td class="p-3 font-mono text-cyan-200/70">${escapeHtml(item.NIK)}</td>
+                        <td class="p-3 text-center">${jkBadge}</td>
+                        <td class="p-3"><span class="bg-cyan-950/80 text-cyan-300 font-medium px-2 py-0.5 rounded border border-cyan-400/30">${escapeHtml(item.Sekolah)}</span></td>
+                        <td class="p-3 text-center font-medium">${escapeHtml(item.Kelas)}</td>
+                        <td class="p-3">${escapeHtml(item.TempatLahir)}, <span class="text-cyan-200/60">${escapeHtml(item.TglLahir)}</span></td>
+                        <td class="p-3 text-center">
+                            <div class="font-bold text-cyan-200">${item.UsiaNum ? item.UsiaNum.toFixed(1) + ' Thn' : '-'}</div>
+                            <div class="text-[10px] text-cyan-200/40">${escapeHtml(item.USIA1)}</div>
+                        </td>
+                        <td class="p-3 text-cyan-200/70">${escapeHtml(item.Alamat)}</td>
+                        <td class="p-3 text-cyan-200/70">
+                            <div><i class="fa-solid fa-person text-cyan-400/60 me-1"></i>${escapeHtml(item.NamaAyah)}</div>
+                            <div><i class="fa-solid fa-person-breastfeeding text-cyan-400/60 me-1"></i>${escapeHtml(item.NamaIbu)}</div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('pagination-info').innerText = `Menampilkan ${startIdx + 1} - ${endIdx} dari ${total.toLocaleString('id-ID')} siswa`;
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const container = document.getElementById('pagination-controls');
+            container.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            const prevBtn = document.createElement('button');
+            prevBtn.type = "button";
+            prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+            prevBtn.className = `px-2.5 py-1 border border-cyan-400/30 rounded hover:bg-cyan-900/50 disabled:opacity-40 disabled:hover:bg-transparent`;
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { currentPage--; renderTable(); };
+            container.appendChild(prevBtn);
+
+            for (let p = 1; p <= totalPages; p++) {
+                if (p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)) {
+                    const activeClass = p === currentPage ? 'bg-cyan-600 text-white font-bold' : 'hover:bg-cyan-900/50 text-cyan-200';
+                    const pageBtn = document.createElement('button');
+                    pageBtn.type = "button";
+                    pageBtn.className = `px-2.5 py-1 border border-cyan-400/30 rounded ${activeClass}`;
+                    pageBtn.textContent = p;
+                    pageBtn.onclick = () => { currentPage = p; renderTable(); };
+                    container.appendChild(pageBtn);
+                } else if (p === currentPage - 2 || p === currentPage + 2) {
+                    container.innerHTML += `<span class="px-1 text-cyan-200/40">...</span>`;
+                }
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.type = "button";
+            nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.className = `px-2.5 py-1 border border-cyan-400/30 rounded hover:bg-cyan-900/50 disabled:opacity-40 disabled:hover:bg-transparent`;
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => { currentPage++; renderTable(); };
+            container.appendChild(nextBtn);
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderTable();
+        }
+
+        function changeRowsPerPage() {
+            rowsPerPage = parseInt(document.getElementById('rows-per-page').value);
+            currentPage = 1;
+            renderTable();
+        }
+
+        function sortTable(col) {
+            if (sortColumn === col) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = col;
+                sortDirection = 'asc';
+            }
+
+            filteredData.sort((a, b) => {
+                let valA = a[col] || '';
+                let valB = b[col] || '';
+
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable();
+        }
+
+        // --- PENCETAKAN AMAN (DATA TIDAK RE-SET) ---
+        function printFilteredData() {
+            const paperSize = document.getElementById('paper-size-select').value;
+            const printStyleEl = document.getElementById('print-paper-style');
+
+            if (paperSize === 'F4') {
+                printStyleEl.innerHTML = `@page { size: 215mm 330mm landscape; margin: 1cm; }`;
+                document.getElementById('print-paper-label').textContent = 'F4 / Folio (215 x 330 mm)';
+            } else {
+                printStyleEl.innerHTML = `@page { size: A4 landscape; margin: 1cm; }`;
+                document.getElementById('print-paper-label').textContent = 'A4 Landscape';
+            }
+
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('print-date').textContent = formattedDate;
+            document.getElementById('print-total').textContent = filteredData.length.toLocaleString('id-ID');
+
+            // Simpan kondisi pagination saat ini
+            const savedRowsPerPage = rowsPerPage;
+            const savedCurrentPage = currentPage;
+
+            // Tampilkan seluruh data untuk dicetak
+            rowsPerPage = filteredData.length || 1;
+            currentPage = 1;
+            renderTable();
+
+            // Jalankan jendela cetak
+            window.print();
+
+            // Kembalikan ke tampilan semula tanpa reload/reset data
+            rowsPerPage = savedRowsPerPage;
+            currentPage = savedCurrentPage;
+            renderTable();
+        }
+
+        function exportToExcel() {
+            if (filteredData.length === 0) {
+                alert("Tidak ada data terfilter untuk diekspor.");
+                return;
+            }
+
+            const exportRows = filteredData.map((d, idx) => ({
+                "No": idx + 1,
+                "Sekolah": d.Sekolah,
+                "Nama Siswa": d.Nama,
+                "NIK": d.NIK,
+                "JK": d.JK,
+                "Kelas": d.Kelas,
+                "Tempat Lahir": d.TempatLahir,
+                "Tanggal Lahir": d.TglLahir,
+                "Usia (Tahun)": d.UsiaNum,
+                "USIA1 (Format)": d.USIA1,
+                "Alamat": d.Alamat,
+                "Nama Ayah": d.NamaAyah,
+                "Nama Ibu": d.NamaIbu
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportRows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Data_Siswa_Terfilter");
+            XLSX.writeFile(wb, "Data_Siswa_Hasil_Filter.xlsx");
+        }
+
+        function parseDateVal(val) {
+            if (!val) return '-';
+            if (typeof val === 'number') {
+                const dateObj = XLSX.SSF.parse_date_code(val);
+                if (dateObj) return `${dateObj.y}-${String(dateObj.m).padStart(2, '0')}-${String(dateObj.d).padStart(2, '0')}`;
+            }
+            return String(val).split('T')[0].split(' ')[0];
+        }
+
+        function calculateAgeFromDate(dateStr) {
+            if (!dateStr || dateStr === '-') return 0;
+            const birth = new Date(dateStr);
+            if (isNaN(birth.getTime())) return 0;
+            const diffMs = Date.now() - birth.getTime();
+            const ageDate = new Date(diffMs);
+            return Math.abs(ageDate.getUTCFullYear() - 1970);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
