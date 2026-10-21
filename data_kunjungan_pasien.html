@@ -247,10 +247,10 @@
         <div class="no-print glass-panel p-3.5 rounded-xl flex flex-col sm:flex-row justify-between items-center text-xs gap-2">
             <div class="flex items-center space-x-2 text-cyan-200">
                 <i class="fa-solid fa-circle-info text-cyan-400"></i>
-                <span>Status Data: <strong id="data-source-label" class="text-cyan-100">Data Sampel Bawaan</strong> (<span id="total-loaded-rows">0</span> Kunjungan)</span>
+                <span>Status Data: <strong id="data-source-label" class="text-cyan-100">Memuat Data Google Sheets...</strong> (<span id="total-loaded-rows">0</span> Kunjungan)</span>
             </div>
             <div class="flex items-center space-x-3">
-                <span id="file-name-tag" class="bg-cyan-950/70 text-cyan-300 border border-cyan-400/30 px-2.5 py-0.5 rounded-full font-mono text-[11px]">kunjungan_sample.xlsx</span>
+                <span id="file-name-tag" class="bg-cyan-950/70 text-cyan-300 border border-cyan-400/30 px-2.5 py-0.5 rounded-full font-mono text-[11px]">Google Sheets Live Data</span>
             </div>
         </div>
 
@@ -538,13 +538,14 @@
 
     <!-- JavaScript Logic -->
     <script>
-        // MOCK DATA 22 KOLOM
+        // DEFAULT GOOGLE SHEETS PUBLISH URL
+        const DEFAULT_GSHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQAPANsdYScpsyZ49MplyX21Fz-DQS_w22xioxPEgMrf_kolz9QJWrpM93I0RTEMQ/pubhtml";
+
+        // MOCK DATA 22 KOLOM (FALLBACK BACKUP)
         const MOCK_PASIEN_DATA = [
             { No: 1, Tanggal: "2026-10-01", NamaPasien: "Budi Santoso", NoeRM: "ERM-00192", NIK: "2103041505850001", NoRMLama: "RM-8821", NoDokumen: "DOC-2026-01", JenisKelamin: "L", TempatTglLahir: "Natuna, 15/05/1985", Umur: "41 Thn", UmurNum: 41, Pekerjaan: "PNS", Alamat: "Jl. Yos Sudarso No. 12", Agama: "Islam", StatusPernikahan: "Menikah", Kelurahan: "Sabang Barat", NamaAyah: "Suhardi", JenisKunjungan: "Rawat Jalan", Kunjungan: "Lama", PoliRuangan: "Poli Umum", Asuransi: "BPJS Kesehatan", NoAsuransi: "00018293019", KodeDiagnosa: "J00", Diagnosa: "Acute nasopharyngitis [common cold]", JenisKasus: "Lama" },
             { No: 2, Tanggal: "2026-10-01", NamaPasien: "Siti Rahmah", NoeRM: "ERM-00193", NIK: "2103045208880002", NoRMLama: "RM-8822", NoDokumen: "DOC-2026-02", JenisKelamin: "P", TempatTglLahir: "Banda Aceh, 12/08/1988", Umur: "38 Thn", UmurNum: 38, Pekerjaan: "IRT", Alamat: "Jl. Merdeka No. 45", Agama: "Islam", StatusPernikahan: "Menikah", Kelurahan: "Sabang Barat", NamaAyah: "Usman", JenisKunjungan: "Rawat Jalan", Kunjungan: "Baru", PoliRuangan: "Poli Gigi", Asuransi: "Umum / Mandiri", NoAsuransi: "-", KodeDiagnosa: "K02.1", Diagnosa: "Caries of dentine", JenisKasus: "Baru" },
-            { No: 3, Tanggal: "2026-10-02", NamaPasien: "Ahmad Dahlan", NoeRM: "ERM-00194", NIK: "2103042010010004", NoRMLama: "RM-8823", NoDokumen: "DOC-2026-03", JenisKelamin: "L", TempatTglLahir: "Natuna, 20/10/2001", Umur: "25 Thn", UmurNum: 25, Pekerjaan: "Wiraswasta", Alamat: "Jl. Diponegoro No. 08", Agama: "Islam", StatusPernikahan: "Belum Menikah", Kelurahan: "Sebelat", NamaAyah: "Rahmat", JenisKunjungan: "IGD", Kunjungan: "Baru", PoliRuangan: "IGD", Asuransi: "BPJS Kesehatan", NoAsuransi: "00029301928", KodeDiagnosa: "S52.5", Diagnosa: "Fracture of lower end of radius", JenisKasus: "Baru" },
-            { No: 4, Tanggal: "2026-10-02", NamaPasien: "Dewi Sartika", NoeRM: "ERM-00195", NIK: "2103044402920005", NoRMLama: "RM-8824", NoDokumen: "DOC-2026-04", JenisKelamin: "P", TempatTglLahir: "Air Putih, 04/02/1992", Umur: "34 Thn", UmurNum: 34, Pekerjaan: "Guru", Alamat: "Gg. Melati No. 03", Agama: "Islam", StatusPernikahan: "Menikah", Kelurahan: "Air Putih", NamaAyah: "Hasan", JenisKunjungan: "Rawat Jalan", Kunjungan: "Lama", PoliRuangan: "Poli KIA / Kebidanan", Asuransi: "BPJS Kesehatan", NoAsuransi: "00039401928", KodeDiagnosa: "Z34.8", Diagnosa: "Supervision of other normal pregnancy", JenisKasus: "Lama" },
-            { No: 5, Tanggal: "2026-10-03", NamaPasien: "Hasanuddin", NoeRM: "ERM-00196", NIK: "2103041004700001", NoRMLama: "RM-8825", NoDokumen: "DOC-2026-05", JenisKelamin: "L", TempatTglLahir: "Sebelat, 10/04/1970", Umur: "56 Thn", UmurNum: 56, Pekerjaan: "Nelayan", Alamat: "Dusun Mawar RT 01", Agama: "Islam", StatusPernikahan: "Menikah", Kelurahan: "Sebelat", NamaAyah: "Mahmud", JenisKunjungan: "Rawat Inap", Kunjungan: "Lama", PoliRuangan: "Poli Penyakit Dalam", Asuransi: "Asuransi Swasta", NoAsuransi: "PRU-992102", KodeDiagnosa: "I10", Diagnosa: "Essential (primary) hypertension", JenisKasus: "Lama" }
+            { No: 3, Tanggal: "2026-10-02", NamaPasien: "Ahmad Dahlan", NoeRM: "ERM-00194", NIK: "2103042010010004", NoRMLama: "RM-8823", NoDokumen: "DOC-2026-03", JenisKelamin: "L", TempatTglLahir: "Natuna, 20/10/2001", Umur: "25 Thn", UmurNum: 25, Pekerjaan: "Wiraswasta", Alamat: "Jl. Diponegoro No. 08", Agama: "Islam", StatusPernikahan: "Belum Menikah", Kelurahan: "Sebelat", NamaAyah: "Rahmat", JenisKunjungan: "IGD", Kunjungan: "Baru", PoliRuangan: "IGD", Asuransi: "BPJS Kesehatan", NoAsuransi: "00029301928", KodeDiagnosa: "S52.5", Diagnosa: "Fracture of lower end of radius", JenisKasus: "Baru" }
         ];
 
         let rawPasienData = [];
@@ -561,12 +562,17 @@
         window.onload = function() {
             const savedData = localStorage.getItem('pasien_app_data');
             if (savedData) {
-                try { rawPasienData = JSON.parse(savedData); } catch (e) { rawPasienData = [...MOCK_PASIEN_DATA]; }
+                try { 
+                    rawPasienData = JSON.parse(savedData); 
+                    initDashboard();
+                } catch (e) { 
+                    fetchGoogleSheetsData(DEFAULT_GSHEETS_URL, true); 
+                }
             } else {
-                rawPasienData = [...MOCK_PASIEN_DATA];
+                // Tarik data Google Sheets secara otomatis saat pertama kali dibuka
+                fetchGoogleSheetsData(DEFAULT_GSHEETS_URL, true);
             }
 
-            initDashboard();
             document.getElementById('excel-file').addEventListener('change', handleFileUpload);
         };
 
@@ -602,7 +608,7 @@
                 try {
                     const data = new Uint8Array(evt.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    processWorkbookData(workbook);
+                    processWorkbookData(workbook, false);
                 } catch (err) {
                     alert("Gagal membaca file Excel: " + err.message);
                 }
@@ -610,21 +616,27 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // [BARU] Fungsi Import Data dari Google Sheets via Live Link / Publish CSV
-        async function importFromGoogleSheets() {
-            let inputUrl = prompt("https://docs.google.com/spreadsheets/d/e/2PACX-1vQAPANsdYScpsyZ49MplyX21Fz-DQS_w22xioxPEgMrf_kolz9QJWrpM93I0RTEMQ/pubhtml"
-               
+        // Trigger Tombol Import dari Google Sheets
+        function importFromGoogleSheets() {
+            let inputUrl = prompt(
+                "Masukkan URL Google Sheets / Link CSV Google Sheets:\n\n" +
+                "URL Google Sheets Anda sudah terisi di bawah ini:",
+                DEFAULT_GSHEETS_URL
             );
 
             if (!inputUrl || !inputUrl.trim()) return;
+            fetchGoogleSheetsData(inputUrl.trim(), false);
+        }
 
-            let csvUrl = inputUrl.trim();
+        // Proses Mengunduh Data Google Sheets via Fetch
+        async function fetchGoogleSheetsData(inputUrl, isSilentLoad = false) {
+            let csvUrl = inputUrl;
 
-            // 1. Ubah format pubhtml menjadi CSV secara otomatis
+            // Konversi URL pubhtml -> CSV
             if (csvUrl.includes('/pubhtml')) {
                 csvUrl = csvUrl.replace('/pubhtml', '/pub?output=csv');
             } 
-            // 2. Ubah link edit biasa menjadi CSV export secara otomatis
+            // Konversi URL biasa /edit -> CSV Export
             else if (csvUrl.includes('docs.google.com/spreadsheets') && !csvUrl.includes('output=csv')) {
                 const match = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
                 if (match && match[1]) {
@@ -644,16 +656,19 @@
                 const csvText = await response.text();
                 const workbook = XLSX.read(csvText, { type: 'string' });
                 
-                processWorkbookData(workbook, true);
+                processWorkbookData(workbook, true, isSilentLoad);
 
             } catch (err) {
-                alert("Gagal memuat Google Sheets! Pastikan link dipublikasikan dengan benar (Publish to Web).\nDetail Error: " + err.message);
-                document.getElementById('data-source-label').textContent = 'Data Sampel Bawaan';
+                if (!isSilentLoad) {
+                    alert("Gagal memuat Google Sheets! Pastikan link dipublikasikan dengan benar (Publish to Web).\nDetail Error: " + err.message);
+                }
+                // Jika gagal, tampilkan mock data sampel bawaan
+                resetDataToMock();
             }
         }
 
-        // Fungsi Pemrosesan Parsial Workbook SheetJS
-        function processWorkbookData(workbook, isGoogleSheets = false) {
+        // Pemrosesan Data SheetJS ke Format 22 Kolom
+        function processWorkbookData(workbook, isGoogleSheets = false, isSilentLoad = false) {
             let parsedData = [];
             workbook.SheetNames.forEach(sheetName => {
                 const worksheet = workbook.Sheets[sheetName];
@@ -696,8 +711,8 @@
             });
 
             if (parsedData.length === 0) {
-                alert("Data tidak berisi format kunjungan pasien yang valid!");
-                document.getElementById('data-source-label').textContent = 'Data Sampel Bawaan';
+                if (!isSilentLoad) alert("Data tidak berisi format kunjungan pasien yang valid!");
+                resetDataToMock();
                 return;
             }
 
@@ -707,7 +722,7 @@
             if (isGoogleSheets) {
                 document.getElementById('file-name-tag').textContent = 'Google Sheets Live Data';
                 document.getElementById('data-source-label').textContent = 'Google Sheets Online';
-                alert(`Berhasil mengimpor ${parsedData.length} data dari Google Sheets!`);
+                if (!isSilentLoad) alert(`Berhasil mengimpor ${parsedData.length} data dari Google Sheets!`);
             } else {
                 document.getElementById('data-source-label').textContent = 'File Excel Pengguna';
             }
