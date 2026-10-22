@@ -224,11 +224,19 @@
             </div>
             
             <div class="flex items-center gap-2 w-full sm:w-auto">
-                <label for="excel-file" class="cursor-pointer bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-medium text-sm px-4 py-2.5 rounded-lg transition-all shadow flex items-center justify-center gap-2 w-full sm:w-auto border border-cyan-400/40">
-                    <i class="fa-solid fa-file-excel text-lg"></i>
-                    <span id="upload-label">Unggah File Excel</span>
+                <!-- Unggah Excel Lokal -->
+                <label for="excel-file" class="cursor-pointer bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-medium text-xs sm:text-sm px-3.5 py-2.5 rounded-lg transition-all shadow flex items-center justify-center gap-2 border border-cyan-400/40">
+                    <i class="fa-solid fa-file-excel text-base"></i>
+                    <span id="upload-label">Unggah Excel</span>
                     <input type="file" id="excel-file" accept=".xlsx, .xls" class="hidden">
                 </label>
+
+                <!-- [BARU] Impor Google Sheets -->
+                <button type="button" onclick="importFromGoogleSheets()" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-medium text-xs sm:text-sm px-3.5 py-2.5 rounded-lg transition-all shadow flex items-center justify-center gap-2 border border-green-400/40">
+                    <i class="fa-solid fa-file-csv text-base"></i>
+                    <span>Impor Google Sheets</span>
+                </button>
+
                 <button type="button" id="reset-btn" onclick="resetFilters()" class="bg-slate-800/80 hover:bg-slate-700/80 text-cyan-200 p-2.5 rounded-lg border border-cyan-400/30 transition shadow" title="Reset Semua Filter">
                     <i class="fa-solid fa-rotate-left"></i>
                 </button>
@@ -242,7 +250,7 @@
         <div id="file-info-bar" class="no-print glass-panel p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
             <div class="flex items-center gap-2 text-cyan-200/80">
                 <i class="fa-solid fa-circle-info text-cyan-300"></i>
-                <span>Status Data: <strong id="status-text" class="text-cyan-100">Menampilkan Data Contoh Bawaan</strong></span>
+                <span>Status Data: <strong id="status-text" class="text-cyan-100">Memuat Data Google Sheets...</strong></span>
             </div>
             <div class="flex items-center gap-4 text-xs text-cyan-200/60">
                 <span><i class="fa-solid fa-layer-group text-cyan-400 me-1"></i> <span id="sheet-count">0</span> Sheet Sekolah</span>
@@ -449,6 +457,9 @@
     </footer>
 
     <script>
+        // TAUTAN BAWAAN GOOGLE SHEETS
+        const DEFAULT_GSHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyO0_kUMsFeVGBGL5gY9bA6awtAg_Cz4HwJzOGMOl3Ndu22r9ywv1IjY2NSbkzkw/pub?output=csv";
+
         let rawData = [];
         let filteredData = [];
         let schools = [];
@@ -463,26 +474,14 @@
         const sampleData = [
             { No: 1, Nama: "SHAKIEL ALFARIZQI", NIK: "2103041309240002", JK: "L", TempatLahir: "NATUNA", TglLahir: "2024-09-13", NamaAyah: "SAPRIADI", NamaIbu: "EMI", Kelas: "A", Alamat: "GUNUNG SEBELAT", USIA1: "02 Thn 01 Bln", USIA2: "2.1", UsiaNum: 2.1, Sekolah: "PAUD_AISYIYAH" },
             { No: 2, Nama: "ALINKA SAPITRI", NIK: "2103044405220001", JK: "P", TempatLahir: "NATUNA", TglLahir: "2022-05-04", NamaAyah: "AGUS SUHENDRI", NamaIbu: "YANTI ALFINA", Kelas: "Kelompok A", Alamat: "GUNUNG SABANG BARAT", USIA1: "04 Thn 05 Bln", USIA2: "4.4", UsiaNum: 4.4, Sekolah: "PAUD_NURUDINIYAH" },
-            { No: 3, Nama: "ANNISA AZKIYA SYAFITRI", NIK: "2103224000000000", JK: "P", TempatLahir: "NATUNA", TglLahir: "2022-05-02", NamaAyah: "ANDOYO", NamaIbu: "DHEA DIVADILLA", Kelas: "A", Alamat: "GN. AIR BUNGA", USIA1: "04 Thn 05 Bln", USIA2: "4.5", UsiaNum: 4.5, Sekolah: "TKN" },
-            { No: 4, Nama: "MUHAMMAD ZAKI", NIK: "2103222506180000", JK: "L", TempatLahir: "MIDAI", TglLahir: "2020-09-30", NamaAyah: "SUPRIANTO", NamaIbu: "MAYASARI", Kelas: "1", Alamat: "AIR KUMPAI", USIA1: "06 Thn 00 Bln", USIA2: "6.0", UsiaNum: 6.0, Sekolah: "SDN_001" },
-            { No: 5, Nama: "ZIKHRA SYAFARI", NIK: "2103042802200001", JK: "L", TempatLahir: "NATUNA", TglLahir: "2020-02-28", NamaAyah: "SAPARUDDIN", NamaIbu: "SUDARMI", Kelas: "1", Alamat: "AIR PUTIH", USIA1: "06 Thn 07 Bln", USIA2: "6.6", UsiaNum: 6.6, Sekolah: "SDN_002" },
-            { No: 6, Nama: "ABID PRANAJA", NIK: "2103042000000000", JK: "L", TempatLahir: "NATUNA", TglLahir: "2019-11-21", NamaAyah: "MAZLAN.S", NamaIbu: "RIZA SASMITA", Kelas: "1", Alamat: "GN. AIR PANCUR", USIA1: "06 Thn 10 Bln", USIA2: "6.9", UsiaNum: 6.9, Sekolah: "SDN_003" },
-            { No: 7, Nama: "AFIZAH SEPRIANI", NIK: "2171035000000000", JK: "P", TempatLahir: "BATAM", TglLahir: "2020-09-12", NamaAyah: "SYAIFUL ANAS", NamaIbu: "WISRI GUSNITA", Kelas: "1", Alamat: "SABANG BARAT", USIA1: "06 Thn 01 Bln", USIA2: "6.1", UsiaNum: 6.1, Sekolah: "MIBU" },
-            { No: 8, Nama: "ADINDA PUTRI RIANI", NIK: "2103040000000001", JK: "P", TempatLahir: "TANJUNG PINANG", TglLahir: "2014-01-21", NamaAyah: "RAJALI", NamaIbu: "ENI LIZA", Kelas: "7", Alamat: "GN SEBELAT", USIA1: "12 Thn 08 Bln", USIA2: "12.7", UsiaNum: 12.7, Sekolah: "SMPN1" },
-            { No: 9, Nama: "AHMAD RAPIANDRA", NIK: "2103040000000002", JK: "L", TempatLahir: "ANAMBAS", TglLahir: "2012-04-21", NamaAyah: "MARYANI", NamaIbu: "SUZANA", Kelas: "7", Alamat: "AIR PANCUR", USIA1: "14 Thn 05 Bln", USIA2: "14.5", UsiaNum: 14.5, Sekolah: "MTSN3" },
-            { No: 10, Nama: "ADAM RAMDANI", NIK: "3204150000000000", JK: "L", TempatLahir: "BANDUNG", TglLahir: "2010-01-01", NamaAyah: "DIDIN WARDIANA", NamaIbu: "RENI", Kelas: "10", Alamat: "GN. SEBELAT", USIA1: "16 Thn 09 Bln", USIA2: "16.8", UsiaNum: 16.8, Sekolah: "MABU" }
+            { No: 3, Nama: "ANNISA AZKIYA SYAFITRI", NIK: "2103224000000000", JK: "P", TempatLahir: "NATUNA", TglLahir: "2022-05-02", NamaAyah: "ANDOYO", NamaIbu: "DHEA DIVADILLA", Kelas: "A", Alamat: "GN. AIR BUNGA", USIA1: "04 Thn 05 Bln", USIA2: "4.5", UsiaNum: 4.5, Sekolah: "TKN" }
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
-            initSampleData();
             setupFileUploader();
+            // Otomatis tarik data dari Google Sheets saat halaman dimuat
+            fetchGoogleSheetsData(DEFAULT_GSHEETS_URL, true);
         });
-
-        function initSampleData() {
-            rawData = [...sampleData];
-            document.getElementById('status-text').innerText = "Menampilkan Data Contoh Bawaan (10 Siswa)";
-            processLoadedData();
-        }
 
         function setupFileUploader() {
             const fileInput = document.getElementById('excel-file');
@@ -497,69 +496,142 @@
                     try {
                         const data = new Uint8Array(evt.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
-                        
-                        let parsedData = [];
-                        schools = workbook.SheetNames;
-
-                        workbook.SheetNames.forEach(sheetName => {
-                            const worksheet = workbook.Sheets[sheetName];
-                            const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
-                            jsonRows.forEach((row, idx) => {
-                                const nama = String(row['Nama'] || row['NAMA'] || '').trim();
-                                if (!nama) return;
-
-                                const jk = String(row['JK'] || row['Jk'] || row['Jenis Kelamin'] || '').trim().toUpperCase();
-                                const nik = String(row['NIK'] || row['Nik'] || '-').trim();
-                                const tempatLahir = String(row['Tempat Lahir'] || row['TEMPAT LAHIR'] || '-').trim();
-                                const tglLahir = parseDateVal(row['Tanggal Lahir'] || row['TANGGAL LAHIR']);
-                                const namaAyah = String(row['Nama Ayah'] || row['NAMA AYAH'] || '-').trim();
-                                const namaIbu = String(row['Nama Ibu'] || row['NAMA IBU'] || '-').trim();
-                                const kelas = String(row['Kelas'] || row['KELAS'] || '-').trim();
-                                const alamat = String(row['Alamat'] || row['ALAMAT'] || '-').trim();
-                                
-                                const usia1 = String(row['USIA1'] || row['USIA'] || '-').trim();
-                                let usia2Val = row['USIA2'] || row['Unnamed: 11'] || 0;
-                                let usiaNum = parseFloat(String(usia2Val).replace(',', '.')) || calculateAgeFromDate(tglLahir);
-
-                                parsedData.push({
-                                    No: idx + 1,
-                                    Nama: nama,
-                                    NIK: nik,
-                                    JK: jk === 'L' || jk === 'LAKI-LAKI' ? 'L' : (jk === 'P' || jk === 'PEREMPUAN' ? 'P' : 'L'),
-                                    TempatLahir: tempatLahir,
-                                    TglLahir: tglLahir,
-                                    NamaAyah: namaAyah,
-                                    NamaIbu: namaIbu,
-                                    Kelas: kelas,
-                                    Alamat: alamat,
-                                    USIA1: usia1,
-                                    USIA2: usiaNum ? usiaNum.toFixed(1) : '-',
-                                    UsiaNum: usiaNum || 0,
-                                    Sekolah: sheetName
-                                });
-                            });
-                        });
-
-                        if (parsedData.length === 0) {
-                            alert("File Excel tidak berisi data siswa yang valid.");
-                            document.getElementById('upload-label').innerText = "Unggah File Excel";
-                            return;
-                        }
-
-                        rawData = parsedData;
-                        document.getElementById('status-text').innerText = `File "${file.name}" Berhasil Diunggah`;
-                        document.getElementById('upload-label').innerText = "Ganti File Excel";
-                        processLoadedData();
-
+                        processWorkbookData(workbook, false);
                     } catch (err) {
                         alert("Gagal membaca file Excel: " + err.message);
-                        document.getElementById('upload-label').innerText = "Unggah File Excel";
+                        document.getElementById('upload-label').innerText = "Unggah Excel";
                     }
                 };
 
                 reader.readAsArrayBuffer(file);
             });
+        }
+
+        // Trigger Tombol Impor Google Sheets
+        function importFromGoogleSheets() {
+            let inputUrl = prompt(
+                "Masukkan URL Google Sheets / Link CSV Google Sheets:\n\nURL default Anda sudah terisi otomatis:",
+                DEFAULT_GSHEETS_URL
+            );
+
+            if (!inputUrl || !inputUrl.trim()) return;
+            fetchGoogleSheetsData(inputUrl.trim(), false);
+        }
+
+        // Fungsi Memuat Data Google Sheets
+        async function fetchGoogleSheetsData(inputUrl, isSilentLoad = false) {
+            let csvUrl = inputUrl;
+
+            // Konversi URL pubhtml ke CSV jika diperlukan
+            if (csvUrl.includes('/pubhtml')) {
+                csvUrl = csvUrl.replace('/pubhtml', '/pub?output=csv');
+            } 
+            else if (csvUrl.includes('docs.google.com/spreadsheets') && !csvUrl.includes('output=csv')) {
+                const match = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                if (match && match[1]) {
+                    const sheetId = match[1];
+                    csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+                }
+            }
+
+            try {
+                document.getElementById('status-text').innerText = 'Mengunduh data Google Sheets...';
+
+                const response = await fetch(csvUrl);
+                if (!response.ok) {
+                    throw new Error(`Gagal mengambil data. Status HTTP: ${response.status}`);
+                }
+
+                const csvText = await response.text();
+                const workbook = XLSX.read(csvText, { type: 'string' });
+                
+                processWorkbookData(workbook, true, isSilentLoad);
+
+            } catch (err) {
+                if (!isSilentLoad) {
+                    alert("Gagal memuat Google Sheets! Pastikan link dipublikasikan dengan benar.\nDetail Error: " + err.message);
+                }
+                initSampleData();
+            }
+        }
+
+        function initSampleData() {
+            rawData = [...sampleData];
+            document.getElementById('status-text').innerText = "Menampilkan Data Contoh Bawaan";
+            processLoadedData();
+        }
+
+        // Proses Pembacaan Workbook SheetJS
+        function processWorkbookData(workbook, isGoogleSheets = false, isSilentLoad = false) {
+            let parsedData = [];
+            schools = workbook.SheetNames;
+
+            workbook.SheetNames.forEach(sheetName => {
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                jsonRows.forEach((row, idx) => {
+                    const nama = String(findValue(row, ['NAMA SISWA', 'NAMA', 'NAMA_SISWA'])).trim();
+                    if (!nama) return;
+
+                    const jk = String(findValue(row, ['JK', 'JENIS KELAMIN', 'KELAMIN'])).trim().toUpperCase();
+                    const nik = String(findValue(row, ['NIK', 'NO NIK']) || '-').trim();
+                    const tempatLahir = String(findValue(row, ['TEMPAT LAHIR', 'TEMPAT_LAHIR']) || '-').trim();
+                    const tglLahir = parseDateVal(findValue(row, ['TANGGAL LAHIR', 'TGL LAHIR', 'TGL_LAHIR']));
+                    const namaAyah = String(findValue(row, ['NAMA AYAH', 'AYAH']) || '-').trim();
+                    const namaIbu = String(findValue(row, ['NAMA IBU', 'IBU']) || '-').trim();
+                    const kelas = String(findValue(row, ['KELAS', 'TINGKAT']) || '-').trim();
+                    const alamat = String(findValue(row, ['ALAMAT', 'WILAYAH']) || '-').trim();
+                    
+                    const usia1 = String(findValue(row, ['USIA1', 'USIA', 'UMUR']) || '-').trim();
+                    let usia2Val = findValue(row, ['USIA2', 'USIA_NUM']) || 0;
+                    let usiaNum = parseFloat(String(usia2Val).replace(',', '.')) || calculateAgeFromDate(tglLahir);
+
+                    parsedData.push({
+                        No: idx + 1,
+                        Nama: nama,
+                        NIK: nik,
+                        JK: jk === 'L' || jk === 'LAKI-LAKI' ? 'L' : (jk === 'P' || jk === 'PEREMPUAN' ? 'P' : 'L'),
+                        TempatLahir: tempatLahir,
+                        TglLahir: tglLahir,
+                        NamaAyah: namaAyah,
+                        NamaIbu: namaIbu,
+                        Kelas: kelas,
+                        Alamat: alamat,
+                        USIA1: usia1,
+                        USIA2: usiaNum ? usiaNum.toFixed(1) : '-',
+                        UsiaNum: usiaNum || 0,
+                        Sekolah: isGoogleSheets ? (findValue(row, ['SEKOLAH']) || sheetName) : sheetName
+                    });
+                });
+            });
+
+            if (parsedData.length === 0) {
+                if (!isSilentLoad) alert("File tidak berisi data siswa yang valid.");
+                initSampleData();
+                return;
+            }
+
+            rawData = parsedData;
+            
+            if (isGoogleSheets) {
+                document.getElementById('status-text').innerText = "Data Google Sheets Terhubung";
+                if (!isSilentLoad) alert(`Berhasil mengimpor ${parsedData.length} data siswa dari Google Sheets!`);
+            } else {
+                document.getElementById('status-text').innerText = "File Excel Berhasil Diunggah";
+                document.getElementById('upload-label').innerText = "Ganti Excel";
+            }
+
+            processLoadedData();
+        }
+
+        function findValue(obj, keys) {
+            const objKeys = Object.keys(obj);
+            for (let k of objKeys) {
+                const cleanK = k.trim().toUpperCase();
+                if (keys.includes(cleanK)) return obj[k];
+            }
+            return "";
         }
 
         function processLoadedData() {
@@ -814,11 +886,6 @@
             container.appendChild(nextBtn);
         }
 
-        function changePage(page) {
-            currentPage = page;
-            renderTable();
-        }
-
         function changeRowsPerPage() {
             rowsPerPage = parseInt(document.getElementById('rows-per-page').value);
             currentPage = 1;
@@ -848,7 +915,6 @@
             renderTable();
         }
 
-        // --- PENCETAKAN AMAN (DATA TIDAK RE-SET) ---
         function printFilteredData() {
             const paperSize = document.getElementById('paper-size-select').value;
             const printStyleEl = document.getElementById('print-paper-style');
@@ -867,19 +933,15 @@
             document.getElementById('print-date').textContent = formattedDate;
             document.getElementById('print-total').textContent = filteredData.length.toLocaleString('id-ID');
 
-            // Simpan kondisi pagination saat ini
             const savedRowsPerPage = rowsPerPage;
             const savedCurrentPage = currentPage;
 
-            // Tampilkan seluruh data untuk dicetak
             rowsPerPage = filteredData.length || 1;
             currentPage = 1;
             renderTable();
 
-            // Jalankan jendela cetak
             window.print();
 
-            // Kembalikan ke tampilan semula tanpa reload/reset data
             rowsPerPage = savedRowsPerPage;
             currentPage = savedCurrentPage;
             renderTable();
