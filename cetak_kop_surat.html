@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Kop Surat dengan Pengaturan Margin & Riwayat - Deep Sea Futurism</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        /* =========================================================
+           TEMA DEEP SEA FUTURISM
+           ========================================================= */
+        :root {
+            color-scheme: dark;
+            --deep-bg: #03121f;
+            --deep-panel: rgba(4, 30, 46, .88);
+            --deep-cyan: #67f3f5;
+            --deep-teal: #21d4c2;
+            --deep-border: rgba(103, 243, 245, .34);
+        }
+
+        body {
+            background-color: #03121f !important;
+            color: #e7fbff;
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Latar Belakang Futuristik */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -3;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 12% 15%, rgba(0, 211, 230, .20), transparent 34%),
+                radial-gradient(ellipse at 88% 30%, rgba(0, 125, 164, .22), transparent 36%),
+                radial-gradient(ellipse at 48% 100%, rgba(13, 148, 136, .18), transparent 38%),
+                linear-gradient(135deg, rgba(2, 15, 28, .94), rgba(3, 35, 51, .82)),
+                url('./latar1.png') center / cover fixed;
+            filter: saturate(1.12) contrast(1.04);
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            opacity: .22;
+            background-image:
+                linear-gradient(rgba(103, 243, 245, .15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(103, 243, 245, .15) 1px, transparent 1px);
+            background-size: 36px 36px;
+            mask-image: linear-gradient(to bottom, #000 0%, transparent 94%);
+        }
+
+        /* Efek Glow Melayang */
+        .page-glow {
+            position: fixed;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            filter: blur(45px);
+            pointer-events: none;
+            z-index: -1;
+            opacity: .42;
+            animation: floatGlow 9s ease-in-out infinite;
+        }
+
+        .page-glow.one { top: 8%; left: -90px; background: rgba(0, 214, 230, .32) !important; }
+        .page-glow.two { top: 42%; right: -100px; background: rgba(0, 132, 170, .30) !important; animation-delay: -3s; }
+        .page-glow.three { bottom: -100px; left: 35%; background: rgba(20, 184, 166, .24) !important; animation-delay: -6s; }
+
+        @keyframes floatGlow {
+            0%,100% { transform: translate3d(0,0,0) scale(1); }
+            50% { transform: translate3d(0,-28px,0) scale(1.08); }
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(3, 28, 44, .94), rgba(5, 69, 82, .78)) !important;
+            border: 1px solid rgba(103, 243, 245, .42) !important;
+            box-shadow: 0 22px 60px rgba(0,0,0,.46),
+                        0 0 28px rgba(34,211,238,.13),
+                        inset 0 1px 0 rgba(255,255,255,.12) !important;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        /* Floating Back Button */
+        .floating-back-btn {
+            align-self: flex-start;
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: #67f3f5;
+            background: linear-gradient(100deg, rgba(5, 100, 122, .94), rgba(7, 71, 99, .96));
+            border: 1px solid rgba(103, 243, 245, .4);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .floating-back-btn:hover {
+            background: linear-gradient(100deg, rgba(8, 133, 151, .98), rgba(7, 91, 119, .98));
+            border-color: rgba(103, 243, 245, .8);
+            box-shadow: 0 0 18px rgba(34,211,238,.3);
+            transform: translateX(-3px);
+            color: #ffffff;
+        }
+
+        /* Control Panel Header Styling */
+        .control-panel {
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 950px;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(103, 243, 245, .3);
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #79f6ee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 12px rgba(34, 211, 238, .3);
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #b8ffff;
+        }
+
+        .form-group input, .form-group select {
+            padding: 9px 12px;
+            border: 1px solid rgba(103, 243, 245, .3);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            background-color: rgba(2, 19, 31, .75);
+            color: #e7fbff;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #67f3f5;
+            background-color: rgba(4, 30, 46, .95);
+            box-shadow: 0 0 12px rgba(103, 243, 245, .25);
+        }
+
+        .form-group input[type="color"] {
+            height: 38px;
+            padding: 2px;
+            cursor: pointer;
+        }
+
+        .margin-group-title {
+            grid-column: 1 / -1;
+            font-size: 13px;
+            font-weight: bold;
+            color: #67f3f5;
+            border-top: 1px dashed rgba(103, 243, 245, .3);
+            padding-top: 12px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Buttons Styling */
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid rgba(103, 243, 245, .3);
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: all 0.22s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,.25);
+        }
+
+        .btn-primary { 
+            background: linear-gradient(100deg, rgba(5, 100, 122, .94), rgba(7, 71, 99, .96)); 
+            color: #edfeff; 
+            border-color: rgba(103, 243, 245, .4);
+        }
+        .btn-primary:hover { 
+            background: linear-gradient(100deg, rgba(8, 133, 151, .98), rgba(7, 91, 119, .98)); 
+            border-color: rgba(103, 243, 245, .8);
+            box-shadow: 0 0 18px rgba(34,211,238,.25);
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+        .btn-warning { background: rgba(217, 119, 6, 0.85); color: #ffffff; border-color: rgba(245, 158, 11, 0.5); }
+        .btn-warning:hover { background: rgba(245, 158, 11, 0.95); box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+        
+        .btn-danger { background: rgba(220, 38, 38, 0.85); color: #ffffff; border-color: rgba(239, 68, 68, 0.5); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.95); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+        
+        .btn-success { background: rgba(16, 185, 129, 0.85); color: #ffffff; border-color: rgba(52, 211, 153, 0.5); }
+        .btn-success:hover { background: rgba(52, 211, 153, 0.95); box-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
+
+        /* Section Title for Preview & History */
+        .section-header-bar {
+            max-width: 950px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #79f6ee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Paper Canvas Container (Properti Kertas Putih untuk Hasil Cetak) */
+        .paper-container {
+            background: #ffffff !important;
+            color: #000000 !important;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 25px rgba(103,243,245,0.15);
+            margin: 0 auto 30px auto;
+            transition: width 0.3s, height 0.3s, padding 0.2s;
+            position: relative;
+            border: 1px solid rgba(103, 243, 245, .4);
+            border-radius: 2px;
+        }
+
+        .paper-a4 { width: 210mm; min-height: 297mm; }
+        .paper-f4 { width: 215mm; min-height: 330mm; }
+
+        /* Kop Surat Layout Structure */
+        .header-kop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .logo-box {
+            width: 110px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-box img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .text-box {
+            flex: 1;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .line-1 { font-weight: bold; text-transform: uppercase; }
+        .line-2 { font-weight: bold; text-transform: uppercase; }
+        .line-3 { font-weight: 800; text-transform: uppercase; }
+        .line-address { font-weight: normal; }
+        .line-email { font-weight: normal; }
+
+        .divider-container {
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        .line-thick { border-bottom: 3px solid #000000; margin-bottom: 2px; }
+        .line-thin { border-bottom: 1px solid #000000; }
+
+        .editable-hint {
+            border: 1px dashed transparent;
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .editable-hint:hover {
+            border-color: #38bdf8;
+            background-color: #f0f9ff;
+        }
+
+        /* History Table Card */
+        .history-card {
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 950px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .history-table th, .history-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(103, 243, 245, .18);
+        }
+
+        .history-table th {
+            background-color: rgba(5, 94, 113, .4);
+            color: #79f6ee;
+            font-weight: 600;
+        }
+
+        .history-table td {
+            color: #e8feff;
+        }
+
+        /* Printable Rules */
+        @media print {
+            body { background: #ffffff !important; padding: 0; }
+            body::before, body::after, .page-glow { display: none !important; }
+            .control-panel, .section-header-bar, .history-card, .floating-back-btn { display: none !important; }
+            .paper-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                border: none !important;
+            }
+            @page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Efek Cahaya 3D Latar Belakang -->
+    <div class="page-glow one"></div>
+    <div class="page-glow two"></div>
+    <div class="page-glow three"></div>
+
+    <!-- Tombol Kembali Melayang -->
+    <a href="korespondensi_terpadu.html" class="floating-back-btn no-print" title="Kembali ke Korespondensi Terpadu">
+        <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
+    </a>
+
+    <!-- Panel Pengaturan Interaktif -->
+    <div class="control-panel glass-panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <i class="fa-solid fa-sliders text-cyan-300"></i> Pengaturan Kustomisasi Kop Surat
+            </div>
+            <button class="btn btn-primary" onclick="triggerPrintAndSave()">
+                <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+            </button>
+        </div>
+
+        <div class="control-grid">
+            <div class="form-group">
+                <label>Ukuran Kertas</label>
+                <select id="paper-size" onchange="updatePaperSize()">
+                    <option value="paper-a4">A4 (210 x 297 mm)</option>
+                    <option value="paper-f4" selected>F4 / Folio (215 x 330 mm)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Jenis Huruf (Font Family)</label>
+                <select id="font-family" onchange="updateStyles()">
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="'Times New Roman', serif" selected>Times New Roman</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="'Garamond', serif">Garamond</option>
+                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Warna Teks Tulis</label>
+                <input type="color" id="font-color" value="#000000" onchange="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Warna Garis Kop</label>
+                <input type="color" id="line-color" value="#000000" onchange="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Tinggi Logo (px)</label>
+                <input type="number" id="logo-size" value="95" min="40" max="180" oninput="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Jarak Spasi Baris</label>
+                <input type="number" id="line-height" value="1.2" step="0.05" min="0.8" max="2" oninput="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Ukuran Baris 1 (Kabupaten)</label>
+                <input type="number" id="size-line1" value="16" min="8" max="32" oninput="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Ukuran Baris 2 (Dinas)</label>
+                <input type="number" id="size-line2" value="16" min="8" max="32" oninput="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Ukuran Baris 3 (UPTD)</label>
+                <input type="number" id="size-line3" value="19" min="10" max="36" oninput="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Ukuran Alamat & Email</label>
+                <input type="number" id="size-address" value="12" min="8" max="20" oninput="updateStyles()">
+            </div>
+
+            <!-- Bagian Pengaturan Margin Kertas -->
+            <div class="margin-group-title">
+                <i class="fa-solid fa-ruler-combined"></i> Pengaturan Margin Kertas (dalam mm)
+            </div>
+
+            <div class="form-group">
+                <label>Margin Atas (mm)</label>
+                <input type="number" id="margin-top" value="15" min="0" max="100" oninput="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Margin Bawah (mm)</label>
+                <input type="number" id="margin-bottom" value="20" min="0" max="100" oninput="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Margin Kiri (mm)</label>
+                <input type="number" id="margin-left" value="20" min="0" max="100" oninput="updateStyles()">
+            </div>
+
+            <div class="form-group">
+                <label>Margin Kanan (mm)</label>
+                <input type="number" id="margin-right" value="20" min="0" max="100" oninput="updateStyles()">
+            </div>
+
+            <!-- Upload Logo -->
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Unggah Logo Kiri</label>
+                <input type="file" id="upload-logo-left" accept="image/*" onchange="previewLogo(event, 'img-logo-left')">
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Unggah Logo Kanan</label>
+                <input type="file" id="upload-logo-right" accept="image/*" onchange="previewLogo(event, 'img-logo-right')">
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Preview -->
+    <div class="section-header-bar">
+        <div class="section-title">
+            <i class="fa-solid fa-eye text-cyan-300"></i> Pratinjau Tampilan Cetak (Live Preview)
+        </div>
+        <span style="font-size: 12px; color: #a9fbf5;">
+            <i class="fa-solid fa-info-circle me-1"></i> Klik teks di bawah untuk mengedit secara langsung.
+        </span>
+    </div>
+
+    <!-- Area Live Preview Kertas Kop Surat -->
+    <div id="paper" class="paper-container paper-f4">
+        <div class="header-kop">
+            <div class="logo-box">
+                <img id="img-logo-left" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='100' viewBox='0 0 90 100'><rect width='90' height='100' fill='%23e2e8f0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='10' fill='%2364748b'>Logo Kiri</text></svg>" alt="Logo Kiri">
+            </div>
+
+            <div class="text-box" id="kop-text-container">
+                <div class="line-1 editable-hint" id="txt-line1" contenteditable="true">PEMERINTAH KABUPATEN NATUNA</div>
+                <div class="line-2 editable-hint" id="txt-line2" contenteditable="true">DINAS KESEHATAN</div>
+                <div class="line-3 editable-hint" id="txt-line3" contenteditable="true">UPTD PUSKESMAS MIDAI</div>
+                <div class="line-address editable-hint" id="txt-address" contenteditable="true">Jalan Tanjung Selamat Midai, Natuna, Kepulauan Riau 29784</div>
+                <div class="line-email editable-hint" id="txt-email" contenteditable="true">Pos-el puskesmasmidai@gmail.com</div>
+            </div>
+
+            <div class="logo-box">
+                <img id="img-logo-right" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='100' viewBox='0 0 90 100'><rect width='90' height='100' fill='%23e2e8f0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='10' fill='%2364748b'>Logo Kanan</text></svg>" alt="Logo Kanan">
+            </div>
+        </div>
+
+        <div class="divider-container">
+            <div id="divider-thick" class="line-thick"></div>
+            <div id="divider-thin" class="line-thin"></div>
+        </div>
+    </div>
+
+    <!-- Riwayat Pencetakan -->
+    <div class="history-card glass-panel">
+        <div class="section-title" style="margin-bottom: 12px;">
+            <i class="fa-solid fa-clock-rotate-left text-cyan-300"></i> Riwayat Pencetakan Kop Surat
+        </div>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Waktu Cetak</th>
+                    <th>Nama Instansi / Kop</th>
+                    <th>Kertas</th>
+                    <th>Margin (T,B,K,Kn)</th>
+                    <th style="text-align: center;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="history-tbody">
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #a9fbf5; padding: 15px;">Belum ada riwayat pencetakan. Klik "Cetak" untuk menyimpan riwayat.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Password Keamanan untuk Edit & Hapus (Default: 1234)
+        const ADMIN_PASSWORD = "1234";
+
+        let historyData = [];
+
+        function updatePaperSize() {
+            const paper = document.getElementById('paper');
+            const selectedSize = document.getElementById('paper-size').value;
+            paper.className = 'paper-container ' + selectedSize;
+        }
+
+        function previewLogo(event, elementId) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const output = document.getElementById(elementId);
+                output.src = reader.result;
+            };
+            if(event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+
+        function updateStyles() {
+            const fontFamily = document.getElementById('font-family').value;
+            const fontColor = document.getElementById('font-color').value;
+            const lineColor = document.getElementById('line-color').value;
+            const logoSize = document.getElementById('logo-size').value + 'px';
+            const lineHeight = document.getElementById('line-height').value;
+
+            const sizeLine1 = document.getElementById('size-line1').value + 'px';
+            const sizeLine2 = document.getElementById('size-line2').value + 'px';
+            const sizeLine3 = document.getElementById('size-line3').value + 'px';
+            const sizeAddress = document.getElementById('size-address').value + 'px';
+
+            // Ambil Nilai Margin
+            const marginTop = document.getElementById('margin-top').value + 'mm';
+            const marginBottom = document.getElementById('margin-bottom').value + 'mm';
+            const marginLeft = document.getElementById('margin-left').value + 'mm';
+            const marginRight = document.getElementById('margin-right').value + 'mm';
+
+            // Terapkan Margin ke Kertas
+            const paper = document.getElementById('paper');
+            paper.style.paddingTop = marginTop;
+            paper.style.paddingBottom = marginBottom;
+            paper.style.paddingLeft = marginLeft;
+            paper.style.paddingRight = marginRight;
+
+            const container = document.getElementById('kop-text-container');
+            container.style.fontFamily = fontFamily;
+            container.style.color = fontColor;
+            container.style.lineHeight = lineHeight;
+
+            document.getElementById('txt-line1').style.fontSize = sizeLine1;
+            document.getElementById('txt-line2').style.fontSize = sizeLine2;
+            document.getElementById('txt-line3').style.fontSize = sizeLine3;
+            document.getElementById('txt-address').style.fontSize = sizeAddress;
+            document.getElementById('txt-email').style.fontSize = sizeAddress;
+
+            document.getElementById('img-logo-left').style.height = logoSize;
+            document.getElementById('img-logo-right').style.height = logoSize;
+
+            document.getElementById('divider-thick').style.borderColor = lineColor;
+            document.getElementById('divider-thin').style.borderColor = lineColor;
+        }
+
+        // Trigger Cetak sekaligus Menyimpan ke Riwayat
+        function triggerPrintAndSave() {
+            saveToHistory();
+            window.print();
+        }
+
+        function saveToHistory() {
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+
+            const record = {
+                id: Date.now(),
+                timestamp: timeStr,
+                line1: document.getElementById('txt-line1').innerText,
+                line2: document.getElementById('txt-line2').innerText,
+                line3: document.getElementById('txt-line3').innerText,
+                address: document.getElementById('txt-address').innerText,
+                email: document.getElementById('txt-email').innerText,
+                paperSize: document.getElementById('paper-size').value,
+                fontFamily: document.getElementById('font-family').value,
+                fontColor: document.getElementById('font-color').value,
+                lineColor: document.getElementById('line-color').value,
+                logoSize: document.getElementById('logo-size').value,
+                lineHeight: document.getElementById('line-height').value,
+                size1: document.getElementById('size-line1').value,
+                size2: document.getElementById('size-line2').value,
+                size3: document.getElementById('size-line3').value,
+                sizeAddr: document.getElementById('size-address').value,
+                marginTop: document.getElementById('margin-top').value,
+                marginBottom: document.getElementById('margin-bottom').value,
+                marginLeft: document.getElementById('margin-left').value,
+                marginRight: document.getElementById('margin-right').value,
+                logoLeftSrc: document.getElementById('img-logo-left').src,
+                logoRightSrc: document.getElementById('img-logo-right').src
+            };
+
+            historyData.unshift(record);
+            renderHistoryTable();
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('history-tbody');
+            tbody.innerHTML = '';
+
+            if (historyData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a9fbf5; padding: 15px;">Belum ada riwayat pencetakan. Klik "Cetak" untuk menyimpan riwayat.</td></tr>`;
+                return;
+            }
+
+            historyData.forEach((item, index) => {
+                const paperLabel = item.paperSize === 'paper-a4' ? 'A4' : 'F4 / Folio';
+                const marginStr = `${item.marginTop}, ${item.marginBottom}, ${item.marginLeft}, ${item.marginRight} mm`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${item.timestamp}</td>
+                        <td><strong>${item.line3 || item.line1}</strong></td>
+                        <td>${paperLabel}</td>
+                        <td>${marginStr}</td>
+                        <td style="text-align: center; display: flex; gap: 6px; justify-content: center;">
+                            <button class="btn btn-sm btn-success" onclick="printFromHistory(${item.id})" title="Cetak Ulang"><i class="fa-solid fa-print"></i></button>
+                            <button class="btn btn-sm btn-warning" onclick="editFromHistory(${item.id})" title="Edit (Butuh Password)"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteFromHistory(${item.id})" title="Hapus (Butuh Password)"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function verifyPassword() {
+            const inputPwd = prompt("Masukkan Password untuk melakukan tindakan ini:");
+            if (inputPwd === null) return false;
+            if (inputPwd === ADMIN_PASSWORD) {
+                return true;
+            } else {
+                alert("Password Salah! Akses ditolak.");
+                return false;
+            }
+        }
+
+        function printFromHistory(id) {
+            loadRecordToCanvas(id);
+            window.print();
+        }
+
+        function editFromHistory(id) {
+            if (!verifyPassword()) return;
+            loadRecordToCanvas(id);
+            alert("Data riwayat berhasil dimuat ke panel pengaturan & pratinjau!");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteFromHistory(id) {
+            if (!verifyPassword()) return;
+            if (confirm("Apakah Anda yakin ingin menghapus item riwayat ini?")) {
+                historyData = historyData.filter(item => item.id !== id);
+                renderHistoryTable();
+            }
+        }
+
+        function loadRecordToCanvas(id) {
+            const item = historyData.find(record => record.id === id);
+            if (!item) return;
+
+            document.getElementById('txt-line1').innerText = item.line1;
+            document.getElementById('txt-line2').innerText = item.line2;
+            document.getElementById('txt-line3').innerText = item.line3;
+            document.getElementById('txt-address').innerText = item.address;
+            document.getElementById('txt-email').innerText = item.email;
+
+            document.getElementById('paper-size').value = item.paperSize;
+            document.getElementById('font-family').value = item.fontFamily;
+            document.getElementById('font-color').value = item.fontColor;
+            document.getElementById('line-color').value = item.lineColor;
+            document.getElementById('logo-size').value = item.logoSize;
+            document.getElementById('line-height').value = item.lineHeight;
+
+            document.getElementById('size-line1').value = item.size1;
+            document.getElementById('size-line2').value = item.size2;
+            document.getElementById('size-line3').value = item.size3;
+            document.getElementById('size-address').value = item.sizeAddr;
+
+            document.getElementById('margin-top').value = item.marginTop || 15;
+            document.getElementById('margin-bottom').value = item.marginBottom || 20;
+            document.getElementById('margin-left').value = item.marginLeft || 20;
+            document.getElementById('margin-right').value = item.marginRight || 20;
+
+            document.getElementById('img-logo-left').src = item.logoLeftSrc;
+            document.getElementById('img-logo-right').src = item.logoRightSrc;
+
+            updatePaperSize();
+            updateStyles();
+        }
+
+        window.onload = function() {
+            updateStyles();
+        };
+    </script>
+</body>
+</html>
