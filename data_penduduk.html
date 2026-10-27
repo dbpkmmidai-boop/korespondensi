@@ -153,7 +153,7 @@
             color: #ffffff;
         }
 
-        select, input[type="text"], input[type="number"] {
+        select, input[type="text"], input[type="number"], input[type="url"] {
             background-color: rgba(2, 19, 31, .8) !important;
             border-color: rgba(103, 243, 245, .3) !important;
             color: #e7fbff !important;
@@ -241,6 +241,48 @@
         </div>
     </div>
 
+    <!-- Modal Input URL Google Sheet -->
+    <div id="gsheet-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="glass-panel rounded-xl shadow-2xl max-w-lg w-full p-6 transform transition-all">
+            <div class="flex items-center justify-between border-b border-cyan-400/20 pb-3 mb-4">
+                <div class="flex items-center space-x-3 text-teal-300">
+                    <div class="p-2.5 bg-teal-950/60 border border-teal-400/40 rounded-lg">
+                        <i class="fa-solid fa-table-cells text-lg"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-white">Impor dari Google Sheets</h3>
+                </div>
+                <button type="button" onclick="closeGSheetModal()" class="text-cyan-200/60 hover:text-cyan-200 text-sm">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-cyan-100/80 mb-4 leading-relaxed">
+                Masukkan URL Google Sheet publik (Link CSV atau Link Publikasi Web). Sistem akan mengambil dan memproses data secara langsung.
+            </p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-cyan-200/80 mb-1.5">Tautan / URL Google Sheet</label>
+                    <input type="url" id="gsheet-url-input" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full px-3 py-2 text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-teal-400 border border-cyan-400/30">
+                </div>
+
+                <div class="bg-cyan-950/50 p-3 rounded-lg border border-cyan-400/20 text-[11px] text-cyan-200/70 space-y-1">
+                    <p class="font-bold text-cyan-300"><i class="fa-solid fa-lightbulb mr-1"></i> Petunjuk Tautan publik:</p>
+                    <p>Buka Google Sheet &rarr; File &rarr; Bagikan &rarr; Publikasikan ke Web &rarr; Pilih "Pemisah koma (.csv)" &rarr; Klik Publikasikan &rarr; Salin Tautannya.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeGSheetModal()" class="px-4 py-2 text-xs font-semibold text-cyan-200 bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-cyan-400/30 transition">
+                    Batal
+                </button>
+                <button type="button" id="btn-fetch-gsheet" onclick="processGoogleSheetURL()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2 rounded-lg font-semibold text-xs flex items-center shadow-md transition border border-teal-300/40">
+                    <i class="fa-solid fa-download mr-2"></i> Muat Data Sheet
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header Print Only -->
     <div class="print-only mb-6 border-b-2 border-slate-800 pb-4">
         <div class="flex justify-between items-center">
@@ -271,7 +313,7 @@
 
             <div class="flex items-center space-x-2 sm:space-x-3">
                 <!-- Tombol Import Google Sheets -->
-                <button type="button" id="btn-import-gsheet" onclick="importGoogleSheet()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm flex items-center shadow-md border border-teal-400/40 transition">
+                <button type="button" id="btn-import-gsheet" onclick="openGSheetModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm flex items-center shadow-md border border-teal-400/40 transition">
                     <i class="fa-solid fa-table-cells mr-2"></i> <span class="hidden sm:inline">Impor Google Sheet</span><span class="sm:hidden">G-Sheet</span>
                 </button>
 
@@ -532,7 +574,7 @@
     </footer>
 
     <script>
-        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQQ1kUqCir7i2bA-I5v6phz2Dax02uotOdXm6BYSsa-5LFFd0qqJQsW4lXoCGpXFA/pub?output=csv';
+        const DEFAULT_GSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQQ1kUqCir7i2bA-I5v6phz2Dax02uotOdXm6BYSsa-5LFFd0qqJQsW4lXoCGpXFA/pub?output=csv';
 
         const MOCK_DPT_DATA = [
             { KELURAHAN: "SABANG BARAT", NKK: "1471011203080001", NIK: "1471011505850003", NAMA: "Ahmad Dahlan", TEMPAT_LAHIR: "Sabang", TGL_LAHIR: "15/05/1985", STS_KAWIN: "S", KELAMIN: "L", ALAMAT: "Jl. Yos Sudarso No. 12", RT: "001", RW: "001" },
@@ -618,16 +660,59 @@
             document.getElementById('reimport-modal').classList.add('hidden');
         }
 
-        /* --- FUNGSI MENGAMBIL DATA DARI GOOGLE SHEETS --- */
-        async function importGoogleSheet() {
-            const btn = document.getElementById('btn-import-gsheet');
+        /* --- FUNGSI MODAL & IMPORT GOOGLE SHEETS DENGAN CUSTOM URL --- */
+        function openGSheetModal() {
+            const inputEl = document.getElementById('gsheet-url-input');
+            const savedLastUrl = localStorage.getItem('dpt_last_gsheet_url');
+            inputEl.value = savedLastUrl || DEFAULT_GSHEET_URL;
+            document.getElementById('gsheet-modal').classList.remove('hidden');
+        }
+
+        function closeGSheetModal() {
+            document.getElementById('gsheet-modal').classList.add('hidden');
+        }
+
+        // Mengubah link Google Sheet biasa ke format CSV publikasi
+        function convertToCsvUrl(url) {
+            if (!url) return '';
+            let cleanUrl = url.trim();
+
+            if (cleanUrl.includes('output=csv')) {
+                return cleanUrl;
+            }
+
+            // Jika format link biasa: https://docs.google.com/spreadsheets/d/ID_SHEET/edit...
+            const sheetIdMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (sheetIdMatch && sheetIdMatch[1]) {
+                const sheetId = sheetIdMatch[1];
+                let gidParam = '';
+                const gidMatch = cleanUrl.match(/[?&]gid=([0-9]+)/);
+                if (gidMatch && gidMatch[1]) {
+                    gidParam = `&gid=${gidMatch[1]}`;
+                }
+                return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv${gidParam}`;
+            }
+
+            return cleanUrl;
+        }
+
+        async function processGoogleSheetURL() {
+            const urlInput = document.getElementById('gsheet-url-input').value.trim();
+
+            if (!urlInput) {
+                alert("Silakan masukkan URL Google Sheet terlebih dahulu!");
+                return;
+            }
+
+            const targetCsvUrl = convertToCsvUrl(urlInput);
+            const btn = document.getElementById('btn-fetch-gsheet');
             const originalText = btn.innerHTML;
-            
+
             try {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengunduh...';
 
-                const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                const response = await fetch(targetCsvUrl);
                 if (!response.ok) throw new Error('Gagal mengunduh data dari Google Sheet.');
 
                 const csvText = await response.text();
@@ -639,7 +724,7 @@
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
                 if (jsonData.length === 0) {
-                    alert("Google Sheet yang dipublikasikan tidak memiliki data!");
+                    alert("Google Sheet yang Anda masukkan tidak memiliki data!");
                     return;
                 }
 
@@ -665,15 +750,18 @@
                 });
 
                 document.getElementById('data-source-label').textContent = 'Google Sheet Live';
-                document.getElementById('file-name-tag').textContent = 'Google_Sheet_DPT';
+                document.getElementById('file-name-tag').textContent = 'Google_Sheet_Custom';
 
-                saveDataToLocalStorage('Google_Sheet_DPT');
+                localStorage.setItem('dpt_last_gsheet_url', urlInput);
+                saveDataToLocalStorage('Google_Sheet_Custom');
                 initDashboard();
+                closeGSheetModal();
+
                 alert(`Berhasil mengimpor ${rawDptData.length} data pemilih dari Google Sheet!`);
 
             } catch (error) {
                 console.error("Kesalahan impor Google Sheet:", error);
-                alert("Gagal mengimpor data dari Google Sheet. Pastikan link dipublikasikan secara publik!");
+                alert("Gagal mengimpor data. Pastikan tautan Google Sheet telah dipublikasikan ke web atau memiliki hak akses terbuka!");
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalText;
