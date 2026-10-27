@@ -269,11 +269,19 @@
                 </div>
             </div>
 
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Tombol Import Google Sheets -->
+                <button type="button" id="btn-import-gsheet" onclick="importGoogleSheet()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm flex items-center shadow-md border border-teal-400/40 transition">
+                    <i class="fa-solid fa-table-cells mr-2"></i> <span class="hidden sm:inline">Impor Google Sheet</span><span class="sm:hidden">G-Sheet</span>
+                </button>
+
+                <!-- Tombol Import Excel -->
                 <label for="excel-file-input" class="cursor-pointer bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm flex items-center shadow-md border border-cyan-400/40 transition">
                     <i class="fa-solid fa-file-excel mr-2"></i> <span class="hidden sm:inline">Impor / Unggah Excel</span><span class="sm:hidden">Unggah</span>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden">
                 </label>
+
+                <!-- Tombol Reset Data -->
                 <button type="button" onclick="resetDataToMock()" class="bg-slate-800/80 hover:bg-slate-700/80 text-cyan-200 border border-cyan-400/30 px-3 py-2 rounded-lg text-xs transition flex items-center" title="Muat Data Sampel Default">
                     <i class="fa-solid fa-rotate-right mr-1.5"></i> Reset Data
                 </button>
@@ -524,6 +532,8 @@
     </footer>
 
     <script>
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQQ1kUqCir7i2bA-I5v6phz2Dax02uotOdXm6BYSsa-5LFFd0qqJQsW4lXoCGpXFA/pub?output=csv';
+
         const MOCK_DPT_DATA = [
             { KELURAHAN: "SABANG BARAT", NKK: "1471011203080001", NIK: "1471011505850003", NAMA: "Ahmad Dahlan", TEMPAT_LAHIR: "Sabang", TGL_LAHIR: "15/05/1985", STS_KAWIN: "S", KELAMIN: "L", ALAMAT: "Jl. Yos Sudarso No. 12", RT: "001", RW: "001" },
             { KELURAHAN: "SABANG BARAT", NKK: "1471011203080001", NIK: "1471015208880002", NAMA: "Siti Aminah", TEMPAT_LAHIR: "Banda Aceh", TGL_LAHIR: "12/08/1988", STS_KAWIN: "S", KELAMIN: "P", ALAMAT: "Jl. Yos Sudarso No. 12", RT: "001", RW: "001" },
@@ -606,6 +616,68 @@
 
         function closeReimportModal() {
             document.getElementById('reimport-modal').classList.add('hidden');
+        }
+
+        /* --- FUNGSI MENGAMBIL DATA DARI GOOGLE SHEETS --- */
+        async function importGoogleSheet() {
+            const btn = document.getElementById('btn-import-gsheet');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengunduh...';
+
+                const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                if (!response.ok) throw new Error('Gagal mengunduh data dari Google Sheet.');
+
+                const csvText = await response.text();
+                
+                // Gunakan SheetJS untuk mengurai CSV
+                const workbook = XLSX.read(csvText, { type: 'string' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                if (jsonData.length === 0) {
+                    alert("Google Sheet yang dipublikasikan tidak memiliki data!");
+                    return;
+                }
+
+                rawDptData = jsonData.map((row) => {
+                    const rawTglLahir = findValueByPossibleKeys(row, [
+                        'TANGGAL LAHIR', 'TGL LAHIR', 'TANGGAL_LAHIR', 'TGL_LAHIR', 
+                        'TGL. LAHIR', 'TGL'
+                    ], row, 5);
+
+                    return {
+                        KELURAHAN: String(findValueByPossibleKeys(row, ['KELURAHAN', 'DESA', 'KELURAHAN/DESA', 'WILAYAH'], row, 0) || '-'),
+                        NKK: String(findValueByPossibleKeys(row, ['NKK', 'NO_KK', 'NO KK'], row, 1) || '-'),
+                        NIK: String(findValueByPossibleKeys(row, ['NIK', 'NO_NIK', 'NO NIK'], row, 2) || '-'),
+                        NAMA: String(findValueByPossibleKeys(row, ['NAMA', 'NAMA PEMILIH', 'NAMA_PEMILIH'], row, 3) || '-'),
+                        TEMPAT_LAHIR: String(findValueByPossibleKeys(row, ['TEMPAT LAHIR', 'TEMPAT_LAHIR', 'TMP_LAHIR', 'TEMPAT'], row, 4) || '-'),
+                        TGL_LAHIR: formatDateToDDMMYYYY(rawTglLahir),
+                        STS_KAWIN: String(findValueByPossibleKeys(row, ['STS KAWIN', 'STS_KAWIN', 'STATUS_KAWIN', 'STATUS', 'STS'], row, 6) || '-').toUpperCase(),
+                        KELAMIN: String(findValueByPossibleKeys(row, ['KELAMIN', 'JK', 'JENIS KELAMIN', 'JENIS_KELAMIN', 'L/P'], row, 7) || '-').toUpperCase(),
+                        ALAMAT: String(findValueByPossibleKeys(row, ['ALAMAT', 'ALAMAT PEMILIH'], row, 8) || '-'),
+                        RT: String(findValueByPossibleKeys(row, ['RT', 'NO_RT'], row, 9) || '-'),
+                        RW: String(findValueByPossibleKeys(row, ['RW', 'NO_RW'], row, 10) || '-')
+                    };
+                });
+
+                document.getElementById('data-source-label').textContent = 'Google Sheet Live';
+                document.getElementById('file-name-tag').textContent = 'Google_Sheet_DPT';
+
+                saveDataToLocalStorage('Google_Sheet_DPT');
+                initDashboard();
+                alert(`Berhasil mengimpor ${rawDptData.length} data pemilih dari Google Sheet!`);
+
+            } catch (error) {
+                console.error("Kesalahan impor Google Sheet:", error);
+                alert("Gagal mengimpor data dari Google Sheet. Pastikan link dipublikasikan secara publik!");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
         }
 
         function formatDateToDDMMYYYY(val) {
