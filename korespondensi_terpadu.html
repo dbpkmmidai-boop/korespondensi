@@ -345,6 +345,32 @@
         "wandisusanto21@gmail.com"
       ];
 
+
+        function verifikasiAksesEmail() {
+            const emailInput = document.getElementById('inputEmail').value.trim().toLowerCase();
+
+            if (emailTerdaftar.includes(emailInput)) {
+                // 1. Buat "Kunci Digital" di browser bahwa akses ini sah
+                sessionStorage.setItem('akses_sah', 'true');
+                sessionStorage.setItem('email_aktif', emailInput);
+
+                alert('Verifikasi Berhasil! Selamat datang.');
+                // Menyembunyikan modal/form login dan membuka dashboard
+                document.getElementById('modalLogin').classList.add('hidden');
+            } else {
+                alert('Email tidak terdaftar! Akses ditolak.');
+            }
+        }
+
+        // Fungsi Logout untuk menghapus kunci saat selesai
+        function logoutSistem() {
+            sessionStorage.clear(); // Hapus semua sesi
+            alert('Anda telah keluar dari sistem.');
+            location.reload(); // Muat ulang halaman agar terkunci kembali
+        }
+    </script>
+</body>
+</html>
       // Fungsi membaca payload JWT Token dari Google
       function parseJwt (token) {
         var base64Url = token.split('.')[1];
