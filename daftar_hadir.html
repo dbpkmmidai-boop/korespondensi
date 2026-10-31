@@ -3,6 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SKRIP INTEGRASI OTENTIKASI DASHBOARD KORESPONDENSI TERPADU -->
+    <script>
+      (function protectPage() {
+        // 1. Daftar email resmi yang diizinkan mengakses dokumen (Sama seperti korespondensi_terpadu.html)
+        const ALLOWED_EMAILS = [
+          "dbpkmmidai@gmail.com",
+          "natunassl@gmail.com",
+          "witapebrianti33@gmail.com",
+          "cyyessi25@gmail.com",
+          "midiawati.midai@gmail.com",
+          "wandisusanto21@gmail.com"
+        ];
+
+        // 2. Cek sesi login yang tersimpan dari dashboard utama
+        const savedUser = sessionStorage.getItem('authorized_user');
+
+        // 3. Validasi: Jika tidak ada sesi atau email tidak terdaftar di whitelist
+        if (!savedUser || !ALLOWED_EMAILS.includes(savedUser.toLowerCase().trim())) {
+          // Sembunyikan tampilan agar isi halaman tidak berkedip / terlihat
+          document.write('<style>html { display: none !important; }</style>');
+          
+          alert('Akses Ditolak!\nDokumen ini hanya dapat dibuka melalui Dashboard Utama setelah verifikasi email resmi.');
+          
+          // Tendang balik ke halaman dashboard utama
+          window.location.href = './korespondensi_terpadu.html';
+        }
+      })();
+    </script>
 <title>Daftar Hadir</title>
 <style>
     /* Ukuran kertas aktif untuk layar/cetak */
